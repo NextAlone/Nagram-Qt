@@ -173,10 +173,9 @@ void SendRepeat(
 	if (resolved.items.empty()) {
 		return;
 	}
-	auto action = RepeatAction(target, rootId);
-	action.generateLocal = false;
 	history->session().api().forwardMessages(
-		std::move(resolved), action);
+		std::move(resolved),
+		RepeatAction(target, rootId));
 	ShowLatest(controller, target, rootId);
 }
 

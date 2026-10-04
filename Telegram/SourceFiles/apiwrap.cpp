@@ -81,6 +81,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/history_item_components.h"
 #include "history/history_item_helpers.h"
 #include "history/view/controls/history_view_forward_panel.h"
+#include "nagram/compose/forward.h"
 #include "nagram/compose/options.h"
 #include "nagram/compose/text.h"
 #include "nagram/messages/content.h"
@@ -3923,10 +3924,9 @@ void ApiWrap::forwardMessages(
 	}
 
 	const auto count = int(draft.items.size());
+	auto localForwards = Nagram::Compose::LocalForwards(draft);
 	const auto genClientSideMessage = action.generateLocal
-		&& (count == 1)
-		&& !draft.items.front()->isEphemeral()
-		&& (draft.options == Data::ForwardOptions::PreserveInfo);
+		&& localForwards.possible();
 	const auto history = action.history;
 	const auto peer = history->peer;
 
@@ -4103,7 +4103,7 @@ void ApiWrap::forwardMessages(
 				const auto newId = FullMsgId(
 					peer->id,
 					_session->data().nextLocalMessageId());
-				history->addNewLocalMessage({
+				history->addNewLocalMessage(localForwards.fields({
 					.id = newId.msg,
 					.flags = flags,
 					.from = NewMessageFromId(action),
@@ -4118,7 +4118,7 @@ void ApiWrap::forwardMessages(
 					.suggest = HistoryMessageSuggestInfo(action.options),
 					// forwarded messages don't have effects
 					//.effectId = action.options.effectId,
-				}, item);
+				}, item), item);
 				_session->data().registerMessageRandomId(randomId, newId);
 				if (!localIds) {
 					localIds = std::make_shared<base::flat_map<uint64, FullMsgId>>();
