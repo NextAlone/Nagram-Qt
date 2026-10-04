@@ -91,6 +91,7 @@ set(nagram_sources
     nagram/snapshot/cloud_theme.cpp
     nagram/snapshot/cloud_theme_model.cpp
     nagram/privacy/profile.cpp
+    nagram/privacy/registration_model.cpp
     nagram/privacy/alias.cpp
     nagram/privacy/admin_shortcuts.cpp
     nagram/privacy/display.cpp
@@ -284,6 +285,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/links/inline_rules.cpp
         nagram/links/webview.cpp
         nagram/privacy/protection_model.cpp
+        nagram/privacy/registration_model.cpp
         nagram/chats/local_pins_model.cpp
         nagram/chats/cleanup_model.cpp
         nagram/media/local_faved_model.cpp

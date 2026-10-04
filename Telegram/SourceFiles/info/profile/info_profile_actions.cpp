@@ -1886,7 +1886,7 @@ Section DetailsFiller::makeInfo() {
 			Nagram::Privacy::ProfileIdValue(_peer), QString());
 		addInfoOneLine(tr::lng_nagram_profile_dc(),
 			Nagram::Privacy::ProfileDcValue(_peer), QString());
-		addInfoOneLine(tr::lng_nagram_profile_registration(),
+		addInfoOneLine(Nagram::Privacy::ProfileRegistrationLabel(_peer),
 			Nagram::Privacy::ProfileRegistrationValue(_peer), QString());
 	}
 	raw->toggleOn(tracker.atLeastOneShownValue());

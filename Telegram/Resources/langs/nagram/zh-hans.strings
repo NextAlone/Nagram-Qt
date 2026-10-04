@@ -180,8 +180,12 @@
 "lng_nagram_show_profile_dc" = "在资料页显示数据中心";
 "lng_nagram_profile_dc" = "数据中心";
 "lng_nagram_show_registration_date" = "在资料页显示注册时间";
-"lng_nagram_show_registration_date_about" = "只在 Telegram 提供该用户的注册月份时显示。";
+"lng_nagram_show_registration_date_about" = "Telegram 提供该用户的注册月份时显示该月份，否则按用户 ID 估算。";
 "lng_nagram_profile_registration" = "注册时间";
+"lng_nagram_profile_registration_estimated" = "注册时间（估算）";
+"lng_nagram_registration_about" = "约 {date}";
+"lng_nagram_registration_before" = "早于 {date}";
+"lng_nagram_registration_after" = "晚于 {date}";
 "lng_nagram_hide_profile_gifts" = "隐藏资料页礼物";
 "lng_nagram_hide_create_todo" = "隐藏创建待办清单入口";
 "lng_nagram_admin_shortcuts_option" = "在聊天菜单中显示管理快捷项";

@@ -184,8 +184,12 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_show_profile_dc" = "Show data center on profile";
 "lng_nagram_profile_dc" = "Data center";
 "lng_nagram_show_registration_date" = "Show registration date on profile";
-"lng_nagram_show_registration_date_about" = "Shown only when Telegram provides the registration month of a user.";
+"lng_nagram_show_registration_date_about" = "Shows the registration month when Telegram provides it. Otherwise the date is estimated from the user ID.";
 "lng_nagram_profile_registration" = "Registration date";
+"lng_nagram_profile_registration_estimated" = "Registration date (estimated)";
+"lng_nagram_registration_about" = "about {date}";
+"lng_nagram_registration_before" = "before {date}";
+"lng_nagram_registration_after" = "after {date}";
 "lng_nagram_hide_profile_gifts" = "Hide profile gifts";
 "lng_nagram_hide_create_todo" = "Hide Create To-Do List";
 "lng_nagram_admin_shortcuts_option" = "Admin shortcuts in chat menu";

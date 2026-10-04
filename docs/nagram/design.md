@@ -273,7 +273,7 @@ P3-08 按[专项设计](p3-08-sync-services.md)实施为 S180–S182：消息截
 
 ### P3-09 实施记录（2026-10-01）
 
-P3-09 与 F16 未归包项按[专项设计](p3-09-advanced-misc.md)实施为 S190–S194，条目为 B25–B26、F26–F27、G17、I11–I15。各步 macOS arm64 Debug 增量构建与 `test_nagram`（新增“P3-09 options”“local lists”两组）通过；没有启动应用，全部界面场景未现场验证，V2 未做。上游改动 10 个已有文件：`core/ui_integration.cpp`、`core/click_handler_types.cpp`、`mainwidget.cpp`、`ui/chat/attach/attach_bot_webview.cpp`、`info/profile/info_profile_actions.cpp`、`dialogs/dialogs_entry.cpp`、`window/window_peer_menu.cpp`、`dialogs/ui/dialogs_layout.cpp`、`data/stickers/data_stickers.cpp`、`chat_helpers/stickers_list_widget.cpp`，没有新增 `friend` 声明。本地置顶与本机收藏不进入上游列表、不上传，按账号保存并带用户归属校验。未实施：按用户 ID 估算注册日期、标签搜索的“公开帖子”、其他设备造成的收藏溢出。
+P3-09 与 F16 未归包项按[专项设计](p3-09-advanced-misc.md)实施为 S190–S194，条目为 B25–B26、F26–F27、G17、I11–I15。各步 macOS arm64 Debug 增量构建与 `test_nagram`（新增“P3-09 options”“local lists”两组）通过；没有启动应用，全部界面场景未现场验证，V2 未做。上游改动 10 个已有文件：`core/ui_integration.cpp`、`core/click_handler_types.cpp`、`mainwidget.cpp`、`ui/chat/attach/attach_bot_webview.cpp`、`info/profile/info_profile_actions.cpp`、`dialogs/dialogs_entry.cpp`、`window/window_peer_menu.cpp`、`dialogs/ui/dialogs_layout.cpp`、`data/stickers/data_stickers.cpp`、`chat_helpers/stickers_list_widget.cpp`，没有新增 `friend` 声明。本地置顶与本机收藏不进入上游列表、不上传，按账号保存并带用户归属校验。未实施：标签搜索的“公开帖子”、其他设备造成的收藏溢出；按用户 ID 估算注册日期当时未实施，2026-10-05 补做。
 
 ### M7 V2 核验（2026-09-29）
 

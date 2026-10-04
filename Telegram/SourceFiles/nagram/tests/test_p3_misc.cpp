@@ -1,10 +1,12 @@
 #include "nagram/core/exchange.h"
 #include "nagram/links/options.h"
 #include "nagram/privacy/options.h"
+#include "nagram/privacy/registration_model.h"
 
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 
+#include <cstdlib>
 #include <iostream>
 #include <map>
 #include <stdexcept>
@@ -179,11 +181,54 @@ void TestRegistrationDate() {
 		"registration date shown without data from Telegram");
 }
 
+void TestRegistrationEstimate() {
+	using namespace Nagram::Privacy;
+	using Bound = RegistrationBound;
+	const auto anchors = RegistrationAnchors();
+	Require(anchors.size() == 133, "registration anchors count");
+	for (auto i = 1; i != int(anchors.size()); ++i) {
+		Require(anchors[i - 1].id < anchors[i].id,
+			"registration anchor IDs must strictly increase");
+		Require(anchors[i - 1].date <= anchors[i].date,
+			"registration anchor dates must not decrease");
+	}
+	const auto &first = anchors.front();
+	const auto &last = anchors.back();
+	using Estimate = RegistrationEstimate;
+	Require(EstimateRegistration(first.id - 1)
+			== Estimate{ Bound::Before, first.date }
+		&& EstimateRegistration(0) == Estimate{ Bound::Before, first.date },
+		"ID below the first anchor must be before its date");
+	Require(EstimateRegistration(first.id)
+			== Estimate{ Bound::About, first.date }
+		&& EstimateRegistration(last.id)
+			== Estimate{ Bound::About, last.date },
+		"anchor IDs must get the anchor dates");
+	Require(EstimateRegistration(last.id + 1)
+			== Estimate{ Bound::After, last.date },
+		"ID above the last anchor must be after its date");
+	const auto &second = anchors[1];
+	const auto middle = EstimateRegistration((first.id + second.id) / 2);
+	Require(middle.bound == Bound::About
+		&& middle.date > first.date
+		&& middle.date < second.date
+		&& std::abs(middle.date - (first.date + second.date) / 2) <= 1,
+		"ID between two anchors must be interpolated");
+	auto previous = first.date;
+	for (auto id = first.id; id <= last.id; id += 7'654'321) {
+		const auto date = EstimateRegistration(id).date;
+		Require(date >= previous,
+			"a larger ID must not get an earlier registration date");
+		previous = date;
+	}
+}
+
 } // namespace
 
 void TestP3Misc() {
 	TestLinkBehavior();
 	TestWebAppSize();
 	TestRegistrationDate();
+	TestRegistrationEstimate();
 	std::cout << "PASS: Nagram P3-09 options" << std::endl;
 }

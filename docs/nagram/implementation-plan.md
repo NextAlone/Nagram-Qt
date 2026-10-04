@@ -203,7 +203,7 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | --- | --- | --- | --- |
 | ✅ S190 | `feat(rules): official web auto-login and hashtag search page` | I11–I13 | 标签搜索只提供“跟随 Telegram”“本对话”“我的消息”；“公开帖子”需改上游判断，不做。官方域名链接、三类对话与话题视图中点击标签均未现场验证 |
 | ✅ S191 | `feat(rules): initial size of web app windows` | I14、I15 | 源端的两个布尔开关改为宽、高各 100–200% 的比例；只改初始尺寸，按当前窗口所在屏幕的可用区域截断。放大后的窗口、小屏幕截断与 Linux 外部壳均未现场验证 |
-| ✅ S192 | `feat(privacy): registration date on profiles` | G17 | 只显示 Telegram 已下发的注册月份；按 ID 估算缺少锚点数据，不做。上游没有注册月份专用的更新标志，随 `barSettingsValue()` 刷新。下发了注册月份的用户资料页未现场验证 |
+| ✅ S192 | `feat(privacy): registration date on profiles` | G17 | 优先显示 Telegram 已下发的注册月份；没有下发时按用户 ID 估算（2026-10-05 补做，锚点表取自 Nnngram `ddbf1ef218` 的 `id_date.json`，133 个点），行标题带“估算”，值为“约 / 早于 / 晚于”某年某月。上游没有注册月份专用的更新标志，随 `barSettingsValue()` 刷新。下发了注册月份的用户资料页未现场验证 |
 | ✅ S193 | `feat(chats): local pins beyond the server limit` | B25、B26 | 本地集合按账号保存并带用户归属校验（`nagram/core/owned_json.h`，S194 复用），上限 100；沿用上游置顶图标，不新增图标资源。置顶到上限后的本机置顶、归档列表、其他设备置顶后的归并、断线重连、双账号与退出账号均未现场验证 |
 | ✅ S194 | `feat(media): keep overflowed favorite stickers locally` | F26、F27 | 只保留本机操作挤出的贴纸，上限 200；其他设备造成的溢出不保留。每个条目记录写入时的应用版本（设计为整份列表记录一个），便于逐项读取。服务端是否同样丢弃最旧一项、收藏到上限后的保留、取消本机收藏、重启后恢复、其他设备收藏后的归并、双账号均未现场验证 |
 | ✅ S195 | `docs(nagram): record P3-09 results` | D063 的合并说明；实施记录 | D063 不新增条目：由 F03 与上游实验项 `unlimited-recent-stickers` 覆盖。**P3-09 的 V2（rebase 到上游 `dev`、完整构建、三平台 CI）未做** |
