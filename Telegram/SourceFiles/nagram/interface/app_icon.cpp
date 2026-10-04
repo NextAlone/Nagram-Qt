@@ -175,7 +175,7 @@ QRectF TrayUnreadDot(QSize size) {
 	// The dot of tray_monochrome_attention.svg, on its 16 unit grid.
 	const auto x = size.width() / 16.;
 	const auto y = size.height() / 16.;
-	return QRectF(12.1 * x, 12.2 * y, 3.4 * x, 3.4 * y);
+	return QRectF(2.6 * x, 11.2 * y, 3.17 * x, 3.17 * y);
 }
 
 void StartAppIcon(rpl::lifetime &lifetime) {
