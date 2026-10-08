@@ -2959,6 +2959,24 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 		return;
 	}
 	const auto controller = _controller;
+	const auto whoReactedAtTop = Nagram::Messages::WhoReactedAtTop();
+	const auto addWhoReactedActions = [=] {
+		if (hasWhoReactedItem) {
+			HistoryView::AddWhoReactedAction(
+				_menu,
+				this,
+				leaderOrSelf,
+				_controller);
+		} else if (leaderOrSelf) {
+			HistoryView::MaybeAddWhenEditedForwardedAction(
+				_menu,
+				leaderOrSelf,
+				_controller);
+		}
+	};
+	if (whoReactedAtTop) {
+		addWhoReactedActions();
+	}
 	const auto canViewMessageStats = [&](HistoryItem *item) {
 		if (!item
 			|| item->isService()
@@ -3875,17 +3893,8 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 			textItem ? textItem : _dragStateItem,
 			!added);
 	}
-	if (hasWhoReactedItem) {
-		HistoryView::AddWhoReactedAction(
-			_menu,
-			this,
-			leaderOrSelf,
-			_controller);
-	} else if (leaderOrSelf) {
-		HistoryView::MaybeAddWhenEditedForwardedAction(
-			_menu,
-			leaderOrSelf,
-			_controller);
+	if (!whoReactedAtTop) {
+		addWhoReactedActions();
 	}
 
 	if (!_menu->empty() && rateTranscriptionItem) {

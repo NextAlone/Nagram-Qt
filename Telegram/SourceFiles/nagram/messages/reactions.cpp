@@ -53,4 +53,8 @@ bool AllowReactionSelector(bool hasSelection) {
 		|| !ForDevice().Get(kHideReactionMenuWhenSelecting);
 }
 
+bool WhoReactedAtTop() {
+	return ForDevice().Get(kMoveWhoReactedToTop);
+}
+
 } // namespace Nagram::Messages

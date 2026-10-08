@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/view/history_view_context_menu.h"
 #include "nagram/menu/actions.h"
 #include "nagram/menu/selection.h"
+#include "nagram/messages/reactions.h"
 #include "nagram/privacy/protection.h"
 
 #include "api/api_attached_stickers.h"
@@ -1833,6 +1834,21 @@ void FillContextMenuItems(
 	}
 	AddTodoListAction(result, request, list);
 
+	const auto whoReactedAtTop = Nagram::Messages::WhoReactedAtTop();
+	const auto addWhoReactedActions = [=] {
+		if (hasWhoReactedItem) {
+			AddWhoReactedAction(result, list, item, list->controller());
+		} else if (item) {
+			MaybeAddWhenEditedForwardedAction(
+				result,
+				item,
+				list->controller());
+		}
+	};
+	if (!skipWhoReacted && whoReactedAtTop) {
+		addWhoReactedActions();
+	}
+
 	if (request.overSelection
 		&& !list->hasCopyRestrictionForSelected()
 		&& !list->getSelectedText().empty()) {
@@ -1978,15 +1994,8 @@ void FillContextMenuItems(
 		const auto added = (result->actions().size() > wasAmount);
 		AddSelectRestrictionAction(result, item, !added);
 	}
-	if (!skipWhoReacted) {
-		if (hasWhoReactedItem) {
-			AddWhoReactedAction(result, list, item, list->controller());
-		} else if (item) {
-			MaybeAddWhenEditedForwardedAction(
-				result,
-				item,
-				list->controller());
-		}
+	if (!skipWhoReacted && !whoReactedAtTop) {
+		addWhoReactedActions();
 	}
 }
 
@@ -2577,7 +2586,7 @@ void AddWhoReactedAction(
 						whoReadIds)));
 		}
 	};
-	if (!menu->empty()) {
+	if (!menu->empty() && !Nagram::Messages::WhoReactedAtTop()) {
 		menu->addSeparator(&st::expandedMenuSeparator);
 	}
 	if (item->history()->peer->isUser()) {

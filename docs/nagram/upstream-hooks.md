@@ -100,6 +100,7 @@ B29（清理聊天）没有上游改动：清理框只调用 `ApiWrap::toggleHis
 | C10–C13 | `history/view/history_view_element.cpp`、`history/view/history_view_message.cpp` | 反应区域不创建并回收空间；按对话类型判断 | 读取 |
 | C14 | `history/view/reactions/history_view_reactions_selector.cpp` | 右键菜单不附加反应面板 | 读取 |
 | C15 | `history/history_inner_widget.cpp`、`history/view/history_view_list_widget.cpp` | 有选中消息时不附加反应面板 | 读取 |
+| C33 | `history/history_inner_widget.cpp`、`history/view/history_view_context_menu.cpp` | 两条填充路径开头的 `addWhoReactedActions` 在开关开启时执行，末尾的同一调用在开启时跳过；`AddWhoReactedAction` 的前置分隔线在开启时不加 | 替换 |
 | C16 | `history/view/media/history_view_sticker.cpp`、`history/view/history_view_emoji_interactions.cpp`、`history/view/history_view_emoji_interactions.h` | 不播放 Premium 贴纸外围特效；头文件以 `friend` 标记让 `nagram/messages/effects.cpp` 在开关变化时清理进行中的特效 | 读取 |
 | C17 | `history/view/history_view_emoji_interactions.cpp` | 丢弃收到和本地触发的表情互动 | 读取 |
 | C18 | `history/view/history_view_emoji_interactions.cpp` | 不播放消息附带特效，保留元数据 | 读取 |

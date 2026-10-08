@@ -28,5 +28,6 @@ namespace Nagram::Messages {
 [[nodiscard]] Data::PossibleItemReactionsRef MenuReactions(
 	not_null<HistoryItem*> item);
 [[nodiscard]] bool AllowReactionSelector(bool hasSelection);
+[[nodiscard]] bool WhoReactedAtTop();
 
 } // namespace Nagram::Messages

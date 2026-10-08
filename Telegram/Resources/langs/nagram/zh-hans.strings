@@ -219,6 +219,7 @@
 "lng_nagram_hide_channel_reactions" = "隐藏频道中的反应";
 "lng_nagram_hide_reaction_menu" = "隐藏右键菜单中的反应面板";
 "lng_nagram_hide_reaction_menu_when_selecting" = "选择消息时隐藏反应面板";
+"lng_nagram_move_who_reacted_to_top" = "移动已读/表情列表到消息菜单顶部";
 "lng_nagram_effects" = "特效";
 "lng_nagram_disable_premium_sticker_effects" = "关闭 Premium 贴纸特效";
 "lng_nagram_disable_emoji_interactions" = "关闭表情互动特效";

@@ -219,6 +219,7 @@
 "lng_nagram_hide_channel_reactions" = "隱藏頻道中的回應";
 "lng_nagram_hide_reaction_menu" = "隱藏右鍵選單中的回應面板";
 "lng_nagram_hide_reaction_menu_when_selecting" = "選取訊息時隱藏回應面板";
+"lng_nagram_move_who_reacted_to_top" = "移動已讀/表情列表到訊息選單頂部";
 "lng_nagram_effects" = "特效";
 "lng_nagram_disable_premium_sticker_effects" = "關閉 Premium 貼圖特效";
 "lng_nagram_disable_emoji_interactions" = "關閉表情互動特效";

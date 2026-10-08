@@ -259,6 +259,10 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_hide_reaction_menu_when_selecting(),
 		u"nagram/messages/reaction-selection"_q,
 		{ u"selection"_q, u"reaction panel"_q });
+	AddToggle(builder, Messages::kMoveWhoReactedToTop,
+		tr::lng_nagram_move_who_reacted_to_top(),
+		u"nagram/messages/who-reacted-top"_q,
+		{ u"seen by"_q, u"reactions"_q, u"top"_q, u"context menu"_q });
 	builder.addSubsectionTitle({
 		.id = u"nagram/messages/effects"_q,
 		.title = tr::lng_nagram_effects(),

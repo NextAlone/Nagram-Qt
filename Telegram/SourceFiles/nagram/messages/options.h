@@ -59,6 +59,9 @@ inline constexpr auto kHideReactionMenu = Option<bool>{
 inline constexpr auto kHideReactionMenuWhenSelecting = Option<bool>{
 	"nagram.hideReactionMenuWhenSelecting", Scope::Device, false,
 	Category::Messages, "lng_nagram_hide_reaction_menu_when_selecting" };
+inline constexpr auto kMoveWhoReactedToTop = Option<bool>{
+	"nagram.moveWhoReactedToTop", Scope::Device, false,
+	Category::Messages, "lng_nagram_move_who_reacted_to_top" };
 inline constexpr auto kDisablePremiumStickerEffects = Option<bool>{
 	"nagram.disablePremiumStickerEffects", Scope::Device, false,
 	Category::Messages, "lng_nagram_disable_premium_sticker_effects" };
@@ -125,6 +128,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kHideChannelReactions));
 	Expects(registry.Add(kHideReactionMenu));
 	Expects(registry.Add(kHideReactionMenuWhenSelecting));
+	Expects(registry.Add(kMoveWhoReactedToTop));
 	Expects(registry.Add(kDisablePremiumStickerEffects));
 	Expects(registry.Add(kDisableEmojiInteractions));
 	Expects(registry.Add(kDisableMessageEffects));
