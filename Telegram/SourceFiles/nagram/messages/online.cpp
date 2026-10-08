@@ -12,22 +12,42 @@
 namespace Nagram::Messages {
 namespace {
 
-enum class Presence { None, Online, Recently };
+// 与安卓端一致，按离开在线状态的时长分级
+QColor RecentlyColor(TimeId diff) {
+	if (diff > -15 * 60) {
+		return QColor(0xEA, 0xEA, 0x1E);
+	} else if (diff > -30 * 60) {
+		return QColor(0xEA, 0x84, 0x1E);
+	} else if (diff > -60 * 60) {
+		return QColor(0xEA, 0x1E, 0x1E);
+	}
+	return st::windowSubTextFg->c;
+}
 
-Presence ComputePresence(not_null<PeerData*> peer) {
+std::optional<QColor> ComputeBadgeColor(not_null<PeerData*> peer) {
 	const auto mode = ForDevice().Get(kSenderOnlineStatus);
 	const auto user = peer->asUser();
 	if (!mode || !user || user->isSelf() || user->isBot()
 		|| user->isServiceUser()) {
-		return Presence::None;
+		return std::nullopt;
 	}
+	const auto now = base::unixtime::now();
 	const auto lastseen = user->lastseen();
-	if (lastseen.isOnline(base::unixtime::now())) {
-		return Presence::Online;
+	if (lastseen.isOnline(now)) {
+		return st::dialogsOnlineBadgeFg->c;
+	} else if (mode != 2) {
+		return std::nullopt;
 	}
-	return (mode == 2 && lastseen.isRecently())
-		? Presence::Recently
-		: Presence::None;
+	const auto till = lastseen.onlineTill();
+	if (till) {
+		const auto diff = till - now;
+		return (diff > -60 * 60)
+			? std::optional<QColor>(RecentlyColor(diff))
+			: std::nullopt;
+	}
+	return lastseen.isRecently()
+		? std::optional<QColor>(st::windowSubTextFg->c)
+		: std::nullopt;
 }
 
 } // namespace
@@ -38,8 +58,8 @@ void PaintSenderOnline(
 		int x,
 		int y,
 		int size) {
-	const auto presence = ComputePresence(peer);
-	if (presence == Presence::None) {
+	const auto color = ComputeBadgeColor(peer);
+	if (!color) {
 		return;
 	}
 	const auto badge = st::dialogsOnlineBadgeSize;
@@ -49,9 +69,7 @@ void PaintSenderOnline(
 	auto pen = QPen(st::windowBg);
 	pen.setWidthF(stroke);
 	p.setPen(pen);
-	p.setBrush((presence == Presence::Online)
-		? st::dialogsOnlineBadgeFg
-		: st::windowSubTextFg);
+	p.setBrush(*color);
 	p.drawEllipse(QRectF(
 		x + size - skip.x() - badge,
 		y + size - skip.y() - badge,
