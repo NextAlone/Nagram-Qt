@@ -9,10 +9,13 @@ function(telegram_add_apple_swift_runtime target_name)
         return()
     endif()
 
+    set(swift_compiler "")
     # Nagram: /usr/bin/swiftc is a shim with no toolchain next to it.
     if (CMAKE_Swift_COMPILER AND NOT CMAKE_Swift_COMPILER MATCHES "^/usr/bin/")
         set(swift_compiler "${CMAKE_Swift_COMPILER}")
-    else()
+    endif()
+    get_filename_component(swift_bin_dir "${swift_compiler}" DIRECTORY)
+    if (NOT swift_compiler OR NOT EXISTS "${swift_bin_dir}/swift-stdlib-tool")
         execute_process(
             COMMAND xcrun --find swiftc
             OUTPUT_VARIABLE swift_compiler

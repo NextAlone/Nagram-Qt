@@ -145,7 +145,7 @@ inline constexpr auto kHideStories = Option<bool>{
 ### 3.8 版本控制与发布
 
 - `nagram-next` 是建立在 `dev@upstream` 之上的一串 change：`docs` → `build/branding` → `core` → 各功能包。
-- 同步上游：`jj git fetch --remote upstream` 后 `jj rebase -b nagram-next -d dev`，逐个 change 解决冲突并跑 `test_nagram`。
+- 同步上游：`jj git fetch --remote upstream` 后把上游合并进来，`jj new <本地头> dev@upstream`，在这一个合并 change 里解决冲突并跑 `test_nagram`。首次发布之前用的是 `jj rebase -b nagram-next -d dev`；发布之后本地的 change 已是发布 tag 的祖先，rebase 会改写已发布的历史，从 7.3.0（2026-10-10）起改用合并。jj 不处理子模块，合并后运行 `git submodule update --init --recursive`。
 - 发行包只上传 GitHub Releases；`releases/` 等本地产物不进入仓库。
 - CI 使用 `.github/workflows/nagram-{mac,win,linux}.yml`（由上游同名工作流改写，产物为 Nagram，未配置 Secrets 时使用上游测试凭据）；上游原有工作流在 GitHub 仓库设置中停用，不修改其文件以免 rebase 冲突。CI 改动单独成 change；不提交空提交来触发构建。
 - Linux 发行包的布局：`Nagram-<版本>-linux-x86_64.tar.xz` 解开是一个 `Nagram/` 目录。`Nagram/Nagram` 和 `Nagram/Updater` 放在任意可写位置即可运行并自行更新；`Nagram/share/` 是打包用的桌面集成文件（桌面入口、D-Bus 服务、各尺寸图标、metainfo），由 `tools/nagram/linux_tree.py` 按 `Telegram/CMakeLists.txt` 里只有系统打包构建才执行的 `install()` 规则生成，D-Bus 服务文件里的路径填 `/usr/bin`。发行版的包把二进制装到 `/usr/bin/Nagram`、把 `share/` 复制到 `/usr/share/`，并用 `externalupdater.d` 关掉内置更新器。metainfo 里没有上游构建时生成的 `<releases>` 段。

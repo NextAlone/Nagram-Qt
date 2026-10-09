@@ -38,6 +38,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/view/history_view_schedule_box.h"
 #include "history/view/history_view_scheduled_section.h"
 #include "menu/menu_send.h"
+#include "wallet/wallet_panel.h"
 #include "data/data_types.h"
 #include "styles/style_calls.h" // groupCallBoxLabel
 #include "styles/style_chat_helpers.h"
@@ -130,6 +131,70 @@ constexpr auto kReminderSetToastDuration = 4 * crl::time(1000);
 
 [[nodiscard]] bool HiddenUrlRequiresConfirmation(const QUrl &url) {
 	return UrlRequiresConfirmation(url) || IsTelegramShortLinkHost(url);
+}
+
+[[nodiscard]] bool IsWebAuthTokenPart(QStringView part) {
+	// Only the parameter name counts, a value may mention it freely.
+	// The name is compared with its percent-encoding undone, however deep.
+	auto name = part.left(part.indexOf('=')).toString();
+	for (auto i = 0; i != 4; ++i) {
+		const auto once = QUrl::fromPercentEncoding(name.toUtf8());
+		if (once == name) {
+			break;
+		}
+		name = once;
+	}
+	// WHY: URLSearchParams drops a leading "?", so "#??tgWebAuthToken="
+	// still hands the token to the web client.
+	while (name.startsWith('?')) {
+		name.remove(0, 1);
+	}
+	// Any tgWebAuth* parameter only describes the foreign login.
+	return name.startsWith(u"tgWebAuth"_q, Qt::CaseInsensitive)
+		|| !name.compare(u"autologin_token"_q, Qt::CaseInsensitive);
+}
+
+// Removes the token parameters from "a=b&c=d", splitting only on "&" the
+// way URLSearchParams does, so that a "?" stays inside the value it is in.
+[[nodiscard]] std::optional<QString> WithoutWebAuthTokenParams(
+		QStringView encoded) {
+	auto result = QString();
+	auto removed = false;
+	auto first = true;
+	for (const auto part : encoded.split('&')) {
+		if (IsWebAuthTokenPart(part)) {
+			removed = true;
+			continue;
+		} else if (!first) {
+			result.append('&');
+		}
+		first = false;
+		result.append(part);
+	}
+	return removed ? std::make_optional(result) : std::nullopt;
+}
+
+// A fragment may hold a route before its parameters, as in "#/k/?a=b",
+// or hold the parameters right away, as in "#a=b", so both are cleaned.
+[[nodiscard]] std::optional<QString> WithoutWebAuthTokenFragmentParams(
+		const QString &encoded) {
+	const auto question = encoded.indexOf('?');
+	if (question < 0) {
+		return WithoutWebAuthTokenParams(encoded);
+	}
+	const auto routePart = QStringView(encoded).left(question);
+	const auto paramsPart = QStringView(encoded).mid(question + 1);
+	const auto route = WithoutWebAuthTokenParams(routePart);
+	const auto params = WithoutWebAuthTokenParams(paramsPart);
+	if (!route && !params) {
+		return std::nullopt;
+	}
+	auto result = route.value_or(routePart.toString());
+	const auto rest = params.value_or(paramsPart.toString());
+	if (!rest.isEmpty()) {
+		result.append('?').append(rest);
+	}
+	return result;
 }
 
 [[nodiscard]] bool RequiresConfirmationAfterIvFallback(const QUrl &url) {
@@ -275,6 +340,40 @@ bool UrlRequiresConfirmation(const QUrl &url) {
 		")$",
 		url.host(),
 		RegExOption::CaseInsensitive);
+}
+
+QString UrlWithoutWebAuthTokens(const QString &url) {
+	auto parsed = QUrl(url);
+	const auto scheme = parsed.scheme().toLower();
+	if (!parsed.isValid()
+		|| (scheme != u"https"_q && scheme != u"http"_q)) {
+		return url;
+	}
+	auto host = parsed.host();
+	while (host.endsWith('.')) {
+		host.chop(1);
+	}
+	auto check = QUrl();
+	check.setHost(host);
+	if (host.isEmpty() || UrlRequiresConfirmation(check)) {
+		return url;
+	}
+	const auto query = WithoutWebAuthTokenParams(
+		parsed.query(QUrl::FullyEncoded));
+	const auto fragment = WithoutWebAuthTokenFragmentParams(
+		parsed.fragment(QUrl::FullyEncoded));
+	if (!query && !fragment) {
+		return url;
+	}
+	if (query) {
+		parsed.setQuery(
+			query->isEmpty() ? QString() : *query);
+	}
+	if (fragment) {
+		parsed.setFragment(
+			fragment->isEmpty() ? QString() : *fragment);
+	}
+	return QString::fromUtf8(parsed.toEncoded());
 }
 
 QString HiddenUrlClickHandler::copyToClipboardText() const {
@@ -777,4 +876,22 @@ QString FormattedDateClickHandler::tooltip() const {
 	return QLocale().toString(
 		base::unixtime::parse(_date),
 		QLocale::LongFormat);
+}
+
+TonAddressClickHandler::TonAddressClickHandler(QString address)
+: _address(std::move(address)) {
+}
+
+void TonAddressClickHandler::onClick(ClickContext context) const {
+	if (context.button != Qt::LeftButton) {
+		return;
+	}
+	const auto my = context.other.value<ClickHandlerContext>();
+	if (const auto controller = my.sessionWindow.get()) {
+		Wallet::OpenAddressEntity(controller, _address);
+	}
+}
+
+auto TonAddressClickHandler::getTextEntity() const -> TextEntity {
+	return { EntityType::TonAddress };
 }
