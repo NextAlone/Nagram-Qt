@@ -500,7 +500,8 @@ void BottomInfo::layoutDateText() {
 		? QString()
 		: editedPrimary
 		? Nagram::Messages::FormatEditedDate(_data.date, _data.editedDate)
-		: edited + ((_data.flags & Data::Flag::ForwardedDate)
+		: edited + ((_data.flags
+			& (Data::Flag::ForwardedDate | Data::Flag::FullDate))
 		? Nagram::Messages::FormatSavedFrom(_data.date)
 		: Nagram::Messages::FormatTime(_data.date.time()));
 	const auto prefix = (!author.isEmpty() && !date.isEmpty())
@@ -682,6 +683,8 @@ BottomInfo::Data BottomInfoDataFromMessage(not_null<Message*> message) {
 	}
 	if (message->context() == Context::ShortcutMessages) {
 		result.flags |= Flag::Shortcut;
+	} else if (message->context() == Context::MediaEditor) {
+		result.flags |= Flag::FullDate;
 	}
 	if (!item->isPost()
 		|| !item->hasRealFromId()

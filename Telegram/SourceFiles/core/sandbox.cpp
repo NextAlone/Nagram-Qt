@@ -29,7 +29,9 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "base/qthelp_url.h"
 #include "base/qthelp_regex.h"
 #include "ui/ui_utility.h"
+#include "ui/window_palette.h"
 #include "ui/effects/animations.h"
+#include "ui/style/style_core_palette.h"
 
 #ifdef Q_OS_MAC
 #include "platform/mac/global_menu_mac.h"
@@ -110,7 +112,6 @@ constexpr auto kCleanupQuitTimeout = 30 * crl::time(1000);
 const char kOptionDeadlockDetector[] = "deadlock-detector";
 
 bool Sandbox::QuitOnStartRequested = false;
-bool Sandbox::SystemShuttingDown = false;
 
 Sandbox::Sandbox(int &argc, char **argv)
 : QApplication(argc, argv)
@@ -194,27 +195,9 @@ int Sandbox::start() {
 
 	crl::on_main(this, [=] { checkForQuit(); });
 	connect(this, &QCoreApplication::aboutToQuit, [=] {
-		// On Windows, Qt emits aboutToQuit synchronously from its
-		// WM_ENDSESSION handler (QWindowsContext::windowsProc). Running
-		// closeApplication() there destroys QWindows mid-dispatch and
-		// later WM_ENDSESSION messages delivered to other top-level
-		// HWNDs crash on virtual dispatch through stale QWindow*. Detect
-		// that path and defer cleanup to the next main-loop tick so Qt
-		// finishes delivering shutdown messages on still-live windows.
-		// On a normal quit (Ctrl+Q etc.) aboutToQuit fires from the
-		// exec() epilogue after the event loop has exited and queued
-		// events would not run, so we keep the synchronous teardown.
-		if (SystemShuttingDown) {
-			QMetaObject::invokeMethod(this, [=] {
-				customEnterFromEventLoop([&] {
-					closeApplication();
-				});
-			}, Qt::QueuedConnection);
-		} else {
-			customEnterFromEventLoop([&] {
-				closeApplication();
-			});
-		}
+		customEnterFromEventLoop([&] {
+			closeApplication();
+		});
 	});
 
 	// https://github.com/telegramdesktop/tdesktop/issues/948
@@ -274,10 +257,6 @@ int Sandbox::stopRunningInstance() {
 	}
 	LOG(("Cleanup: the running instance quit."));
 	return 0;
-}
-
-void Sandbox::NotifySystemShuttingDown() {
-	SystemShuttingDown = true;
 }
 
 void Sandbox::QuitWhenStarted() {
@@ -565,11 +544,28 @@ void Sandbox::newInstanceConnected() {
 
 void Sandbox::readClients() {
 	// This method can be called before Application is constructed.
+
+	// execExternal() may run a nested event loop (X11 window activation),
+	// where _localClients is changed, so iterate a copy of the sockets.
+	const auto sockets = _localClients
+		| ranges::views::transform(&LocalClient::socket)
+		| ranges::to_vector;
+	const auto findClient = [&](QLocalSocket *socket) -> LocalClient* {
+		const auto i = ranges::find(
+			_localClients,
+			socket,
+			&LocalClient::socket);
+		return (i != _localClients.end()) ? &*i : nullptr;
+	};
 	QList<QUrl> startUrls;
-	for (auto i = _localClients.begin(), e = _localClients.end(); i != e; ++i) {
-		i->buffer.append(i->socket->readAll());
-		if (i->buffer.size()) {
-			QString cmds(QString::fromLatin1(i->buffer));
+	for (const auto socket : sockets) {
+		const auto client = findClient(socket);
+		if (!client) {
+			continue;
+		}
+		client->buffer.append(socket->readAll());
+		if (client->buffer.size()) {
+			QString cmds(QString::fromLatin1(client->buffer));
 			int32 from = 0, l = cmds.length();
 			auto records = QStringList();
 			for (int32 to = cmds.indexOf(QChar(';'), from); to >= from; to = (from < l) ? cmds.indexOf(QChar(';'), from) : -1) {
@@ -577,8 +573,9 @@ void Sandbox::readClients() {
 				from = to + 1;
 			}
 			if (from > 0) {
-				i->buffer = i->buffer.mid(from);
+				client->buffer = client->buffer.mid(from);
 			}
+			const auto externalUrlWas = client->externalUrlReceived;
 			auto hasOpen = false;
 			for (const auto &cmd : records) {
 				if (cmd.startsWith(u"OPEN:"_q)) {
@@ -595,7 +592,7 @@ void Sandbox::readClients() {
 					const auto processId = QApplication::applicationPid();
 					const auto windowId = execExternal(cmd.mid(4));
 					const auto response = u"RES:%1_%2;"_q.arg(processId).arg(windowId).toLatin1();
-					i->socket->write(response.data(), response.size());
+					socket->write(response.data(), response.size());
 				} else if (cmd.startsWith(u"XDG_ACTIVATION_TOKEN:"_q)) {
 					qputenv("XDG_ACTIVATION_TOKEN", QByteArray::fromBase64(cmd.mid(21).toLatin1()));
 				} else if (cmd.startsWith(u"OPEN:"_q)) {
@@ -608,7 +605,7 @@ void Sandbox::readClients() {
 					const auto response = QByteArray("DATA:")
 						+ payload.toBase64()
 						+ ';';
-					i->socket->write(response);
+					socket->write(response);
 				} else {
 					LOG(("Sandbox Error: unknown command %1 passed in local socket").arg(cmd));
 				}
@@ -618,14 +615,21 @@ void Sandbox::readClients() {
 			// means the sender failed to escape the record separator and a
 			// crafted url smuggled extra records. Once such a connection
 			// shows a non-file url its local paths are dropped for good.
+			// A nested readClients() could have set the flag meanwhile.
+			const auto alive = findClient(socket);
+			auto externalUrlReceived = externalUrlWas
+				|| (alive && alive->externalUrlReceived);
 			for (const auto &url : urls) {
 				if (!url.isLocalFile()) {
-					i->externalUrlReceived = true;
+					externalUrlReceived = true;
 				}
+			}
+			if (alive) {
+				alive->externalUrlReceived = externalUrlReceived;
 			}
 			auto activationRequired = false;
 			for (const auto &url : urls) {
-				if (i->externalUrlReceived && url.isLocalFile()) {
+				if (externalUrlReceived && url.isLocalFile()) {
 					LOG(("Sandbox Warning: local file dropped, "
 						"the same launch carries an external url: %1"
 						).arg(url.toString()));
@@ -641,7 +645,7 @@ void Sandbox::readClients() {
 				? execExternal("show")
 				: 0;
 			const auto response = u"RES:%1_%2;"_q.arg(processId).arg(windowId).toLatin1();
-			i->socket->write(response.data(), response.size());
+			socket->write(response.data(), response.size());
 		}
 	}
 	cRefStartUrls() << base::take(startUrls);
@@ -762,6 +766,16 @@ bool Sandbox::notify(QObject *receiver, QEvent *e) {
 		// grabbed, and Qt then routes plain mouse wheel events to that
 		// stale widget instead of the one under the cursor.
 		QApplicationPrivate::wheel_widget = nullptr;
+	}
+	if (e->type() == QEvent::Paint
+		&& Ui::HasWindowPalettes()
+		&& receiver->isWidgetType()) {
+		// WHY: stock widgets read the one main palette at paint, so a window
+		// with its own palette gets it swapped into the main palette's slots
+		// for exactly the duration of each of its widgets' paint events.
+		const auto scope = style::main_palette::Override(
+			Ui::WindowPaletteFor(static_cast<QWidget*>(receiver)));
+		return QApplication::notify(receiver, e);
 	}
 	return QApplication::notify(receiver, e);
 }

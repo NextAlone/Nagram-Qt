@@ -532,6 +532,7 @@ void Player::fail(Error error) {
 
 void Player::play(const PlaybackOptions &options) {
 	Expects(options.speed >= kSpeedMin && options.speed <= kSpeedMax);
+	Expects(options.volume >= 0. && options.volume <= 1.);
 
 	// Looping video with audio is not supported for now.
 	Expects(!options.loop || (options.mode != Mode::Both));
@@ -574,8 +575,13 @@ crl::time Player::loadInAdvanceFor() const {
 }
 
 crl::time Player::computeTotalDuration() const {
+	const auto video = _video
+		? _video->streamDuration()
+		: kDurationUnavailable;
 	if (_totalDuration != kDurationUnavailable) {
-		return _totalDuration;
+		return (video == kDurationUnavailable)
+			? _totalDuration
+			: std::max(_totalDuration, video);
 	} else if (const auto byPackets = _durationByPackets.load()) {
 		return byPackets;
 	}
@@ -857,6 +863,17 @@ void Player::setSpeed(float64 speed) {
 			if (_video) {
 				_video->setSpeed(speed);
 			}
+		}
+	}
+}
+
+void Player::setVolume(float64 volume) {
+	Expects(volume >= 0. && volume <= 1.);
+
+	if (_options.volume != volume) {
+		_options.volume = volume;
+		if (active() && _audio) {
+			_audio->setVolume(volume);
 		}
 	}
 }
