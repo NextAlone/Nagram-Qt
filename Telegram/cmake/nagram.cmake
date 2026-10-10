@@ -25,6 +25,7 @@ set(nagram_sources
     nagram/interface/notifications.cpp
     nagram/interface/text.cpp
     nagram/interface/appearance.cpp
+    nagram/interface/settings_pane.cpp
     nagram/interface/app_icon.cpp
     nagram/chats/startup_folder.cpp
     nagram/chats/sort.cpp

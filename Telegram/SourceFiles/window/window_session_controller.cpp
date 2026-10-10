@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "window/window_session_controller.h"
 #include "nagram/chats/startup_folder.h"
+#include "nagram/interface/settings_pane.h"
 #include "nagram/chats/sort.h"
 #include "nagram/chats/recent_chats.h"
 #include "nagram/chats/reading_position.h"
@@ -1490,6 +1491,9 @@ void SessionNavigation::showByInitialId(
 void SessionNavigation::showSettings(
 		Settings::Type type,
 		const SectionShow &params) {
+	if (Nagram::SettingsPane::Show(this, type)) {
+		return;
+	}
 	showSection(
 		std::make_shared<Info::Memento>(
 			Info::Settings::Tag{ _session->user() },
@@ -2698,6 +2702,7 @@ int SessionController::countDialogsWidthFromRatio(int bodyWidth) const {
 		* Core::App().settings().dialogsWidthRatio(nochat);
 	auto result = int(base::SafeRound(width));
 	accumulate_max(result, st::columnMinimalWidthLeft);
+	accumulate_max(result, Nagram::SettingsPane::MinWidth(this));
 //	accumulate_min(result, st::columnMaximalWidthLeft);
 	return result;
 }
@@ -3239,7 +3244,8 @@ void SessionController::showSection(
 		&& widget()->showSectionInExistingLayer(memento.get(), params)) {
 		return;
 	}
-	content()->showSection(std::move(memento), params);
+	const auto adjusted = Nagram::SettingsPane::Adjust(this, memento, params);
+	content()->showSection(std::move(memento), adjusted);
 }
 
 void SessionController::showBackFromStack(const SectionShow &params) {

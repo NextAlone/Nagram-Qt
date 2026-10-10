@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "info/info_section_widget.h"
+#include "nagram/interface/settings_pane.h"
 
 #include "window/window_adaptive.h"
 #include "window/window_connecting_widget.h"
@@ -54,7 +55,10 @@ void SectionWidget::init() {
 		const auto full = !_content->scrollBottomSkip();
 		const auto additionalScroll = (full ? st::boxRadius : 0);
 		const auto height = size.height() - (full ? 0 : st::boxRadius);
-		const auto wrapGeometry = QRect{ 0, 0, size.width(), height };
+		const auto wrapGeometry = Nagram::SettingsPane::Centered(
+			controller(),
+			_content->controller()->section(),
+			QRect{ 0, 0, size.width(), height });
 		_content->updateGeometry(
 			wrapGeometry,
 			expanding,
@@ -124,7 +128,9 @@ std::shared_ptr<Window::SectionMemento> SectionWidget::createMemento() {
 
 object_ptr<Ui::LayerWidget> SectionWidget::moveContentToLayer(
 		QRect bodyGeometry) {
+	const auto section = _content->controller()->section();
 	if (_content->controller()->wrap() != Wrap::Narrow
+		|| Nagram::SettingsPane::KeepsInSection(controller(), section)
 		|| width() < LayerWidget::MinimalSupportedWidth()) {
 		return nullptr;
 	}

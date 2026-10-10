@@ -1,4 +1,7 @@
 using "ui/basic.style";
 
 nagramAppIconPreview: 96px;
+nagramSettingsPlaceholderLogo: 96px;
+nagramSettingsPlaceholderSkip: 16px;
+nagramSettingsDetailWidth: 560px;
 nagramAppIconPreviewMargin: margins(0px, 4px, 0px, 12px);

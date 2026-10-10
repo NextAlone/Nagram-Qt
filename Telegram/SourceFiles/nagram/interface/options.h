@@ -76,6 +76,9 @@ inline constexpr auto kIgnoreChannelChatTheme = Option<bool>{
 inline constexpr auto kAccountNameInTitle = Option<bool>{
 	"nagram.accountNameInTitle", Scope::Device, false,
 	Category::Interface, "lng_nagram_account_name_in_title" };
+inline constexpr auto kSplitSettings = Option<bool>{
+	"nagram.splitSettings", Scope::Device, false,
+	Category::Interface, "lng_nagram_split_settings" };
 inline constexpr auto kAlwaysSeasonal = Option<bool>{
 	"nagram.alwaysSeasonalDecorations", Scope::Device, false,
 	Category::Interface, "lng_nagram_always_seasonal", kRestart };
@@ -117,6 +120,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kIgnorePrivateChatTheme));
 	Expects(registry.Add(kIgnoreChannelChatTheme));
 	Expects(registry.Add(kAccountNameInTitle));
+	Expects(registry.Add(kSplitSettings));
 	Expects(registry.Add(kAlwaysSeasonal));
 	Expects(registry.Add(kMainMenuConfig));
 	Expects(registry.Add(kAppIcon));

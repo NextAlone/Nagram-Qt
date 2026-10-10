@@ -38,6 +38,7 @@
 | 编号 | 上游位置 | 需要处理的上游逻辑 | 方式 |
 | --- | --- | --- | --- |
 | A21、I16 | `window/notifications_manager.cpp`（`System::computeSkipState`） | 在退出与“仅当前账号”检查之后、静音判断之前调用 `Nagram::Interface::ReviewNotification(item, messageType)`：返回 `false` 时跳过通知（免打扰时段），返回 `true` 时不再看静音设置（关键词提醒），无返回值时走上游逻辑 | 拦截 |
+| A22 | `window/window_session_controller.cpp`（`SessionNavigation::showSettings`、`SessionController::showSection`、`SessionController::countDialogsWidthFromRatio`）、`info/info_controller.cpp`（`Controller::showSection`、`Controller::showBackFromStack`）、`info/info_memento.cpp`（`Memento::createLayer`）、`info/info_section_widget.cpp`（`SectionWidget::init`、`SectionWidget::moveContentToLayer`）、`window/window_filters_menu.cpp`（`FiltersMenu::setup`） | 打开设置时先调用 `Nagram::SettingsPane::Show`，在聊天列表上建立左栏面板并在聊天区域压入占位页，首页由面板接管；面板内的页面跳转经 `Redirect` 改到聊天区域，`Adjust` 把从面板发起的页面改成无动画替换（含“我的账号”这类不经设置页类型的资料页），面板的返回经 `Close` 关闭面板；`KeepsInSection` 让设置页以及面板打开期间的资料页不生成弹出层，窗口变宽时也不转回弹出层；`MinWidth` 在面板打开期间给左栏宽度加下限；`Centered` 给聊天区域里的设置页限宽并居中；文件夹侧栏刷新选中态的订阅并入 `Changes`，选中条件沿用 B 条目的 `FolderButtonActive`，面板打开时为否。面板、占位页以及聊天列表控件和聊天区域页面的查找都在 `nagram/interface/settings_pane.cpp`，不访问上游私有成员 | 拦截 |
 | A02 | `ui/chat/chat_style_radius.cpp`、`core/application.cpp` | 气泡圆角半径由常量改为按比例计算，启动时设定一次 | 替换 |
 | A03、A04 | `ui/userpic_view.cpp`、`ui/controls/userpic_button.cpp`、`ui/peer/video_userpic_player.cpp` | 圆形头像的绘制路径改为圆角矩形；论坛和频道私信的特殊形状按 A04 决定是否统一 | 替换 |
 | A05、A06 | `history/view/history_view_message.cpp`（最大气泡宽度计算） | 纯文字消息的最大宽度乘以比例；频道文字消息使用可用宽度；两者同时设置时 A05 优先 | 替换 |

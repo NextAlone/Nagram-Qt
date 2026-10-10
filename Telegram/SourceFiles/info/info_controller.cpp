@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "info/info_controller.h"
+#include "nagram/interface/settings_pane.h"
 
 #include "ui/search_field_controller.h"
 #include "history/history.h"
@@ -527,13 +528,15 @@ void Controller::saveSearchState(not_null<ContentMemento*> memento) {
 void Controller::showSection(
 		std::shared_ptr<Window::SectionMemento> memento,
 		const Window::SectionShow &params) {
-	if (!_widget->showInternal(memento.get(), params)) {
+	if (!Nagram::SettingsPane::Redirect(_widget, memento, params)
+		&& !_widget->showInternal(memento.get(), params)) {
 		AbstractController::showSection(std::move(memento), params);
 	}
 }
 
 void Controller::showBackFromStack(const Window::SectionShow &params) {
-	if (!_widget->showBackFromStackInternal(params)) {
+	if (!_widget->showBackFromStackInternal(params)
+		&& !Nagram::SettingsPane::Close(_widget)) {
 		AbstractController::showBackFromStack(params);
 	}
 }

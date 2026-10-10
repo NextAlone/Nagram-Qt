@@ -403,6 +403,10 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_account_name_in_title(),
 		u"nagram/interface/account-name-title"_q,
 		{ u"window"_q, u"title"_q, u"account"_q });
+	AddToggle(builder, Interface::kSplitSettings,
+		tr::lng_nagram_split_settings(),
+		u"nagram/interface/split-settings"_q,
+		{ u"settings"_q, u"columns"_q, u"split"_q, u"popup"_q });
 	AddDelay(builder, Interface::kNotificationDelay,
 		tr::lng_nagram_notification_delay(),
 		u"nagram/interface/notification-delay"_q);

@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "window/window_filters_menu.h"
 #include "nagram/chats/folders.h"
+#include "nagram/interface/settings_pane.h"
 #include "nagram/chats/managed_folders.h"
 #include "nagram/chats/options.h"
 #include "nagram/core/options.h"
@@ -193,7 +194,9 @@ void FiltersMenu::setup() {
 		_reorder->finishReordering();
 	}, _outer.lifetime());
 
-	_session->openedFolder().changes(
+	rpl::merge(
+		_session->openedFolder().changes() | rpl::to_empty,
+		Nagram::SettingsPane::Changes(_session)
 	) | rpl::on_next([=] {
 		const auto i = _filters.find(_activeFilterId);
 		if (i != end(_filters)) {

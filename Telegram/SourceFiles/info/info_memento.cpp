@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "info/info_memento.h"
+#include "nagram/interface/settings_pane.h"
 
 #include "info/global_media/info_global_media_widget.h"
 #include "info/profile/info_profile_widget.h"
@@ -311,7 +312,9 @@ object_ptr<Window::SectionWidget> Memento::createWidget(
 object_ptr<Ui::LayerWidget> Memento::createLayer(
 		not_null<Window::SessionController*> controller,
 		const QRect &geometry) {
-	if (geometry.width() >= LayerWidget::MinimalSupportedWidth()) {
+	const auto section = content()->section();
+	if (geometry.width() >= LayerWidget::MinimalSupportedWidth()
+		&& !Nagram::SettingsPane::KeepsInSection(controller, section)) {
 		return object_ptr<LayerWidget>(controller, this);
 	}
 	return nullptr;

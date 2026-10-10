@@ -26,6 +26,8 @@
 "lng_nagram_ignore_channel_chat_theme" = "忽略頻道的自訂主題";
 "lng_nagram_always_seasonal" = "總是顯示節日裝飾";
 "lng_nagram_account_name_in_title" = "在視窗標題中顯示帳號名稱";
+"lng_nagram_split_settings" = "在視窗分欄中顯示設定";
+"lng_nagram_settings_placeholder" = "在左側選擇一項設定";
 "lng_nagram_messages" = "訊息";
 "lng_nagram_chats" = "聊天";
 "lng_nagram_chat_list" = "聊天清單";

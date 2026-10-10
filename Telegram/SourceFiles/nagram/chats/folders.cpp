@@ -1,5 +1,6 @@
 #include "nagram/chats/folders.h"
 
+#include "nagram/interface/settings_pane.h"
 #include "nagram/chats/options.h"
 #include "boxes/choose_filter_box.h"
 #include "core/application.h"
@@ -362,9 +363,10 @@ void WatchArchiveTab(
 }
 
 bool FolderButtonActive(not_null<Window::SessionController*> controller) {
-	return !ForDevice().Get(kArchiveInFolderList)
-		|| ((EnteringFolder != controller)
-			&& !controller->openedFolder().current());
+	return !SettingsPane::IsOpen(controller)
+		&& (!ForDevice().Get(kArchiveInFolderList)
+			|| ((EnteringFolder != controller)
+				&& !controller->openedFolder().current()));
 }
 
 void SetupFolderListButtons(
