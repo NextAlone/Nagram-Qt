@@ -16,6 +16,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "base/qthelp_url.h"
 #include "lang/lang_cloud_manager.h"
 #include "lang/lang_keys.h"
+#include "nagram/settings/link_format.h"
 #include "core/update_checker.h"
 #include "core/application.h"
 #include "core/click_handler_types.h"
@@ -2015,6 +2016,10 @@ QString TryConvertUrlToLocal(QString url) {
 	auto telegramMeMatch = regex_match(u"^(https?://)?(www\\.)?(telegram\\.(me|dog)|t\\.me)/(.+)$"_q, url, matchOptions);
 	if (telegramMeMatch) {
 		const auto query = telegramMeMatch->capturedView(5);
+		if (const auto local = Nagram::SettingsLinkToLocal(query)
+			; !local.isEmpty()) {
+			return local;
+		}
 		if (const auto phoneMatch = regex_match(u"^\\+([0-9]+)(\\?|$)"_q, query, matchOptions)) {
 			const auto params = query.mid(phoneMatch->captured(0).size()).toString();
 			return u"tg://resolve?phone="_q + phoneMatch->captured(1) + (params.isEmpty() ? QString() : '&' + params);

@@ -14,6 +14,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "core/deep_links/deep_links_settings.h"
 #include "core/application.h"
 #include "main/main_session.h"
+#include "nagram/settings/links.h"
 #include "ui/toast/toast.h"
 #include "window/window_controller.h"
 #include "window/window_session_controller.h"
@@ -72,6 +73,7 @@ Router::Router() {
 	RegisterContactsHandlers(*this);
 	RegisterChatsHandlers(*this);
 	RegisterNewHandlers(*this);
+	Nagram::RegisterSettingsLinks(*this);
 }
 
 void Router::add(const QString &section, Entry entry) {

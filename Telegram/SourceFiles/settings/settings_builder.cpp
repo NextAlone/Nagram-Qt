@@ -12,6 +12,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "api/api_user_privacy.h"
 #include "boxes/edit_privacy_box.h"
 #include "main/main_session.h"
+#include "nagram/settings/links.h"
 #include "settings/settings_common.h"
 #include "settings/sections/settings_privacy_security.h"
 #include "ui/vertical_list.h"
@@ -207,6 +208,10 @@ Ui::RpWidget *SectionBuilder::add(
 				wctx.container->add(std::move(w.widget), w.margin, w.align);
 
 				if (auto entry = search ? search() : SearchEntry()) {
+					Nagram::AddSettingsLinkMenu(
+						wctx.controller,
+						entry.id,
+						result);
 					if (wctx.highlights) {
 						wctx.highlights->push_back({
 							std::move(entry.id),

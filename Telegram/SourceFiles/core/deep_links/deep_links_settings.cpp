@@ -39,6 +39,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/layers/generic_box.h"
 #include "main/main_domain.h"
 #include "main/main_session.h"
+#include "nagram/settings/links.h"
 #include "storage/storage_domain.h"
 #include "settings/sections/settings_active_sessions.h"
 #include "settings/sections/settings_advanced.h"
@@ -2154,6 +2155,10 @@ void RegisterSettingsHandlers(Router &router) {
 QString SettingsDeepLink(
 		::Settings::Type section,
 		const QString &controlId) {
+	if (const auto link = Nagram::SettingsLink(section, controlId)
+		; !link.isEmpty()) {
+		return link;
+	}
 	const auto &router = Router::Instance();
 	const auto sectionPath = [&] {
 		return router.findPath(u"settings"_q, [&](const Action &action) {
