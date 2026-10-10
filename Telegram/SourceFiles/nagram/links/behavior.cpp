@@ -43,6 +43,10 @@ bool AutoLoginDisabled() {
 	return ForDevice().Get(kDisableOfficialAutoLogin);
 }
 
+bool SkipOpenLinkConfirm() {
+	return ForDevice().Get(kSkipOpenLinkConfirm);
+}
+
 HashtagClickScope::HashtagClickScope(
 	const ClickContext &context,
 	const QString &tag)

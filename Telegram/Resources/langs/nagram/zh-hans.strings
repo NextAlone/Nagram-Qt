@@ -354,6 +354,8 @@
 "lng_nagram_links_search_group" = "链接与搜索";
 "lng_nagram_disable_official_auto_login" = "打开 Telegram 官方网页时不自动登录";
 "lng_nagram_disable_official_auto_login_about" = "不在链接中附带登录令牌。需要确认的网站登录不受影响。";
+"lng_nagram_skip_open_link_confirm" = "跳过打开链接确认";
+"lng_nagram_skip_open_link_confirm_about" = "点击文字下隐藏的链接时不再询问“要打开此链接吗？”。网站登录确认和上面的链接规则仍会询问。";
 "lng_nagram_hashtag_page_channel" = "在频道中点击话题标签时";
 "lng_nagram_hashtag_page_chat" = "在其他对话中点击话题标签时";
 "lng_nagram_hashtag_page_this_chat" = "在本对话中搜索";

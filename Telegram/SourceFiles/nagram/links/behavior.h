@@ -13,6 +13,7 @@ struct SearchState;
 namespace Nagram::Links {
 
 [[nodiscard]] bool AutoLoginDisabled();
+[[nodiscard]] bool SkipOpenLinkConfirm();
 
 class HashtagClickScope final {
 public:

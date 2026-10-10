@@ -229,6 +229,7 @@ P3-07 外部媒体后端：
 | I06、I07 | `history/view/controls/history_view_compose_controls.cpp` | `inlineBotChanged()` 的 `isInlineBot` 追加同一条件；`applyInlineBotQuery` 加同样的 `else if` 分支 | 读取 |
 | I08 | `inline_bots/bot_attach_web_view.cpp` | `WebViewInstance::botHandleLocalUri` 中非 `tg://`／`tonsite://`／`ton://` 分支的 `return false` 改为 `return !keepOpen && Nagram::Links::OpenOutsideWebview(uri, _panelUrl)`；表达式为空时返回假。只匹配 `http`、`https`，含 `tgWebAppData` 的地址与启动地址不匹配，每秒最多外部打开一次 | 拦截 |
 | I11 | `core/ui_integration.cpp` | `UrlWithAutoLoginToken` 的提前返回条件加入 `Nagram::Links::AutoLoginDisabled()`；`url_auth_domains` 的 `BotAutoLogin` 确认框不动 | 读取 |
+| I17 | `core/click_handler_types.cpp`（`HiddenUrlClickHandler::Open`） | `skipConfirmation` 在 `base::IsCtrlPressed()` 之外加入 `Nagram::Links::SkipOpenLinkConfirm()`；`tg://` 链接分支的 `mayShowConfirmation` 不动 | 读取 |
 | I12、I13 | `core/click_handler_types.cpp`、`mainwidget.cpp` | `SearchByHashtag` 开头建立 `Nagram::Links::HashtagClickScope`（记录点击所在的对话；`#标签@用户名` 不建立有效标记）；`MainWidget::searchMessages` 在 `state.tab = state.defaultTabForMe()` 之后调用 `Nagram::Links::ApplyHashtagSearchPage(state)`，只在标记有效时改写 `inChat` 与页面 | 替换 |
 | I14、I15 | `ui/chat/attach/attach_bot_webview.cpp` | `Panel::Panel` 的 `setInnerSize` 与 `Panel::createWebview` 中 Linux 外部壳的 `initialSize` 改用 `Nagram::Links::WebAppPanelSize(st::botWebViewPanelSize)`；两个比例都是 100% 时原样返回 | 替换 |
 

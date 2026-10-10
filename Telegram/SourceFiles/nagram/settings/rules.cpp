@@ -228,6 +228,12 @@ const auto kMeta = BuildHelper({
 		{ u"login"_q, u"website"_q, u"token"_q });
 	builder.addDividerText(
 		tr::lng_nagram_disable_official_auto_login_about());
+	AddToggle(builder, Links::kSkipOpenLinkConfirm,
+		tr::lng_nagram_skip_open_link_confirm(),
+		u"nagram/rules/skip-open-link-confirm"_q,
+		{ u"link"_q, u"open"_q, u"confirm"_q, u"warning"_q });
+	builder.addDividerText(
+		tr::lng_nagram_skip_open_link_confirm_about());
 	const auto addHashtagPage = [&](
 			const Option<int> *option,
 			const tr::phrase<> *title,

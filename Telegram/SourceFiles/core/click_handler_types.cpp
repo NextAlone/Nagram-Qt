@@ -435,7 +435,8 @@ void HiddenUrlClickHandler::Open(QString url, QVariant context) {
 		auto openContext = context;
 		const auto forceConfirmation = my.forceExternalUrlConfirmation
 			&& my.ignoreIv;
-		const auto skipConfirmation = base::IsCtrlPressed();
+		const auto skipConfirmation = base::IsCtrlPressed()
+			|| Nagram::Links::SkipOpenLinkConfirm();
 		if (forceConfirmation) {
 			my.forceExternalUrlConfirmation = false;
 			openContext = QVariant::fromValue(my);

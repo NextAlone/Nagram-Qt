@@ -81,6 +81,8 @@ void TestLinkBehavior() {
 	RegisterBehaviorOptions(registry);
 	CheckDeviceOption(registry, kDisableOfficialAutoLogin,
 		Category::Rules, true);
+	CheckDeviceOption(registry, kSkipOpenLinkConfirm,
+		Category::Rules, true);
 	CheckDeviceOption(registry, kHashtagSearchPageChannel,
 		Category::Rules, 2);
 	CheckDeviceOption(registry, kHashtagSearchPageChat,

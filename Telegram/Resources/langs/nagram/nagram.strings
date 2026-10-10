@@ -358,6 +358,8 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_links_search_group" = "Links and search";
 "lng_nagram_disable_official_auto_login" = "Do not log in automatically on official Telegram websites";
 "lng_nagram_disable_official_auto_login_about" = "No login token is added to the link. Website logins that ask for confirmation are not affected.";
+"lng_nagram_skip_open_link_confirm" = "Open links without asking";
+"lng_nagram_skip_open_link_confirm_about" = "Links hidden behind text open without the \"Open this link?\" question. Website logins and the link rules above still ask.";
 "lng_nagram_hashtag_page_channel" = "When clicking a hashtag in a channel";
 "lng_nagram_hashtag_page_chat" = "When clicking a hashtag in other chats";
 "lng_nagram_hashtag_page_this_chat" = "Search in this chat";
