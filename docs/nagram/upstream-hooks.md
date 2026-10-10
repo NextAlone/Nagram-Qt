@@ -253,7 +253,7 @@ E21 截图在 `history_view_element.h/.cpp`、`history_view_message.cpp`、`hist
 | A16、A17 | `window/section_widget.cpp` | 主题忽略条件改用 `IgnoreChatThemeValue(peer)`，按会话类型合并 A10 | 替换 |
 | A18 | `window/window_main_menu.cpp` | 节日判断前加“始终显示” | 读取 |
 | A19 | `window/main_window.cpp` | 账号名显示条件增加本开关；与 A12 共用的设置变化订阅在切换时刷新标题 | 读取 |
-| A20 | `window/main_window.cpp`、`core/application.cpp`、`platform/win/tray_win.cpp`、`Telegram/CMakeLists.txt`、`Telegram/Telegram.plist`、`cmake/td_ui.cmake` | `Logo()`、`LogoNoMargin()`、`CreateIcon()` 先取所选图标；启动时订阅图标与系统深色变化；Windows 托盘缩放缓存按图标代次失效；macOS 用 `actool` 编译 `Nagram.icon`，`Info.plist` 的图标名改为变量；登记 `nagram_interface.style` | 替换 |
+| A20 | `window/main_window.cpp`、`core/application.cpp`、`platform/win/tray_win.cpp`、`platform/win/tray_win.h`、`Telegram/CMakeLists.txt`、`Telegram/Telegram.plist`、`cmake/td_ui.cmake` | `Logo()`、`LogoNoMargin()`、`CreateIcon()` 先取所选图标；启动时订阅图标与系统深色变化；Windows 托盘缩放缓存按图标代次失效，`tray_win.h` 声明 `WriteIco` 供 `nagram/interface/app_icon_win.cpp` 写快捷方式用的图标文件；macOS 用 `actool` 编译 `Nagram.icon`，`Info.plist` 的图标名改为变量；登记 `nagram_interface.style` | 替换 |
 | B19 | `settings/sections/settings_main.cpp` | 手机号确认建议前判断 | 过滤 |
 | B20 | `ui/widgets/chat_filters_tabs_strip.cpp` | 标签条样式经 `FiltersTabsStyle` 选择 | 替换 |
 | B21 | `window/window_session_controller.cpp` | 控制器构造时订阅加入频道事件 | 读取 |

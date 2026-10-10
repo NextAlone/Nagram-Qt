@@ -122,6 +122,13 @@ auto Generation = 0;
 #endif // Q_OS_MAC
 }
 
+void RefreshShortcuts() {
+#ifdef Q_OS_WIN
+	const auto &current = Current();
+	SetShortcutsIcon(current.id, current.logo);
+#endif // Q_OS_WIN
+}
+
 void Refresh() {
 	++Generation;
 	Core::App().refreshApplicationIcon();
@@ -129,6 +136,7 @@ void Refresh() {
 		window->widget()->updateWindowIcon();
 	});
 	Core::App().tray().updateIconCounters();
+	RefreshShortcuts();
 }
 
 } // namespace
@@ -182,6 +190,7 @@ void StartAppIcon(rpl::lifetime &lifetime) {
 	if (const auto icon = CustomAppIcon(); !icon.isNull()) {
 		Platform::SetApplicationIcon(icon);
 	}
+	RefreshShortcuts();
 	ForDevice().changes(
 	) | rpl::filter([](auto key) {
 		return key == kAppIcon.key;

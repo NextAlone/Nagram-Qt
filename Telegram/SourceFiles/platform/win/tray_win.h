@@ -76,6 +76,8 @@ private:
 
 void RefreshTaskbarThemeValue();
 
+void WriteIco(const QString &path, std::vector<QImage> images);
+
 [[nodiscard]] std::optional<bool> IsDarkTaskbar();
 
 } // namespace Platform

@@ -21,4 +21,8 @@ struct AppIconChoice {
 [[nodiscard]] QRectF TrayUnreadDot(QSize size);
 void StartAppIcon(rpl::lifetime &lifetime);
 
+#ifdef Q_OS_WIN
+void SetShortcutsIcon(const QString &id, const QImage &image);
+#endif // Q_OS_WIN
+
 } // namespace Nagram::Interface
