@@ -94,6 +94,11 @@
 "lng_nagram_top_bar_more" = "更多";
 "lng_nagram_top_bar_customize" = "自定义按钮…";
 "lng_nagram_top_bar_jump_to_date" = "跳转到日期";
+"lng_nagram_top_bar_jump_to_message" = "跳转到消息";
+"lng_nagram_jump_placeholder" = "消息 ID 或链接";
+"lng_nagram_jump_about" = "输入消息 ID 或粘贴消息链接。指向其他聊天、评论或讨论串的链接会在对应位置打开。";
+"lng_nagram_jump_go" = "跳转";
+"lng_nagram_jump_missing" = "此聊天中没有这个 ID 的消息。";
 "lng_nagram_save_reading_position" = "恢复阅读位置";
 "lng_nagram_save_reading_position_note" = "聊天没有未读消息时，从上次读到的位置打开，而不是跳到底部。位置按账号保存在本机，不包括话题；关闭后会清空。";
 "lng_nagram_local_pins_group" = "本地置顶";

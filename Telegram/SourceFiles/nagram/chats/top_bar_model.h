@@ -25,6 +25,7 @@ enum class TopBarAction {
 	InviteLinks,
 	Statistics,
 	Manage,
+	JumpToMessage,
 };
 
 struct TopBarEntry {
@@ -32,12 +33,13 @@ struct TopBarEntry {
 	std::string_view id;
 };
 
-inline constexpr auto kTopBarEntries = std::array<TopBarEntry, 15>({{
+inline constexpr auto kTopBarEntries = std::array<TopBarEntry, 16>({{
 	{ TopBarAction::Photos, "photos" },
 	{ TopBarAction::Pinned, "pinned" },
 	{ TopBarAction::JumpToStart, "jumpToStart" },
 	{ TopBarAction::Mute, "mute" },
 	{ TopBarAction::JumpToDate, "jumpToDate" },
+	{ TopBarAction::JumpToMessage, "jumpToMessage" },
 	{ TopBarAction::Files, "files" },
 	{ TopBarAction::Links, "links" },
 	{ TopBarAction::RecentActions, "recentActions" },

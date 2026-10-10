@@ -94,6 +94,11 @@
 "lng_nagram_top_bar_more" = "更多";
 "lng_nagram_top_bar_customize" = "自訂按鈕…";
 "lng_nagram_top_bar_jump_to_date" = "跳至日期";
+"lng_nagram_top_bar_jump_to_message" = "跳至訊息";
+"lng_nagram_jump_placeholder" = "訊息 ID 或連結";
+"lng_nagram_jump_about" = "輸入訊息 ID 或貼上訊息連結。指向其他聊天、留言或討論串的連結會在對應位置開啟。";
+"lng_nagram_jump_go" = "前往";
+"lng_nagram_jump_missing" = "此聊天中沒有這個 ID 的訊息。";
 "lng_nagram_save_reading_position" = "恢復閱讀位置";
 "lng_nagram_save_reading_position_note" = "對話沒有未讀訊息時，從上次讀到的位置開啟，而不是跳到底部。位置按帳號儲存在本機，不包括話題；關閉後會清除。";
 "lng_nagram_local_pins_group" = "本機置頂";

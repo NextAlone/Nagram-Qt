@@ -26,6 +26,7 @@ void TestMedia();
 void TestExport();
 void TestMarkdown();
 void TestCleanup();
+void TestJump();
 void TestNotifications();
 void TestSendTranslation();
 void TestRawJson();
@@ -190,6 +191,7 @@ int main() {
 		TestExport();
 		TestMarkdown();
 		TestCleanup();
+		TestJump();
 		TestNotifications();
 		TestSendTranslation();
 		TestRawJson();

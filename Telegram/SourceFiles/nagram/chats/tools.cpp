@@ -59,6 +59,10 @@ struct ToolIcon {
 				&st::nagramChatToolsMuteOver };
 	case TopBarAction::JumpToDate:
 		return { &st::nagramChatToolsDate, &st::nagramChatToolsDateOver };
+	case TopBarAction::JumpToMessage:
+		return {
+			&st::nagramChatToolsMessage,
+			&st::nagramChatToolsMessageOver };
 	case TopBarAction::Files:
 		return { &st::nagramChatToolsFile, &st::nagramChatToolsFileOver };
 	case TopBarAction::Links:

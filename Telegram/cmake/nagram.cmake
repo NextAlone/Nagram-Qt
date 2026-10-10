@@ -33,6 +33,8 @@ set(nagram_sources
     nagram/chats/local_pins_model.cpp
     nagram/chats/cleanup.cpp
     nagram/chats/cleanup_model.cpp
+    nagram/chats/jump.cpp
+    nagram/chats/jump_model.cpp
     nagram/chats/reading_position.cpp
     nagram/chats/tools.cpp
     nagram/chats/top_bar_actions.cpp
@@ -271,6 +273,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_export.cpp
         nagram/tests/test_markdown.cpp
         nagram/tests/test_cleanup.cpp
+        nagram/tests/test_jump.cpp
         nagram/tests/test_notifications.cpp
         nagram/tests/test_send_translation.cpp
         nagram/tests/test_raw_json.cpp
@@ -302,6 +305,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/privacy/registration_model.cpp
         nagram/chats/local_pins_model.cpp
         nagram/chats/cleanup_model.cpp
+        nagram/chats/jump_model.cpp
         nagram/chats/top_bar_model.cpp
         nagram/media/local_faved_model.cpp
         nagram/network/model.cpp

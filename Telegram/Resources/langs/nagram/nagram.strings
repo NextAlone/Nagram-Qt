@@ -111,6 +111,11 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_top_bar_more" = "More";
 "lng_nagram_top_bar_customize" = "Customize buttons…";
 "lng_nagram_top_bar_jump_to_date" = "Jump to date";
+"lng_nagram_top_bar_jump_to_message" = "Go to message";
+"lng_nagram_jump_placeholder" = "Message ID or link";
+"lng_nagram_jump_about" = "Enter a message ID or paste a message link. Links to other chats, comments and threads open there.";
+"lng_nagram_jump_go" = "Go";
+"lng_nagram_jump_missing" = "There is no message with this ID in this chat.";
 "lng_nagram_compose" = "Compose and send";
 "lng_nagram_compose_buttons" = "Compose buttons";
 "lng_nagram_hide_attach_button" = "Hide attachment button";

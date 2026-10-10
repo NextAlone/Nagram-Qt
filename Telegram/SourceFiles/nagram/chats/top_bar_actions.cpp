@@ -1,5 +1,6 @@
 #include "nagram/chats/top_bar_actions.h"
 
+#include "nagram/chats/jump.h"
 #include "apiwrap.h"
 #include "boxes/peers/edit_participants_box.h"
 #include "boxes/peers/edit_peer_info_box.h"
@@ -57,6 +58,8 @@ QString TopBarActionTitle(TopBarAction action, History *history) {
 			: tr::lng_context_mute)(tr::now);
 	case TopBarAction::JumpToDate:
 		return tr::lng_nagram_top_bar_jump_to_date(tr::now);
+	case TopBarAction::JumpToMessage:
+		return tr::lng_nagram_top_bar_jump_to_message(tr::now);
 	case TopBarAction::Files: return tr::lng_media_type_files(tr::now);
 	case TopBarAction::Links: return tr::lng_media_type_links(tr::now);
 	case TopBarAction::RecentActions:
@@ -94,6 +97,7 @@ not_null<const style::icon*> TopBarActionIcon(
 			? &st::menuIconUnmute
 			: &st::menuIconMute;
 	case TopBarAction::JumpToDate: return &st::menuIconSchedule;
+	case TopBarAction::JumpToMessage: return &st::menuIconOrderNumber;
 	case TopBarAction::Files: return &st::menuIconFile;
 	case TopBarAction::Links: return &st::menuIconLink;
 	case TopBarAction::RecentActions: return &st::menuIconGroupLog;
@@ -121,7 +125,8 @@ bool TopBarActionAvailable(TopBarAction action, not_null<History*> history) {
 	case TopBarAction::Pinned: return history->hasPinnedMessages();
 	case TopBarAction::JumpToStart:
 	case TopBarAction::Mute:
-	case TopBarAction::JumpToDate: return true;
+	case TopBarAction::JumpToDate:
+	case TopBarAction::JumpToMessage: return true;
 	case TopBarAction::RecentActions: return channel && Admin(channel);
 	case TopBarAction::Admins:
 		return chat ? chat->amIn() : (channel && channel->canViewAdmins());
@@ -188,6 +193,9 @@ void RunTopBarAction(
 	} break;
 	case TopBarAction::JumpToDate:
 		controller->showCalendar({ Dialogs::Key(history), QDate() });
+		break;
+	case TopBarAction::JumpToMessage:
+		ShowJumpToMessage(controller, history);
 		break;
 	case TopBarAction::RecentActions:
 		if (const auto channel = peer->asChannel()) {

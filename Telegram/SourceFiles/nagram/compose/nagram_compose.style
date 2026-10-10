@@ -52,6 +52,8 @@ nagramChatToolsUnmute: icon {{ "menu/unmute", menuIconFg }};
 nagramChatToolsUnmuteOver: icon {{ "menu/unmute", menuIconFgOver }};
 nagramChatToolsDate: icon {{ "menu/calendar", menuIconFg }};
 nagramChatToolsDateOver: icon {{ "menu/calendar", menuIconFgOver }};
+nagramChatToolsMessage: icon {{ "menu/order_number", menuIconFg }};
+nagramChatToolsMessageOver: icon {{ "menu/order_number", menuIconFgOver }};
 nagramChatToolsFile: icon {{ "menu/file", menuIconFg }};
 nagramChatToolsFileOver: icon {{ "menu/file", menuIconFgOver }};
 nagramChatToolsLink: icon {{ "menu/link", menuIconFg }};
