@@ -257,6 +257,7 @@
 "lng_nagram_menu_forward" = "轉發";
 "lng_nagram_menu_translate" = "翻譯";
 "lng_nagram_menu_pin" = "釘選 / 取消釘選";
+"lng_nagram_menu_messages_from_sender" = "此使用者的其他訊息";
 "lng_nagram_menu_select" = "選取";
 "lng_nagram_menu_statistics" = "統計";
 "lng_nagram_menu_report" = "檢舉";

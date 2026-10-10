@@ -257,6 +257,7 @@
 "lng_nagram_menu_forward" = "转发";
 "lng_nagram_menu_translate" = "翻译";
 "lng_nagram_menu_pin" = "置顶 / 取消置顶";
+"lng_nagram_menu_messages_from_sender" = "此用户的其他消息";
 "lng_nagram_menu_select" = "选择";
 "lng_nagram_menu_statistics" = "统计";
 "lng_nagram_menu_report" = "举报";
