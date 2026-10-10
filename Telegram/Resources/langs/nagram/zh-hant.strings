@@ -89,6 +89,11 @@
 "lng_nagram_recent_chats_clear" = "清除";
 "lng_nagram_chat_tools" = "在頂部列顯示聊天工具按鈕";
 "lng_nagram_chat_tools_start" = "跳到開頭";
+"lng_nagram_top_bar_actions" = "頂部列按鈕";
+"lng_nagram_top_bar_actions_about" = "拖曳各列調整順序，以開關顯示或隱藏按鈕。按鈕只在對應操作可用的聊天中出現，例如管理工具只在你管理的群組中顯示。放不下的按鈕會收進末端的選單。";
+"lng_nagram_top_bar_more" = "更多";
+"lng_nagram_top_bar_customize" = "自訂按鈕…";
+"lng_nagram_top_bar_jump_to_date" = "跳至日期";
 "lng_nagram_save_reading_position" = "恢復閱讀位置";
 "lng_nagram_save_reading_position_note" = "對話沒有未讀訊息時，從上次讀到的位置開啟，而不是跳到底部。位置按帳號儲存在本機，不包括話題；關閉後會清除。";
 "lng_nagram_local_pins_group" = "本機置頂";

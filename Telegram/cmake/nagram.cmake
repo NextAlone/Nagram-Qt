@@ -21,6 +21,7 @@ set(nagram_sources
     nagram/export/range_model.cpp
     nagram/interface/main_menu.cpp
     nagram/interface/main_menu_model.cpp
+    nagram/interface/order_row.cpp
     nagram/interface/notifications.cpp
     nagram/interface/text.cpp
     nagram/interface/appearance.cpp
@@ -34,6 +35,8 @@ set(nagram_sources
     nagram/chats/cleanup_model.cpp
     nagram/chats/reading_position.cpp
     nagram/chats/tools.cpp
+    nagram/chats/top_bar_actions.cpp
+    nagram/chats/top_bar_model.cpp
     nagram/chats/community.cpp
     nagram/chats/folders.cpp
     nagram/chats/managed_folders.cpp
@@ -292,6 +295,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/privacy/registration_model.cpp
         nagram/chats/local_pins_model.cpp
         nagram/chats/cleanup_model.cpp
+        nagram/chats/top_bar_model.cpp
         nagram/media/local_faved_model.cpp
         nagram/network/model.cpp
         nagram/notifications/model.cpp

@@ -1,6 +1,7 @@
 #include "nagram/interface/main_menu.h"
 
 #include "nagram/interface/options.h"
+#include "nagram/interface/order_row.h"
 #include "lang/lang_keys.h"
 #include "ui/layers/generic_box.h"
 #include "ui/widgets/buttons.h"
@@ -13,12 +14,6 @@
 
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
-#include <QtCore/QMimeData>
-#include <QtGui/QDrag>
-#include <QtGui/QDragEnterEvent>
-#include <QtGui/QDropEvent>
-#include <QtGui/QMouseEvent>
-#include <QtWidgets/QApplication>
 
 #include <algorithm>
 
@@ -26,65 +21,6 @@
 #include "styles/style_settings.h"
 
 namespace Nagram::Interface {
-namespace {
-
-constexpr auto kMenuItemMime = "application/x-nagram-main-menu-item";
-
-class MenuOrderRow final : public Ui::SettingsButton {
-public:
-	MenuOrderRow(
-			QWidget *parent,
-			QString id,
-			rpl::producer<QString> title,
-			Fn<void(QString, QString)> moved)
-	: Ui::SettingsButton(parent, std::move(title), st::settingsButtonNoIcon)
-	, _id(std::move(id))
-	, _moved(std::move(moved)) {
-		setAcceptDrops(true);
-	}
-
-protected:
-	void mousePressEvent(QMouseEvent *event) override {
-		_dragStart = event->globalPosition().toPoint();
-		Ui::SettingsButton::mousePressEvent(event);
-	}
-
-	void mouseMoveEvent(QMouseEvent *event) override {
-		if ((event->buttons() & Qt::LeftButton)
-			&& (event->globalPosition().toPoint() - _dragStart).manhattanLength()
-				>= QApplication::startDragDistance()) {
-			const auto data = new QMimeData();
-			data->setData(kMenuItemMime, _id.toUtf8());
-			const auto drag = new QDrag(this);
-			drag->setMimeData(data);
-			drag->exec(Qt::MoveAction);
-			return;
-		}
-		Ui::SettingsButton::mouseMoveEvent(event);
-	}
-
-	void dragEnterEvent(QDragEnterEvent *event) override {
-		if (event->mimeData()->hasFormat(kMenuItemMime)) {
-			event->acceptProposedAction();
-		}
-	}
-
-	void dropEvent(QDropEvent *event) override {
-		const auto from = QString::fromUtf8(
-			event->mimeData()->data(kMenuItemMime));
-		if (!from.isEmpty() && from != _id) {
-			_moved(from, _id);
-		}
-		event->acceptProposedAction();
-	}
-
-private:
-	const QString _id;
-	Fn<void(QString, QString)> _moved;
-	QPoint _dragStart;
-};
-
-} // namespace
 
 QString MainMenuActionTitle(const QString &id) {
 	if (id == u"profile"_q) return tr::lng_nagram_main_menu_action_profile(tr::now);
@@ -187,11 +123,15 @@ void MainMenuBox(not_null<Ui::GenericBox*> box) {
 		tr::lng_nagram_main_menu_seasonal(tr::now),
 		current->value(u"seasonalDecorations"_q).toBool()));
 	struct State {
+		explicit State(not_null<Ui::VerticalLayout*> rows) : rows(rows) {
+		}
+
 		QJsonArray order;
 		QJsonArray hidden;
-		Fn<void()> refresh;
+		OrderRows rows;
 	};
-	const auto state = box->lifetime().make_state<State>();
+	const auto rows = box->addRow(object_ptr<Ui::VerticalLayout>(box));
+	const auto state = box->lifetime().make_state<State>(rows);
 	state->order = current->value(u"order"_q).toArray();
 	state->hidden = current->value(u"hidden"_q).toArray();
 	for (const auto &id : kMainMenuIds) {
@@ -200,48 +140,28 @@ void MainMenuBox(not_null<Ui::GenericBox*> box) {
 			state->order.push_back(text);
 		}
 	}
-	const auto rows = box->addRow(object_ptr<Ui::VerticalLayout>(box));
-	state->refresh = [=] {
-		rows->clear();
-		for (auto index = 0; index != state->order.size(); ++index) {
-			const auto id = state->order[index].toString();
-			const auto hidden = state->hidden.contains(id);
-			const auto row = rows->add(object_ptr<MenuOrderRow>(
-				rows,
-				id,
-				rpl::single(MainMenuActionTitle(id)),
-				[=](QString from, QString to) {
-					const auto fromIt = std::find(
-						state->order.begin(), state->order.end(), QJsonValue(from));
-					const auto toIt = std::find(
-						state->order.begin(), state->order.end(), QJsonValue(to));
-					if (fromIt == state->order.end()
-						|| toIt == state->order.end()) {
-						return;
-					}
-					const auto fromIndex = int(fromIt - state->order.begin());
-					const auto toIndex = int(toIt - state->order.begin());
-					state->order.removeAt(fromIndex);
-					state->order.insert(toIndex, from);
-					InvokeQueued(box, state->refresh);
-				}));
-			if (id != u"settings"_q) {
-				row->toggleOn(rpl::single(!hidden));
-				row->toggledChanges(
-				) | rpl::on_next([=](bool shown) {
-					if (shown) {
-						const auto found = std::find(state->hidden.begin(),
-							state->hidden.end(), QJsonValue(id));
-						if (found != state->hidden.end()) {
-							state->hidden.removeAt(int(found - state->hidden.begin()));
-						}
-					} else if (!state->hidden.contains(id)) {
-						state->hidden.push_back(id);
-					}
-				}, row->lifetime());
-			}
-		}
-	};
+	for (const auto &item : std::as_const(state->order)) {
+		const auto id = item.toString();
+		const auto fixed = (id == u"settings"_q);
+		state->rows.add(
+			rpl::single(MainMenuActionTitle(id)),
+			st::settingsButtonNoIcon,
+			fixed ? std::nullopt : std::optional(!state->hidden.contains(id)),
+			[=](bool shown) {
+				const auto found = std::find(
+					state->hidden.begin(),
+					state->hidden.end(),
+					QJsonValue(id));
+				if (!shown && found == state->hidden.end()) {
+					state->hidden.push_back(id);
+				} else if (shown && found != state->hidden.end()) {
+					state->hidden.removeAt(int(found - state->hidden.begin()));
+				}
+			});
+	}
+	state->rows.start([=](int from, int to) {
+		state->order.insert(to, state->order.takeAt(from));
+	});
 	box->addButton(tr::lng_settings_save(), [=] {
 		if (MainMenu() != current) {
 			box->showToast(tr::lng_nagram_main_menu_changed(tr::now));
@@ -265,7 +185,6 @@ void MainMenuBox(not_null<Ui::GenericBox*> box) {
 		box->closeBox();
 	});
 	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
-	state->refresh();
 }
 
 } // namespace Nagram::Interface

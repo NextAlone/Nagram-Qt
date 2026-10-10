@@ -106,6 +106,11 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_local_unpin" = "Unpin from this device";
 "lng_nagram_chat_tools" = "Show chat tools in the top bar";
 "lng_nagram_chat_tools_start" = "Jump to beginning";
+"lng_nagram_top_bar_actions" = "Top bar buttons";
+"lng_nagram_top_bar_actions_about" = "Drag rows to reorder them, or use each switch to show or hide a button. A button appears only in chats where its action is available, such as admin tools in groups you manage. Buttons that do not fit move to a menu at the end.";
+"lng_nagram_top_bar_more" = "More";
+"lng_nagram_top_bar_customize" = "Customize buttons…";
+"lng_nagram_top_bar_jump_to_date" = "Jump to date";
 "lng_nagram_compose" = "Compose and send";
 "lng_nagram_compose_buttons" = "Compose buttons";
 "lng_nagram_hide_attach_button" = "Hide attachment button";

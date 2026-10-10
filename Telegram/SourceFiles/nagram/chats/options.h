@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nagram/core/options.h"
+#include "nagram/chats/top_bar_model.h"
 
 namespace Nagram::Chats {
 
@@ -180,6 +181,10 @@ inline constexpr auto kMaximumReadingPositions = 100;
 inline constexpr auto kChatTools = Option<bool>{
 	"nagram.chatTools", Scope::Device, false,
 	Category::Chats, "lng_nagram_chat_tools" };
+inline const auto kTopBarActions = Option<QByteArray>{
+	"nagram.topBarActions", Scope::Device, QByteArray(),
+	Category::Chats, "lng_nagram_top_bar_actions",
+	static_cast<unsigned>(Flag::Exportable), ValidTopBarActions };
 inline constexpr auto kRecentInShare = Option<bool>{
 	"nagram.recentChatsInShare", Scope::Device, false,
 	Category::Chats, "lng_nagram_recent_in_share" };
@@ -224,6 +229,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kRecentInShare));
 	Expects(registry.Add(kRecentFolderIds));
 	Expects(registry.Add(kChatTools));
+	Expects(registry.Add(kTopBarActions));
 	Expects(registry.Add(kSaveReadingPosition));
 	Expects(registry.Add(kReadingPositions));
 }

@@ -1,6 +1,7 @@
 #include "nagram/settings/chats.h"
 
 #include "nagram/chats/options.h"
+#include "nagram/chats/tools.h"
 #include "nagram/chats/cleanup.h"
 #include "nagram/chats/local_pins.h"
 #include "nagram/chats/local_pins_model.h"
@@ -361,6 +362,13 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_chat_tools(),
 		u"nagram/chats/chat-tools"_q,
 		{ u"toolbar"_q, u"top bar"_q, u"media"_q, u"pinned"_q });
+	builder.addButton({
+		.id = u"nagram/chats/top-bar-actions"_q,
+		.title = tr::lng_nagram_top_bar_actions(),
+		.st = &st::settingsButtonNoIcon,
+		.onClick = [=] { controller->show(Box(Chats::TopBarActionsBox)); },
+		.keywords = { u"toolbar"_q, u"top bar"_q, u"admin"_q, u"order"_q },
+	});
 	AddToggle(builder, Chats::kSaveReadingPosition,
 		tr::lng_nagram_save_reading_position(),
 		u"nagram/chats/reading-position"_q,

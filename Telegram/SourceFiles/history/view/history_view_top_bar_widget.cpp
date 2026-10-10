@@ -1311,7 +1311,8 @@ void TopBarWidget::updateControlsGeometry() {
 			&& !_animatingMode
 			&& !_chooseForReportReason,
 		_rightTaken,
-		otherButtonsTop);
+		otherButtonsTop,
+		width() - _leftTaken - _rightTaken);
 	_search->moveToRight(_rightTaken, otherButtonsTop);
 	if (!_search->isHidden()) {
 		_rightTaken += _search->width() + st::topBarCallSkip;

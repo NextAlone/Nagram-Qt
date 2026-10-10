@@ -205,7 +205,7 @@ void TestOptions() {
 		"unknown refresh option");
 	auto chats = Registry();
 	Chats::RegisterOptions(chats);
-	Require(chats.All().size() == 34, "chat option count");
+	Require(chats.All().size() == 35, "chat option count");
 	Require(Chats::ValidReadingPositions(QString::fromLatin1("5:10,7:1"))
 		&& !Chats::ValidReadingPositions(QString::fromLatin1("5:0"))
 		&& !Chats::ValidReadingPositions(QString::fromLatin1("5"))
@@ -280,6 +280,36 @@ void TestOptions() {
 		"settings cannot be hidden");
 	Require(!Interface::ValidMainMenuBytes(R"({"version":1,"order":["calls","calls"],"hidden":[],"title":"","seasonalDecorations":true})"),
 		"duplicate menu action accepted");
+	using Chats::TopBarAction;
+	Require(Chats::ReadTopBarActions({}).empty(),
+		"top bar buttons shown by default");
+	Require(Chats::WriteTopBarActions({}).isEmpty(),
+		"default top bar buttons stored");
+	const auto adminTopBar = std::vector{
+		TopBarAction::RecentActions,
+		TopBarAction::Mute,
+		TopBarAction::Admins,
+	};
+	const auto adminTopBarRaw = Chats::WriteTopBarActions(adminTopBar);
+	Require(adminTopBarRaw
+		== R"({"items":["recentActions","mute","admins"],"version":1})",
+		"top bar buttons format");
+	Require(Chats::kTopBarActions.validate(adminTopBarRaw)
+		&& Chats::ReadTopBarActions(adminTopBarRaw) == adminTopBar,
+		"top bar buttons order lost");
+	Require(Chats::ValidTopBarActions(R"({"version":1,"items":[]})"),
+		"explicit empty top bar buttons rejected");
+	Require(!Chats::ValidTopBarActions(R"({"version":1,"items":["unknown"]})"),
+		"unknown top bar button accepted");
+	Require(!Chats::ValidTopBarActions(R"({"version":1,"items":["mute","mute"]})"),
+		"duplicate top bar button accepted");
+	Require(!Chats::ValidTopBarActions(R"({"version":2,"items":[]})")
+		&& !Chats::ValidTopBarActions(R"({"version":1,"items":[],"extra":1})")
+		&& !Chats::ValidTopBarActions(R"({"version":1,"items":[1]})")
+		&& !Chats::ValidTopBarActions("[]"),
+		"malformed top bar buttons accepted");
+	Require(Chats::ReadTopBarActions("[]").empty(),
+		"malformed top bar buttons not read as default");
 	Require(Interface::kNotificationDelay.validate(0)
 		&& Interface::kNotificationDelay.validate(500)
 		&& Interface::kNotificationDelay.validate(60000)
