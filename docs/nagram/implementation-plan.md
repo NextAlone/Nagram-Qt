@@ -270,6 +270,7 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | --- | --- | --- | --- |
 | ✅ S200 | `feat(privacy): do not send typing and upload status` | G18（N050、N105） | 从搁置的 P3-01 中单独启用；本机开关，不含回执、在线状态和预设。上游改动一处 |
 | ✅ S201 | `feat(messages): message ID in the bubble` | C04 | 开关改为三态（关闭／时间提示／气泡），新键 `nagram.messageIdPlace`，旧键启动时迁移并改为不导出 |
+| ✅ S202 | `feat(chats): seconds in the chat list time` | B30 | 独立于 C01；只改显示为时间的行，时间列随文字变宽 |
 
 | 包 | 专项设计 | 步骤 | 设置页条目 |
 | --- | --- | --- | --- |

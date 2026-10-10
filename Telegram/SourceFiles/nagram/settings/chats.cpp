@@ -191,6 +191,10 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_compact_chat_list(),
 		u"nagram/chats/compact"_q,
 		{ u"compact"_q, u"list"_q });
+	AddToggle(builder, Chats::kSecondsInChatList,
+		tr::lng_nagram_seconds_in_chat_list(),
+		u"nagram/chats/seconds"_q,
+		{ u"seconds"_q, u"time"_q, u"timestamp"_q });
 	const auto controller = builder.controller();
 	builder.addButton({
 		.id = u"nagram/chats/preview-lines"_q,

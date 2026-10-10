@@ -1,12 +1,25 @@
 #include "nagram/chats/layout.h"
 
 #include "nagram/chats/options.h"
+#include "nagram/messages/time_format.h"
 #include "lang/lang_keys.h"
+#include "ui/text/format_values.h"
 #include "styles/style_dialogs.h"
 
 #include <algorithm>
 
 namespace Nagram::Chats {
+
+int ListDateSerial(int todaySerial) {
+	return ListDateSerial(todaySerial, ForDevice().Get(kSecondsInChatList));
+}
+
+QString FormatListDate(const QDateTime &lastTime) {
+	return (ForDevice().Get(kSecondsInChatList)
+		&& ListDateIsTime(lastTime, QDateTime::currentDateTime()))
+		? Messages::FormatTime(lastTime.time(), true)
+		: Ui::FormatDialogsDate(lastTime);
+}
 
 const style::DialogRow &RowStyle(bool hasTags, bool wideRow) {
 	if (wideRow) {

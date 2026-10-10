@@ -35,6 +35,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_chat_list" = "Chat list";
 "lng_nagram_compact_chat_list" = "Compact chat list";
 "lng_nagram_chat_preview_lines" = "Message preview lines";
+"lng_nagram_seconds_in_chat_list" = "Show seconds in the chat list time";
 "lng_nagram_preview_follow" = "Follow Telegram";
 "lng_nagram_preview_one" = "1 line";
 "lng_nagram_preview_two" = "2 lines";

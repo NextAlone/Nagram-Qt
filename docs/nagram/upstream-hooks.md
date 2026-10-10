@@ -54,6 +54,7 @@
 | --- | --- | --- | --- |
 | B01 | `dialogs/dialogs_row.cpp`、`dialogs/dialogs_inner_widget.cpp`、`dialogs/dialogs.style` | 普通会话行使用紧凑行高与头像尺寸；更新列表高度与命中区域 | 替换 |
 | B02 | `dialogs/ui/dialogs_layout.cpp`、`dialogs/dialogs_row.cpp` | 预览文字的最大行数与行高 | 替换 |
+| B30 | `dialogs/dialogs_entry.cpp`（`ResolveDateText`） | `Ui::FormatDialogsDate(qdt)` 改为 `Nagram::Chats::FormatListDate(qdt)`；`LastTodaySerial` 的取值包一层 `Nagram::Chats::ListDateSerial(...)`，开关变化时各行缓存的时间文字随之失效。“20 小时内显示时间”的判断在 `nagram/chats/layout.h` 中重复了一份，上游调整该阈值时要同步 | 替换 |
 | B03 | `dialogs/ui/dialogs_layout.cpp`、`dialogs/dialogs_inner_widget_accessibility.cpp` | 收藏夹与归档行不绘制预览文字，读屏文本同步脱敏 | 读取 |
 | B04 | `dialogs/dialogs_widget.cpp` | 即时隐藏动态条并收起已展开区域，保留内部对象（用户在 S30 确认沿用旧版行为） | 读取 |
 | B05 | `window/window_session_controller.cpp`（初始文件夹） | 账号启动时选择文件夹；记录上次打开的文件夹 | 替换 |

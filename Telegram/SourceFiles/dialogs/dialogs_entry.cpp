@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "dialogs/dialogs_entry.h"
 #include "nagram/chats/sort.h"
 #include "nagram/chats/local_pins.h"
+#include "nagram/chats/layout.h"
 
 #include "dialogs/dialogs_key.h"
 #include "dialogs/dialogs_indexed_list.h"
@@ -353,12 +354,13 @@ DateText ResolveDateText(
 	static int LastTodaySerial = 0;
 	if (!now || LastNow != now) {
 		LastNow = now;
-		LastTodaySerial = int(QDate::currentDate().toJulianDay());
+		LastTodaySerial = Nagram::Chats::ListDateSerial(
+			int(QDate::currentDate().toJulianDay()));
 	}
 	if (cache.messageTimeId != date
 		|| cache.todaySerial != LastTodaySerial) {
 		const auto qdt = base::unixtime::parse(date);
-		cache.text = Ui::FormatDialogsDate(qdt);
+		cache.text = Nagram::Chats::FormatListDate(qdt);
 		cache.width = st::dialogsDateFont->width(cache.text);
 		cache.messageTimeId = date;
 		cache.todaySerial = LastTodaySerial;

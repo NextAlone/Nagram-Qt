@@ -5,6 +5,7 @@
 #include "nagram/interface/main_menu.h"
 #include "nagram/messages/options.h"
 #include "nagram/chats/options.h"
+#include "nagram/chats/layout.h"
 #include "nagram/compose/options.h"
 #include "nagram/media/options.h"
 #include "nagram/menu/model.h"
@@ -204,7 +205,7 @@ void TestOptions() {
 		"unknown refresh option");
 	auto chats = Registry();
 	Chats::RegisterOptions(chats);
-	Require(chats.All().size() == 33, "chat option count");
+	Require(chats.All().size() == 34, "chat option count");
 	Require(Chats::ValidReadingPositions(QString::fromLatin1("5:10,7:1"))
 		&& !Chats::ValidReadingPositions(QString::fromLatin1("5:0"))
 		&& !Chats::ValidReadingPositions(QString::fromLatin1("5"))
@@ -236,6 +237,19 @@ void TestOptions() {
 		Flag::RefreshDialogList), "compact list refresh flag");
 	Require(chats.HasFlag(Chats::kPreviewLines.key,
 		Flag::RefreshDialogList), "preview line refresh flag");
+	Require(chats.HasFlag(Chats::kSecondsInChatList.key,
+		Flag::RefreshDialogList), "chat list seconds refresh flag");
+	{
+		const auto now = QDateTime(QDate(2026, 10, 11), QTime(9, 0));
+		Require(Chats::ListDateIsTime(now.addSecs(-8 * 3600), now)
+			&& Chats::ListDateIsTime(now.addSecs(-19 * 3600), now)
+			&& !Chats::ListDateIsTime(now.addSecs(-21 * 3600), now)
+			&& !Chats::ListDateIsTime(now.addDays(-3), now),
+			"chat list shows a time for today and the last 20 hours");
+		Require(Chats::ListDateSerial(5, false) == 5
+			&& Chats::ListDateSerial(5, true) != 5,
+			"chat list date cache key follows the option");
+	}
 	Require(!chats.HasFlag(Chats::kHideStories.key,
 		Flag::RefreshDialogList), "stories use widget refresh");
 	auto interface = Registry();

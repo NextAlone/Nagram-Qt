@@ -18,6 +18,9 @@ inline constexpr auto kHideSavedAndArchivedPreviews = Option<bool>{
 	"nagram.hideSavedAndArchivedPreviews", Scope::Device, false,
 	Category::Chats, "lng_nagram_hide_saved_and_archived_previews",
 	kRefreshDialogList };
+inline constexpr auto kSecondsInChatList = Option<bool>{
+	"nagram.secondsInChatList", Scope::Device, false,
+	Category::Chats, "lng_nagram_seconds_in_chat_list", kRefreshDialogList };
 inline constexpr auto kHideStories = Option<bool>{
 	"nagram.hideStories", Scope::Device, false,
 	Category::Chats, "lng_nagram_hide_stories" };
@@ -191,6 +194,7 @@ inline const auto kReadingPositions = Option<QString>{
 inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kCompactList));
 	Expects(registry.Add(kPreviewLines));
+	Expects(registry.Add(kSecondsInChatList));
 	Expects(registry.Add(kHideSavedAndArchivedPreviews));
 	Expects(registry.Add(kHideStories));
 	Expects(registry.Add(kHideAllChatsFolder));

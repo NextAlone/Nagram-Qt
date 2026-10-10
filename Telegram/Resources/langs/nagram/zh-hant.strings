@@ -31,6 +31,7 @@
 "lng_nagram_chat_list" = "聊天清單";
 "lng_nagram_compact_chat_list" = "緊湊清單";
 "lng_nagram_chat_preview_lines" = "訊息預覽行數";
+"lng_nagram_seconds_in_chat_list" = "清單時間顯示秒";
 "lng_nagram_preview_follow" = "跟隨 Telegram";
 "lng_nagram_preview_one" = "1 行";
 "lng_nagram_preview_two" = "2 行";
