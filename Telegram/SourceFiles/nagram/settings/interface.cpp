@@ -114,20 +114,18 @@ void RoundnessBox(
 void AddRoundness(
 		SectionBuilder &builder,
 		const Option<int> &option,
-		rpl::producer<QString> title,
+		tr::phrase<> title,
 		QString id,
 		QStringList keywords) {
 	const auto controller = builder.controller();
 	builder.addButton({
 		.id = std::move(id),
-		.title = std::move(title),
+		.title = title(),
 		.st = &st::settingsButtonNoIcon,
 		.label = ForDevice().Value(option) | rpl::map(RoundnessLabel),
 		.onClick = [=] {
 			controller->show(Box([=](not_null<Ui::GenericBox*> box) {
-				RoundnessBox(box, option, (option.key == Interface::kBubbleRoundness.key)
-					? tr::lng_nagram_bubble_roundness(tr::now)
-					: tr::lng_nagram_avatar_roundness(tr::now), controller);
+				RoundnessBox(box, option, title(tr::now), controller);
 			}));
 		},
 		.keywords = std::move(keywords),
@@ -295,13 +293,17 @@ const auto kMeta = BuildHelper({
 		.keywords = { u"corners"_q, u"shapes"_q },
 	});
 	AddRoundness(builder, Interface::kBubbleRoundness,
-		tr::lng_nagram_bubble_roundness(),
+		tr::lng_nagram_bubble_roundness,
 		u"nagram/interface/bubble-roundness"_q,
 		{ u"bubble"_q, u"roundness"_q });
 	AddRoundness(builder, Interface::kAvatarRoundness,
-		tr::lng_nagram_avatar_roundness(),
+		tr::lng_nagram_avatar_roundness,
 		u"nagram/interface/avatar-roundness"_q,
 		{ u"avatar"_q, u"roundness"_q });
+	AddRoundness(builder, Interface::kSearchRoundness,
+		tr::lng_nagram_search_roundness,
+		u"nagram/interface/search-roundness"_q,
+		{ u"search"_q, u"roundness"_q });
 	const auto controller = builder.controller();
 	const auto button = builder.addButton({
 		.id = u"nagram/interface/uniform-avatars"_q,

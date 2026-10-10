@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/view/history_view_top_bar_widget.h"
 #include "nagram/chats/tools.h"
+#include "nagram/interface/roundness.h"
 #include "nagram/messages/content.h"
 
 #include "history/history.h"
@@ -1561,7 +1562,10 @@ bool TopBarWidget::toggleSearch(bool shown, anim::type animated) {
 	}
 	_searchMode = shown;
 	if (shown && !_searchField) {
-		_searchField.create(this, st::dialogsFilter, tr::lng_dlg_filter());
+		_searchField.create(
+			this,
+			Nagram::Interface::SearchFieldStyle(),
+			tr::lng_dlg_filter());
 		_searchField->setFocusPolicy(Qt::StrongFocus);
 		_searchField->customUpDown(true);
 		_searchField->show();

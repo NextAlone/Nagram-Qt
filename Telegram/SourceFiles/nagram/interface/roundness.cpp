@@ -5,6 +5,7 @@
 #include "media/streaming/media_streaming_instance.h"
 #include "ui/image/image_prepare.h"
 #include "ui/style/style_core.h"
+#include "styles/style_dialogs.h"
 
 #include <algorithm>
 
@@ -13,6 +14,7 @@ namespace {
 
 int BubbleRoundness = 0;
 int AvatarRoundness = 0;
+int SearchRoundness = 0;
 bool UniformAvatarShapes = false;
 
 } // namespace
@@ -20,6 +22,7 @@ bool UniformAvatarShapes = false;
 void StartRoundness() {
 	BubbleRoundness = ForDevice().Get(kBubbleRoundness);
 	AvatarRoundness = ForDevice().Get(kAvatarRoundness);
+	SearchRoundness = ForDevice().Get(kSearchRoundness);
 	UniformAvatarShapes = ForDevice().Get(kUniformAvatarShapes);
 }
 
@@ -31,6 +34,20 @@ int AdjustBubbleRadius(int radius) {
 	return BubbleRoundness
 		? std::max(1, radius * BubbleRoundness / 100)
 		: radius;
+}
+
+const style::InputField &SearchFieldStyle() {
+	if (!SearchRoundness) {
+		return st::dialogsFilter;
+	}
+	static const auto result = [] {
+		auto copy = st::dialogsFilter;
+		copy.borderRadius = std::max(
+			1,
+			copy.borderRadius * SearchRoundness / 100);
+		return copy;
+	}();
+	return result;
 }
 
 std::optional<int> AvatarRadius(int size, Ui::PeerUserpicShape shape) {

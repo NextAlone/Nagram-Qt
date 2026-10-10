@@ -12,6 +12,7 @@
 "lng_nagram_roundness_and_shapes" = "圓角與形狀";
 "lng_nagram_bubble_roundness" = "訊息氣泡圓角";
 "lng_nagram_avatar_roundness" = "頭像圓角";
+"lng_nagram_search_roundness" = "搜尋框圓角";
 "lng_nagram_uniform_avatar_shapes" = "論壇和頻道私訊也使用頭像圓角";
 "lng_nagram_restart_required" = "重新啟動後生效";
 "lng_nagram_message_style" = "訊息樣式";

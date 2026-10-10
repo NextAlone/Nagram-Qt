@@ -16,6 +16,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_roundness_and_shapes" = "Corners and shapes";
 "lng_nagram_bubble_roundness" = "Message bubble roundness";
 "lng_nagram_avatar_roundness" = "Avatar roundness";
+"lng_nagram_search_roundness" = "Search field roundness";
 "lng_nagram_uniform_avatar_shapes" = "Use avatar roundness for forums and channel direct messages";
 "lng_nagram_restart_required" = "After restart";
 "lng_nagram_message_style" = "Message style";
