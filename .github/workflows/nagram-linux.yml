@@ -294,7 +294,9 @@ jobs:
             fi
             echo "ARTIFACT_NAME=release-linux" >> $GITHUB_ENV
           else
-            mv Nagram artifact/
+            # An artifact does not keep the executable bit, the archive does.
+            tar --owner=0 --group=0 --numeric-owner \
+              -czf artifact/Nagram-linux-x86_64-debug.tar.gz Nagram
           fi
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: env.UPLOAD_ARTIFACT == 'true'
@@ -303,3 +305,16 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: out/${{ env.CONFIG }}/artifact/
           retention-days: 1
+
+  channel:
+    name: Channel
+    needs: linux
+    # Debug builds of the default branch are posted to the assets channel;
+    # a release posts its own packages from nagram-release.yml.
+    if: ${{ inputs.config != 'Release' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}
+    uses: ./.github/workflows/nagram-channel.yml
+    permissions:
+      contents: read
+    with:
+      platform: linux
+    secrets: inherit

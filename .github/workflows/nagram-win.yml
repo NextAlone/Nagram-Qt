@@ -414,7 +414,8 @@ jobs:
             )
             echo ARTIFACT_NAME=release-windows-${{ matrix.arch }}>>%GITHUB_ENV%
           ) else (
-            move %OUT%\Nagram.exe artifact/
+            powershell -Command "Compress-Archive -Path '%OUT%\Nagram.exe' -DestinationPath 'artifact\Nagram-windows-${{ matrix.arch }}-debug.zip'"
+            if errorlevel 1 exit /b 1
           )
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         name: Upload artifact.
@@ -450,3 +451,16 @@ jobs:
           name: release-windows-${{ matrix.arch }}-setup
           path: installer\
           retention-days: 1
+
+  channel:
+    name: Channel
+    needs: windows
+    # Debug builds of the default branch are posted to the assets channel;
+    # a release posts its own packages from nagram-release.yml.
+    if: ${{ inputs.config != 'Release' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}
+    uses: ./.github/workflows/nagram-channel.yml
+    permissions:
+      contents: read
+    with:
+      platform: windows
+    secrets: inherit

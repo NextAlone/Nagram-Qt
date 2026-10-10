@@ -22,6 +22,10 @@ on:
         type: choice
         default: all
         options: [all, x64, arm64]
+      channel:
+        description: Post the packages of the release to the Telegram channels.
+        type: boolean
+        default: false
 
 jobs:
 
@@ -169,6 +173,109 @@ jobs:
           python3 tools/nagram/update_feed.py \
             --feed feed/nagram-updates.json --tag "$TAG" "${packages[@]}"
           gh release upload updates feed/nagram-updates.json --clobber --repo "$GITHUB_REPOSITORY"
+
+  channel:
+    name: Channel
+    needs: [version, publish]
+    # A tag is announced once, when it is pushed; a manual run posts only
+    # when asked to, so that rebuilding a release does not repeat the post.
+    if: ${{ !cancelled() && needs.version.result == 'success' && (needs.publish.result == 'success' || inputs.only == 'packages') && (github.event_name == 'push' || inputs.channel) }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+      BOT_TOKEN: ${{ secrets.NAGRAM_CHANNEL_BOT_TOKEN }}
+      ASSETS_CHAT_ID: ${{ vars.NAGRAM_CHANNEL_ASSETS_CHAT_ID }}
+      OFFICIAL_CHAT_ID: ${{ vars.NAGRAM_CHANNEL_CHAT_ID }}
+      BETA_CHAT_ID: ${{ vars.NAGRAM_CHANNEL_BETA_CHAT_ID }}
+
+    steps:
+      - name: Clone.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+          persist-credentials: false
+          sparse-checkout: docs/nagram/releases
+
+      # The release holds every platform, whatever this run has built.
+      - name: Download the packages.
+        id: packages
+        run: |
+          if [ -z "$BOT_TOKEN" ] || [ -z "$ASSETS_CHAT_ID$OFFICIAL_CHAT_ID" ]; then
+            echo "::notice::NAGRAM_CHANNEL_BOT_TOKEN or both channels are not set, nothing is posted."
+            exit 0
+          fi
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern 'Nagram-*' --dir "$RUNNER_TEMP/channel"
+          ls -l "$RUNNER_TEMP/channel"
+
+          # Debug builds come to the assets channel from the platform
+          # workflows, the hashtags tell the kinds apart.
+          HASHTAGS="desktop release"
+          case "$TAG" in (*-*)
+            HASHTAGS="desktop beta"
+            OFFICIAL_CHAT_ID="${BETA_CHAT_ID:-$OFFICIAL_CHAT_ID}"
+            ;;
+          esac
+          # The files are sent to the assets channel and the official one
+          # gets a copy of the post; with one channel set, it gets the post.
+          CHAT_ID="${ASSETS_CHAT_ID:-$OFFICIAL_CHAT_ID}"
+          COPY_TO=""
+          if [ -n "$ASSETS_CHAT_ID" ] && [ "$OFFICIAL_CHAT_ID" != "$ASSETS_CHAT_ID" ]; then
+            COPY_TO="$OFFICIAL_CHAT_ID"
+          fi
+          NOTES="docs/nagram/releases/$TAG.md"
+          test -f "$NOTES"
+          # English notes are optional and are folded under the others.
+          NOTES_EN="docs/nagram/releases/$TAG.en.md"
+          if [ ! -f "$NOTES_EN" ]; then
+            NOTES_EN=""
+          fi
+          {
+            echo "chat=$CHAT_ID"
+            echo "copy=$COPY_TO"
+            echo "hashtags=$HASHTAGS"
+            echo "version=${TAG#v}"
+            echo "notes=$NOTES"
+            echo "notes_en=$NOTES_EN"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Post to the channels.
+        if: steps.packages.outputs.chat != ''
+        uses: NextAlone/NagramActionRelated/channel-publish@2b74e4cd4e3c89fcc9d50095c039e467c674661f
+        with:
+          bot-token: ${{ secrets.NAGRAM_CHANNEL_BOT_TOKEN }}
+          api-id: ${{ secrets.NAGRAM_API_ID }}
+          api-hash: ${{ secrets.NAGRAM_API_HASH }}
+          chat-id: ${{ steps.packages.outputs.chat }}
+          copy-to: ${{ steps.packages.outputs.copy }}
+          directory: ${{ runner.temp }}/channel
+          title: Nagram Desktop
+          version: ${{ steps.packages.outputs.version }}
+          hashtags: ${{ steps.packages.outputs.hashtags }}
+          notes-file: ${{ steps.packages.outputs.notes }}
+          notes-en-file: ${{ steps.packages.outputs.notes_en }}
+          # The notes name these sections the same way in every release;
+          # the list of the packages is replaced by the files themselves.
+          fold-sections: |
+            上游
+            安装
+          drop-sections: 安装包
+          files-title: 下载
+          folded-files-title: 其他安装包（便携版、Windows ARM64）
+          files: |
+            *-macos.dmg | macOS · Apple 芯片与 Intel
+            *-windows-x64-setup.exe | Windows x64 · 安装程序
+            *-linux-x86_64.tar.xz | Linux x86_64
+            *-macos.zip | macOS · 压缩包 | folded
+            *-windows-x64.zip | Windows x64 · 便携版 | folded
+            *-windows-arm64-setup.exe | Windows ARM64 · 安装程序 | folded
+            *-windows-arm64.zip | Windows ARM64 · 便携版 | folded
+          buttons: |
+            *GitHub Release=${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.TAG }}
+            问题反馈=https://t.me/OrIssuesBot | Assets={post}
 
   aur:
     name: AUR

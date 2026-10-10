@@ -1,0 +1,96 @@
+# Posts the Debug builds of the calling platform workflow to the assets
+# channel on Telegram. nagram-release.yml posts the packages of a release
+# there as well, and copies them to the official channel; in the assets
+# channel the two are told apart by the hashtags (#debug against #release
+# or #beta) and by the commit in the names of the Debug files.
+#
+# Needs the secret NAGRAM_CHANNEL_BOT_TOKEN and the variable
+# NAGRAM_CHANNEL_ASSETS_CHAT_ID, and posts nothing while one is missing.
+
+name: Nagram Channel.
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        description: Hashtag of the platform, 'macos', 'windows' or 'linux'.
+        type: string
+        required: true
+
+jobs:
+
+  debug:
+    name: Debug build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      BOT_TOKEN: ${{ secrets.NAGRAM_CHANNEL_BOT_TOKEN }}
+      CHAT_ID: ${{ vars.NAGRAM_CHANNEL_ASSETS_CHAT_ID }}
+
+    steps:
+      - name: Check the configuration.
+        id: configuration
+        run: |
+          if [ -z "$BOT_TOKEN" ] || [ -z "$CHAT_ID" ]; then
+            echo "::notice::NAGRAM_CHANNEL_BOT_TOKEN or NAGRAM_CHANNEL_ASSETS_CHAT_ID is not set, nothing is posted to the channel."
+            exit 0
+          fi
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
+      - name: Clone.
+        if: steps.configuration.outputs.ready == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            Telegram/build
+            tools/nagram
+
+      - name: Download the builds.
+        if: steps.configuration.outputs.ready == 'true'
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          pattern: Nagram*
+          path: ${{ runner.temp }}/builds
+          merge-multiple: true
+
+      - name: Name the builds.
+        if: steps.configuration.outputs.ready == 'true'
+        id: builds
+        env:
+          COMMITS: ${{ toJSON(github.event.commits) }}
+        run: |
+          VERSION="$(python3 tools/nagram/release_version.py --version)"
+          COMMIT="${GITHUB_SHA::7}"
+          mkdir "$RUNNER_TEMP/channel"
+          shopt -s nullglob
+          for file in "$RUNNER_TEMP"/builds/Nagram-*-debug.*; do
+            name="$(basename "$file")"
+            mv "$file" "$RUNNER_TEMP/channel/${name/Nagram-/Nagram-$VERSION-$COMMIT-}"
+          done
+          ls -l "$RUNNER_TEMP/channel"
+          test -n "$(ls "$RUNNER_TEMP/channel")"
+          # The commits of the push, shown grouped by their kind.
+          printf '%s\n' "$COMMITS" > "$RUNNER_TEMP/channel-commits.json"
+          {
+            echo "version=$VERSION"
+            echo "commit=$COMMIT"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Post to the channel.
+        if: steps.configuration.outputs.ready == 'true'
+        uses: NextAlone/NagramActionRelated/channel-publish@2b74e4cd4e3c89fcc9d50095c039e467c674661f
+        with:
+          bot-token: ${{ secrets.NAGRAM_CHANNEL_BOT_TOKEN }}
+          api-id: ${{ secrets.NAGRAM_API_ID }}
+          api-hash: ${{ secrets.NAGRAM_API_HASH }}
+          chat-id: ${{ env.CHAT_ID }}
+          directory: ${{ runner.temp }}/channel
+          kind: test
+          title: Nagram Desktop
+          version: ${{ steps.builds.outputs.version }}
+          build: ${{ steps.builds.outputs.commit }}
+          hashtags: desktop debug ${{ inputs.platform }}
+          commits-file: ${{ runner.temp }}/channel-commits.json
+          buttons: Commit=${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
