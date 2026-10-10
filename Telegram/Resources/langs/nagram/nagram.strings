@@ -78,6 +78,8 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_hide_premium_promotions" = "Hide Premium promotions";
 "lng_nagram_hide_birthday_suggestions" = "Hide birthday suggestions";
 "lng_nagram_hide_phone_suggestion" = "Hide phone number check suggestion";
+"lng_nagram_mark_mutual_contacts" = "Mark mutual contacts in the contact list";
+"lng_nagram_mutual_contact_hint" = "This contact also has you in their contacts.";
 "lng_nagram_scroll_navigation" = "Scroll navigation";
 "lng_nagram_disable_scroll_to_next_channel" = "Do not switch to next channel at bottom";
 "lng_nagram_disable_scroll_to_next_topic" = "Do not switch to next topic at bottom";

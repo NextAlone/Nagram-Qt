@@ -74,6 +74,8 @@
 "lng_nagram_hide_premium_promotions" = "隐藏 Premium 推广提示";
 "lng_nagram_hide_birthday_suggestions" = "隐藏生日提示";
 "lng_nagram_hide_phone_suggestion" = "隐藏手机号确认建议";
+"lng_nagram_mark_mutual_contacts" = "在联系人列表中标记双向联系人";
+"lng_nagram_mutual_contact_hint" = "对方也把你加为了联系人。";
 "lng_nagram_scroll_navigation" = "滚动导航";
 "lng_nagram_disable_scroll_to_next_channel" = "滚动到底时不切换到下一个频道";
 "lng_nagram_disable_scroll_to_next_topic" = "滚动到底时不切换到下一个话题";

@@ -205,7 +205,7 @@ void TestOptions() {
 		"unknown refresh option");
 	auto chats = Registry();
 	Chats::RegisterOptions(chats);
-	Require(chats.All().size() == 35, "chat option count");
+	Require(chats.All().size() == 36, "chat option count");
 	Require(Chats::ValidReadingPositions(QString::fromLatin1("5:10,7:1"))
 		&& !Chats::ValidReadingPositions(QString::fromLatin1("5:0"))
 		&& !Chats::ValidReadingPositions(QString::fromLatin1("5"))

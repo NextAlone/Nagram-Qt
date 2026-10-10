@@ -335,6 +335,10 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_disable_global_search(),
 		u"nagram/chats/disable-global-search"_q,
 		{ u"search"_q, u"global"_q, u"public"_q });
+	AddToggle(builder, Chats::kMarkMutualContacts,
+		tr::lng_nagram_mark_mutual_contacts(),
+		u"nagram/chats/mark-mutual-contacts"_q,
+		{ u"contacts"_q, u"mutual"_q });
 	AddToggle(builder, Chats::kDisableCommunityGrouping,
 		tr::lng_nagram_disable_community_grouping(),
 		u"nagram/chats/disable-community-grouping"_q,

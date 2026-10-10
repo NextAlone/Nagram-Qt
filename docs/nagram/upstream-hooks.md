@@ -72,6 +72,7 @@
 | B12、B13 | `dialogs/dialogs_top_bar_suggestion.cpp` | 顶部提示条不显示 Premium 推广与生日提示 | 过滤 |
 | B14、B15 | `history/history_view_pull_to_next_channel.cpp` | 滚动到底时不触发切换，取消已排队的切换 | 读取 |
 | B16 | `window/window_session_controller.cpp`、`window/window_main_menu.cpp` | 控制器构造时订阅当前会话变化并记录；主菜单在“收藏夹”后按开关加入入口 | 读取 |
+| B31 | `boxes/peer_list_controllers.cpp`（`PrepareContactsBox`） | 局部 `Controller::createRow` 的 `ContactsBoxController::createRow(user)` 改为 `Nagram::Chats::MakeContactRow(user)`，并新增 `rowRightActionClicked` 覆盖，调用 `Nagram::Chats::ShowMutualContactHint(delegate())`。行在绘制时读取开关和 `UserDataFlag::MutualContact`，关闭时不占右侧宽度 | 替换 |
 | B17 | `window/window_session_controller.cpp`、`history/history_widget.cpp` | 切换会话与定时保存上一会话的 `scrollTopItem`；打开无未读的普通聊天时以保存的消息 ID 替换 `ShowAtUnreadMsgId` | 替换 |
 | B18 | `history/view/history_view_top_bar_widget.cpp` | `updateControlsGeometry` 在搜索按钮前放置工具按钮组并计入右侧占用宽度；传入标题与右侧按钮之间的可用宽度（`width() - _leftTaken - _rightTaken`），放不下的按钮由 `nagram/chats/tools.cpp` 收进溢出菜单。按钮的种类和顺序来自 `nagram.topBarActions`，动作目录在 `nagram/chats/top_bar_actions.cpp`，`⋮` 菜单的管理快捷项共用这份目录 | 读取 |
 | 管理文件夹 | `data/data_chat_filters.cpp`、`ui/widgets/chat_filters_tabs_strip.cpp`、`window/window_filters_menu.cpp` | 文件夹匹配增加“仅我管理的”条件；文件夹菜单加入该选项 | 读取 |

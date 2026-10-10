@@ -74,6 +74,8 @@
 "lng_nagram_hide_premium_promotions" = "隱藏 Premium 推廣提示";
 "lng_nagram_hide_birthday_suggestions" = "隱藏生日提示";
 "lng_nagram_hide_phone_suggestion" = "隱藏手機號碼確認建議";
+"lng_nagram_mark_mutual_contacts" = "在聯絡人列表中標記雙向聯絡人";
+"lng_nagram_mutual_contact_hint" = "對方也將你加為了聯絡人。";
 "lng_nagram_scroll_navigation" = "捲動導覽";
 "lng_nagram_disable_scroll_to_next_channel" = "捲動到底時不切換到下一個頻道";
 "lng_nagram_disable_scroll_to_next_topic" = "捲動到底時不切換到下一個話題";

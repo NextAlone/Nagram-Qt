@@ -41,6 +41,7 @@ set(nagram_sources
     nagram/chats/top_bar_actions.cpp
     nagram/chats/top_bar_model.cpp
     nagram/chats/community.cpp
+    nagram/chats/contacts.cpp
     nagram/chats/folders.cpp
     nagram/chats/managed_folders.cpp
     nagram/interface/roundness.cpp

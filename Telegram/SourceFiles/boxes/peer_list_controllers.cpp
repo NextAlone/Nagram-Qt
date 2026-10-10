@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "boxes/peer_list_controllers.h"
 
 #include "api/api_chat_participants.h"
+#include "nagram/chats/contacts.h"
 #include "nagram/chats/recent_chats.h"
 #include "api/api_premium.h" // MessageMoneyRestriction.
 #include "base/random.h"
@@ -88,8 +89,12 @@ object_ptr<Ui::BoxContent> PrepareContactsBox(
 		std::unique_ptr<PeerListRow> createRow(
 				not_null<UserData*> user) override {
 			return !user->isSelf()
-				? ContactsBoxController::createRow(user)
+				? Nagram::Chats::MakeContactRow(user)
 				: nullptr;
+		}
+
+		void rowRightActionClicked(not_null<PeerListRow*>) override {
+			Nagram::Chats::ShowMutualContactHint(delegate());
 		}
 
 		void rowMiddleClicked(

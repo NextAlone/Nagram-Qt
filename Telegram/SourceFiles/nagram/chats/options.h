@@ -114,6 +114,9 @@ inline constexpr auto kChooseFolderAfterJoin = Option<bool>{
 inline constexpr auto kHidePhoneSuggestion = Option<bool>{
 	"nagram.hidePhoneSuggestion", Scope::Device, false,
 	Category::Chats, "lng_nagram_hide_phone_suggestion" };
+inline constexpr auto kMarkMutualContacts = Option<bool>{
+	"nagram.markMutualContacts", Scope::Device, false,
+	Category::Chats, "lng_nagram_mark_mutual_contacts" };
 inline constexpr auto kDisableScrollToNextChannel = Option<bool>{
 	"nagram.disableScrollToNextChannel", Scope::Device, false,
 	Category::Chats, "lng_nagram_disable_scroll_to_next_channel" };
@@ -217,6 +220,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kHidePremiumPromotions));
 	Expects(registry.Add(kHideBirthdaySuggestions));
 	Expects(registry.Add(kHidePhoneSuggestion));
+	Expects(registry.Add(kMarkMutualContacts));
 	Expects(registry.Add(kDisableCommunityGrouping));
 	Expects(registry.Add(kCompactFolderTabs));
 	Expects(registry.Add(kDisableGlobalSearch));

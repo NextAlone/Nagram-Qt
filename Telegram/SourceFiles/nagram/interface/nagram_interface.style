@@ -5,3 +5,6 @@ nagramSettingsPlaceholderLogo: 96px;
 nagramSettingsPlaceholderSkip: 16px;
 nagramSettingsDetailWidth: 560px;
 nagramAppIconPreviewMargin: margins(0px, 4px, 0px, 12px);
+nagramMutualContactIcon: icon {{ "nagram/mutual_contact-24x24", windowSubTextFg }};
+nagramMutualContactIconOver: icon {{ "nagram/mutual_contact-24x24", windowSubTextFgOver }};
+nagramMutualContactSkip: 16px;
