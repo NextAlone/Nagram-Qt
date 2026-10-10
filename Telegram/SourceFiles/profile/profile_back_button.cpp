@@ -86,7 +86,7 @@ void BackButton::paintEvent(QPaintEvent *e) {
 
 	auto p = QPainter(this);
 
-	p.fillRect(e->rect(), st::profileBg);
+	p.fillRect(e->rect(), st::topBarBg);
 	st::topBarBack.paint(
 		p,
 		st::historyAdminLogTopBarLeft,
