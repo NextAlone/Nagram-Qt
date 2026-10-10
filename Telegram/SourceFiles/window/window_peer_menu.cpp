@@ -719,6 +719,10 @@ void Filler::addToggleFolder() {
 		},
 		.submenuSt = &st::foldersMenu,
 	});
+	Nagram::Chats::AddRemoveRecentAction(
+		_addAction,
+		history,
+		_request.filterId);
 }
 
 void Filler::addToggleUnreadMark() {

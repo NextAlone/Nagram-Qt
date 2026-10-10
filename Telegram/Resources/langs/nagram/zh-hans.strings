@@ -91,6 +91,7 @@
 "lng_nagram_recent_chats" = "最近会话";
 "lng_nagram_recent_chats_empty" = "还没有最近会话。";
 "lng_nagram_recent_chats_clear" = "清空";
+"lng_nagram_recent_chats_remove" = "从最近会话中移除";
 "lng_nagram_chat_tools" = "在顶部栏显示聊天工具按钮";
 "lng_nagram_chat_tools_start" = "跳到开头";
 "lng_nagram_top_bar_actions" = "顶部栏按钮";

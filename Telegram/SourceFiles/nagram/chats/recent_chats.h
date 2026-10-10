@@ -4,6 +4,7 @@
 #include "data/data_types.h"
 #include "lang/lang_keys.h"
 #include "styles/style_menu_icons.h"
+#include "ui/widgets/menu/menu_add_action_callback.h"
 
 class History;
 namespace Main {
@@ -37,6 +38,10 @@ void SetRecentFolderEnabled(
 	not_null<Main::Session*> session,
 	FilterId folderId,
 	bool enabled);
+void AddRemoveRecentAction(
+	const Ui::Menu::MenuCallback &addAction,
+	not_null<History*> history,
+	FilterId folderId);
 void ShowRecentChats(not_null<Window::SessionController*> controller);
 
 template <typename AddAction>

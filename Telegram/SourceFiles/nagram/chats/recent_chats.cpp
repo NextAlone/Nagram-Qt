@@ -40,6 +40,7 @@ struct FolderCache {
 	base::flat_set<FilterId> folders;
 };
 std::vector<FolderCache> Caches;
+bool SkipRecentInFolder = false;
 
 void ResetCache(not_null<Main::Session*> session) {
 	Caches.erase(ranges::remove_if(Caches, [&](const FolderCache &cache) {
@@ -244,7 +245,7 @@ std::unique_ptr<PeerListRow> MakeRecentFilterRow() {
 }
 
 bool RecentInFolder(not_null<History*> history, FilterId folderId) {
-	if (!folderId) {
+	if (!folderId || SkipRecentInFolder) {
 		return false;
 	}
 	const auto &cache = Cache(&history->session());
@@ -278,6 +279,35 @@ void SetRecentFolderEnabled(
 	Expects(ForAccount(session).Set(kRecentFolderIds, parts.join(u',')));
 	ResetCache(session);
 	RefreshFolders(session, ReadRecent(session));
+}
+
+void AddRemoveRecentAction(
+		const Ui::Menu::MenuCallback &addAction,
+		not_null<History*> history,
+		FilterId folderId) {
+	if (!RecentInFolder(history, folderId)) {
+		return;
+	}
+	const auto &list = history->owner().chatsFilters().list();
+	const auto i = ranges::find(list, folderId, &Data::ChatFilter::id);
+	if (i == end(list)) {
+		return;
+	}
+	SkipRecentInFolder = true;
+	const auto otherwise = i->contains(history);
+	SkipRecentInFolder = false;
+	if (otherwise) {
+		return;
+	}
+	const auto session = base::make_weak(&history->session());
+	const auto id = history->peer->id;
+	addAction(tr::lng_nagram_recent_chats_remove(tr::now), [=] {
+		if (const auto strong = session.get()) {
+			auto ids = ReadRecent(strong);
+			ids.erase(ranges::remove(ids, id), ids.end());
+			WriteRecent(strong, ids);
+		}
+	}, &st::menuIconRemove);
 }
 
 void ShowRecentChats(not_null<Window::SessionController*> controller) {
