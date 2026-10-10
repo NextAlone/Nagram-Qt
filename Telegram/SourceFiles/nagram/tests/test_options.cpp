@@ -156,7 +156,7 @@ void TestOptions() {
 	Require(registry.All().size() == 1, "registry count");
 	auto messages = Registry();
 	Messages::RegisterOptions(messages);
-	Require(messages.All().size() == 33, "message option count");
+	Require(messages.All().size() == 34, "message option count");
 	auto refreshCount = 0;
 	for (const auto &entry : messages.All()) {
 		Require(entry.scope == Scope::Device, "message option scope");
@@ -169,6 +169,33 @@ void TestOptions() {
 		&& Messages::kReadingChinese.validate(2)
 		&& !Messages::kReadingChinese.validate(3),
 		"reading conversion modes");
+	Require(Messages::kMessageIdPlace.validate(0)
+		&& Messages::kMessageIdPlace.validate(2)
+		&& !Messages::kMessageIdPlace.validate(3),
+		"message ID places");
+	Require(messages.HasFlag(Messages::kShowMessageId.key, Flag::Hidden)
+		&& !messages.HasFlag(Messages::kShowMessageId.key, Flag::Exportable)
+		&& messages.HasFlag(Messages::kMessageIdPlace.key, Flag::Exportable),
+		"legacy message ID switch is not exported");
+	{
+		auto prefs = MemoryPrefs();
+		auto options = Options(prefs);
+		Messages::MigrateMessageIdPlace(options);
+		Require(prefs.values.empty(), "message ID migration without a value");
+		prefs.values["nagram.showMessageId"] = "1";
+		Messages::MigrateMessageIdPlace(options);
+		Require(options.Get(Messages::kMessageIdPlace) == 1
+			&& !options.Get(Messages::kShowMessageId)
+			&& prefs.values.size() == 1,
+			"message ID switch moves to the tooltip place");
+		prefs.values["nagram.showMessageId"] = "1";
+		Require(options.Set(Messages::kMessageIdPlace, 2),
+			"message ID place write");
+		Messages::MigrateMessageIdPlace(options);
+		Require(options.Get(Messages::kMessageIdPlace) == 2
+			&& prefs.values.size() == 1,
+			"message ID migration keeps a chosen place");
+	}
 	Require(messages.HasFlag(Messages::kSecondsInMessages.key,
 		Flag::RefreshMessageView), "message refresh option missing");
 	Require(!messages.HasFlag(Messages::kHideReactionMenu.key,

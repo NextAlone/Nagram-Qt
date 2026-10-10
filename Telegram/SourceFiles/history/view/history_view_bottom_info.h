@@ -61,6 +61,7 @@ public:
 		int64 tonStake = 0;
 		int stars = 0;
 		TimeId scheduleRepeatPeriod = 0;
+		MsgId nagramMessageId = 0;
 		std::optional<int> views;
 		std::optional<int> replies;
 		std::optional<int> forwardsCount;

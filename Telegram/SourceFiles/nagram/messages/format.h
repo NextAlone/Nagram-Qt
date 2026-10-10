@@ -16,7 +16,12 @@ namespace Nagram::Messages {
 [[nodiscard]] QString FormatEditedDate(QDateTime sent, QDateTime edited);
 [[nodiscard]] QString EditedMark();
 [[nodiscard]] QString FormatCounter(int count);
-void ApplyInfoOptions(HistoryView::BottomInfo::Data &data);
+void ApplyInfoOptions(
+	HistoryView::BottomInfo::Data &data,
+	not_null<HistoryItem*> item);
+[[nodiscard]] QString WithBubbleId(
+	const QString &date,
+	const HistoryView::BottomInfo::Data &data);
 void LayoutForwards(
 	Ui::Text::String &text,
 	const HistoryView::BottomInfo::Data &data);

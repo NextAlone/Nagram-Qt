@@ -205,7 +205,9 @@
 "lng_nagram_seconds_in_messages" = "时间显示秒";
 "lng_nagram_show_forwarded_message_date" = "转发消息显示原始发送时间";
 "lng_nagram_show_service_time" = "服务消息显示时间";
-"lng_nagram_show_message_id" = "时间提示中显示消息 ID";
+"lng_nagram_show_message_id" = "显示消息 ID";
+"lng_nagram_message_id_tooltip" = "在时间提示中";
+"lng_nagram_message_id_bubble" = "在气泡中";
 "lng_nagram_sender_online" = "发送者头像显示在线状态";
 "lng_nagram_sender_online_now" = "在线";
 "lng_nagram_sender_online_recently" = "在线和最近在线";

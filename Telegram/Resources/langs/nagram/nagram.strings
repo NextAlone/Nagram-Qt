@@ -209,7 +209,9 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_seconds_in_messages" = "Show seconds in message times";
 "lng_nagram_show_forwarded_message_date" = "Show original time on forwarded messages";
 "lng_nagram_show_service_time" = "Show time on service messages";
-"lng_nagram_show_message_id" = "Show message ID in time tooltip";
+"lng_nagram_show_message_id" = "Show message ID";
+"lng_nagram_message_id_tooltip" = "In the time tooltip";
+"lng_nagram_message_id_bubble" = "In the bubble";
 "lng_nagram_sender_online" = "Online status on sender avatars";
 "lng_nagram_sender_online_now" = "Online";
 "lng_nagram_sender_online_recently" = "Online and recently";

@@ -562,7 +562,7 @@
 | D104 | 全局：先转发再发送评论 | `sendForwardFirst` | `bool` / `false` | 纳入/合并 · [F05](requirements.md#f05) |
 | D105 | 全局：会话 ID 显示格式 | `showPeerId` | `PeerIdDisplay` / `BotApi` | 纳入/合并 · [F14](requirements.md#f14) |
 | D106 | 全局：时间戳显示秒 | `showMessageSeconds` | `bool` / `false` | 纳入/合并 · [F03](requirements.md#f03) |
-| D107 | 全局：显示消息 ID | `showMessageId` | `bool` / `false` | 纳入/合并 · [F03](requirements.md#f03) |
+| D107 | 全局：显示消息 ID | `showMessageId` | `bool` / `false` | 纳入/合并 · [F03](requirements.md#f03)；设置页 C04，可选时间提示或气泡 |
 | D108 | 全局：消息截图入口 | `showMessageShot` | `bool` / `true` | 纳入/合并 · [F13](requirements.md#f13) |
 | D109 | 全局：过滤组合字符堆叠 | `filterZalgo` | `bool` / `false` | 纳入/合并 · [F09](requirements.md#f09) |
 | D110 | 全局：贴纸发送确认 | `stickerConfirmation` | `bool` / `false` | 纳入/合并 · [F06](requirements.md#f06) |

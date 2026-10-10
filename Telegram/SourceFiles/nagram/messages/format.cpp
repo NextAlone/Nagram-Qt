@@ -86,8 +86,25 @@ QString FormatCounter(int count) {
 		: Lang::FormatCountToShort(count).string;
 }
 
-void ApplyInfoOptions(HistoryView::BottomInfo::Data &data) {
+namespace {
+
+[[nodiscard]] bool ShowsMessageId(
+		not_null<HistoryItem*> item,
+		MessageIdPlace place) {
+	return (ForDevice().Get(kMessageIdPlace) == static_cast<int>(place))
+		&& IsServerMsgId(item->id)
+		&& !item->isSending();
+}
+
+} // namespace
+
+void ApplyInfoOptions(
+		HistoryView::BottomInfo::Data &data,
+		not_null<HistoryItem*> item) {
 	auto &options = ForDevice();
+	data.nagramMessageId = ShowsMessageId(item, MessageIdPlace::Bubble)
+		? item->id
+		: MsgId();
 	if (options.Get(kHideMessageViews)) {
 		data.views.reset();
 	}
@@ -98,6 +115,14 @@ void ApplyInfoOptions(HistoryView::BottomInfo::Data &data) {
 		using Flag = HistoryView::BottomInfo::Data::Flag;
 		data.flags &= ~(Flag::Edited | Flag::EditedPrimary);
 	}
+}
+
+QString WithBubbleId(
+		const QString &date,
+		const HistoryView::BottomInfo::Data &data) {
+	return (date.isEmpty() || !data.nagramMessageId)
+		? date
+		: date + u" | "_q + QString::number(data.nagramMessageId.bare);
 }
 
 void LayoutForwards(
@@ -179,9 +204,7 @@ TextWithEntities ServiceText(
 }
 
 QString WithMessageId(QString text, not_null<HistoryItem*> item) {
-	if (ForDevice().Get(kShowMessageId)
-		&& IsServerMsgId(item->id)
-		&& !item->isSending()) {
+	if (ShowsMessageId(item, MessageIdPlace::Tooltip)) {
 		text += '\n' + tr::lng_nagram_message_id(
 			tr::now, lt_id, QString::number(item->id.bare));
 	}

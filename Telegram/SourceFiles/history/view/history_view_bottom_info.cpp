@@ -496,7 +496,7 @@ void BottomInfo::layoutDateText() {
 		? (SchedulePeriodText(_data.scheduleRepeatPeriod) + ' ')
 		: QString();
 	const auto author = _data.author;
-	const auto date = (_data.flags & Data::Flag::HideDate)
+	const auto plainDate = (_data.flags & Data::Flag::HideDate)
 		? QString()
 		: editedPrimary
 		? Nagram::Messages::FormatEditedDate(_data.date, _data.editedDate)
@@ -504,6 +504,7 @@ void BottomInfo::layoutDateText() {
 			& (Data::Flag::ForwardedDate | Data::Flag::FullDate))
 		? Nagram::Messages::FormatSavedFrom(_data.date)
 		: Nagram::Messages::FormatTime(_data.date.time()));
+	const auto date = Nagram::Messages::WithBubbleId(plainDate, _data);
 	const auto prefix = (!author.isEmpty() && !date.isEmpty())
 		? u", "_q : QString();
 	const auto afterAuthor = prefix + date;
@@ -759,7 +760,7 @@ BottomInfo::Data BottomInfoDataFromMessage(not_null<Message*> message) {
 			result.flags |= Flag::Silent;
 		}
 	}
-	Nagram::Messages::ApplyInfoOptions(result);
+	Nagram::Messages::ApplyInfoOptions(result, item);
 	if (!forwarded) {
 		return result;
 	}

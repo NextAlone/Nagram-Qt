@@ -205,7 +205,9 @@
 "lng_nagram_seconds_in_messages" = "時間顯示秒數";
 "lng_nagram_show_forwarded_message_date" = "轉傳訊息顯示原始傳送時間";
 "lng_nagram_show_service_time" = "服務訊息顯示時間";
-"lng_nagram_show_message_id" = "時間提示中顯示訊息 ID";
+"lng_nagram_show_message_id" = "顯示訊息 ID";
+"lng_nagram_message_id_tooltip" = "在時間提示中";
+"lng_nagram_message_id_bubble" = "在氣泡中";
 "lng_nagram_sender_online" = "傳送者頭像顯示上線狀態";
 "lng_nagram_sender_online_now" = "上線";
 "lng_nagram_sender_online_recently" = "上線和最近上線";

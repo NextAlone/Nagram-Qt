@@ -92,7 +92,7 @@ B29（清理聊天）没有上游改动：清理框只调用 `ApiWrap::toggleHis
 | C01 | `history/view/history_view_bottom_info.cpp`、`history/view/history_view_element.cpp` | 时间格式加入秒 | 替换 |
 | C02 | `history/view/history_view_bottom_info.cpp` | 转发消息显示 `originalDate` | 替换 |
 | C03 | `history/view/history_view_element.cpp`（服务消息） | 服务消息文本后追加时间 | 读取 |
-| C04 | `history/view/history_view_element.cpp`（时间提示） | 提示文本追加服务端消息 ID；本地、待发送消息不显示 | 读取 |
+| C04 | `history/view/history_view_element.cpp`（时间提示）、`history/view/history_view_bottom_info.h`、`history/view/history_view_bottom_info.cpp` | 提示文本追加服务端消息 ID；本地、待发送消息不显示。气泡位置：`BottomInfo::Data` 加字段 `nagramMessageId`，由 `ApplyInfoOptions(result, item)` 填入；`layoutDateText` 的 `date` 改名 `plainDate`，其后加一行 `Nagram::Messages::WithBubbleId(plainDate, _data)` | 读取 |
 | C27 | `history/history_inner_widget.cpp`、`history/view/history_view_list_widget.cpp` | 绘制发送者头像后叠加在线点；订阅在线状态变化重绘 | 读取 |
 | C05–C07 | `history/view/history_view_bottom_info.cpp` | 计数格式化、浏览数与签名的布局 | 替换 |
 | C32 | `history/view/history_view_bottom_info.cpp`、`history/view/history_view_bottom_info.h` | `BottomInfo` 增加一个 `Ui::Text::String` 成员；`layoutViewsText`、`countOptimalSize`、`paint`、`textState` 各加一处 `Nagram::Messages` 调用，在浏览数与时间之间绘制转发数。图标是镜像的回复箭头，颜色随气泡样式 | 读取 |
@@ -298,7 +298,7 @@ K01、K03 修改后由 `nagram/network/runtime.cpp` 对每个账号的 `MTP::Ins
 | `history/history_widget.cpp` | D01–D15、D22、D23 等约 17 项 |
 | `history/view/controls/history_view_compose_controls.cpp` | D01–D10、D13、D15 等约 13 项 |
 | `history/view/history_view_element.cpp` | C03、C04、C10–C13、C19、C21、C25、C26、F02、I01 等约 13 项 |
-| `history/view/history_view_bottom_info.cpp` | C01、C02、C05–C09、F02 |
+| `history/view/history_view_bottom_info.cpp` | C01、C02、C04–C09、F02 |
 | `history/history_inner_widget.cpp`、`history/view/history_view_context_menu.cpp` | 消息菜单（E01–E27）；C27 在线点 |
 
 ## 4. 私有成员依赖

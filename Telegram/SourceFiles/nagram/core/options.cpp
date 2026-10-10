@@ -54,7 +54,12 @@ namespace Nagram {
 
 Options &ForDevice() {
 	static auto prefs = DevicePrefs(Core::App().settings());
-	return details::SharedDeviceOptions(prefs);
+	static const auto options = [] {
+		const auto result = &details::SharedDeviceOptions(prefs);
+		Messages::MigrateMessageIdPlace(*result);
+		return result;
+	}();
+	return *options;
 }
 
 DevicePrefs::DevicePrefs(Core::Settings &settings) : _settings(settings) { }

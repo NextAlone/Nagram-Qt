@@ -16,9 +16,21 @@ inline constexpr auto kShowForwardedMessageDate = Option<bool>{
 inline constexpr auto kShowServiceTime = Option<bool>{
 	"nagram.showServiceTime", Scope::Device, false,
 	Category::Messages, "lng_nagram_show_service_time", kRefreshMessageView };
+// Replaced by kMessageIdPlace, kept to move a stored value over.
 inline constexpr auto kShowMessageId = Option<bool>{
 	"nagram.showMessageId", Scope::Device, false,
-	Category::Messages, "lng_nagram_show_message_id", kRefreshMessageView };
+	Category::Messages, "lng_nagram_show_message_id",
+	static_cast<unsigned>(Flag::Hidden) };
+
+enum class MessageIdPlace {
+	None,
+	Tooltip,
+	Bubble,
+};
+inline constexpr auto kMessageIdPlace = Option<int>{
+	"nagram.messageIdPlace", Scope::Device, 0,
+	Category::Messages, "lng_nagram_show_message_id", kRefreshMessageView,
+	[](const int &value) { return value >= 0 && value <= 2; } };
 inline constexpr auto kSenderOnlineStatus = Option<int>{
 	"nagram.senderOnlineStatus", Scope::Device, 0,
 	Category::Messages, "lng_nagram_sender_online", kRefreshMessageView,
@@ -115,6 +127,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kShowForwardedMessageDate));
 	Expects(registry.Add(kShowServiceTime));
 	Expects(registry.Add(kShowMessageId));
+	Expects(registry.Add(kMessageIdPlace));
 	Expects(registry.Add(kSenderOnlineStatus));
 	Expects(registry.Add(kExactMessageCounters));
 	Expects(registry.Add(kHideMessageViews));
@@ -144,6 +157,17 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kHidePrivateChatActivities));
 	Expects(registry.Add(kReadingSpacing));
 	Expects(registry.Add(kReadingChinese));
+}
+
+inline void MigrateMessageIdPlace(Options &options) {
+	if (!options.Get(kShowMessageId)) {
+		return;
+	} else if (options.Get(kMessageIdPlace) == 0) {
+		Expects(options.Set(
+			kMessageIdPlace,
+			static_cast<int>(MessageIdPlace::Tooltip)));
+	}
+	Expects(options.Set(kShowMessageId, false));
 }
 
 } // namespace Nagram::Messages

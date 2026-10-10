@@ -116,6 +116,29 @@ QString SenderOnlineLabel(int value) {
 	}
 }
 
+QString MessageIdPlaceLabel(int value) {
+	switch (value) {
+	case 1: return tr::lng_nagram_message_id_tooltip(tr::now);
+	case 2: return tr::lng_nagram_message_id_bubble(tr::now);
+	default: return tr::lng_nagram_reading_off(tr::now);
+	}
+}
+
+void MessageIdPlaceBox(not_null<Ui::GenericBox*> box) {
+	box->setTitle(tr::lng_nagram_show_message_id());
+	const auto group = std::make_shared<Ui::RadiobuttonGroup>(
+		ForDevice().Get(Messages::kMessageIdPlace));
+	for (auto value = 0; value != 3; ++value) {
+		box->addRow(object_ptr<Ui::Radiobutton>(
+			box, group, value, MessageIdPlaceLabel(value),
+			st::settingsSendType), st::settingsSendTypePadding);
+	}
+	group->setChangedCallback([=](int value) {
+		Expects(ForDevice().Set(Messages::kMessageIdPlace, value));
+		box->closeBox();
+	});
+}
+
 void SenderOnlineBox(not_null<Ui::GenericBox*> box) {
 	box->setTitle(tr::lng_nagram_sender_online());
 	const auto group = std::make_shared<Ui::RadiobuttonGroup>(
@@ -169,11 +192,16 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_show_service_time(),
 		u"nagram/messages/service-time"_q,
 		{ u"service"_q, u"time"_q });
-	AddToggle(builder, Messages::kShowMessageId,
-		tr::lng_nagram_show_message_id(),
-		u"nagram/messages/id"_q,
-		{ u"message ID"_q, u"tooltip"_q });
 	const auto onlineController = builder.controller();
+	builder.addButton({
+		.id = u"nagram/messages/id"_q,
+		.title = tr::lng_nagram_show_message_id(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForDevice().Value(Messages::kMessageIdPlace)
+			| rpl::map(MessageIdPlaceLabel),
+		.onClick = [=] { onlineController->show(Box(MessageIdPlaceBox)); },
+		.keywords = { u"message ID"_q, u"tooltip"_q, u"bubble"_q },
+	});
 	builder.addButton({
 		.id = u"nagram/messages/sender-online"_q,
 		.title = tr::lng_nagram_sender_online(),
