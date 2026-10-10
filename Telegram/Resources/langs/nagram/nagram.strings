@@ -170,6 +170,8 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_hide_share_phone_prompt" = "Hide share phone number prompt";
 "lng_nagram_do_not_share_phone" = "Do not share my phone number by default when adding contacts";
 "lng_nagram_do_not_share_phone_about" = "Only changes the initial state of “Share my phone number”. You can still tick it when adding a contact.";
+"lng_nagram_hide_send_status" = "Do not send my typing and upload status";
+"lng_nagram_hide_send_status_about" = "Others will not see that you are typing, recording, uploading or choosing a sticker. Read receipts and your online status are not affected.";
 "lng_nagram_force_copy" = "Allow copying and saving protected content";
 "lng_nagram_force_copy_about" = "Applies only to messages and media already received on this device. Forwarding is still restricted by Telegram, so Repeat and Forward send a copy without attribution instead. Self-destructing and paid media are not affected.";
 "lng_nagram_ignore_restrictions" = "Ignore content restrictions";

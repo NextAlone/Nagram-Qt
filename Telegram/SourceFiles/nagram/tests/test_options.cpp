@@ -291,7 +291,7 @@ void TestOptions() {
 		Flag::RefreshMessageView), "video autoplay refresh flag");
 	auto privacy = Registry();
 	Privacy::RegisterOptions(privacy);
-	Require(privacy.All().size() == 16, "privacy option count");
+	Require(privacy.All().size() == 17, "privacy option count");
 	Require(Privacy::kProfileIdFormat.validate(0)
 		&& Privacy::kProfileIdFormat.validate(1)
 		&& Privacy::kProfileIdFormat.validate(2)

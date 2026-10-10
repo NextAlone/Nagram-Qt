@@ -159,7 +159,7 @@
 | N047 | 使用系统表情 | `EmojiUseDefault` | `Bool` / `false` | 纳入/合并 · [F06](requirements.md#f06) |
 | N048 | 视频留言默认使用后置摄像头 | `RearVideoMessages` | `Bool` / `false` | 排除 · X02：手机专属系统/硬件接口，桌面无对应配置 |
 | N049 | 隐藏“全部对话” | `HideAllTab` | `Bool` / `false` | 纳入/合并 · [F02](requirements.md#f02) |
-| N050 | 不要发送我的输入状态 | `DisableChatAction` | `Bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)，P3-01；发送策略，不是本地显示；暂不实现 |
+| N050 | 不要发送我的输入状态 | `DisableChatAction` | `Bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)，P3-01；发送策略，不是本地显示。设置页 G18 |
 | N051 | 排序：未读优先 | `sort_by_unread` | `Bool` / `false` | 纳入/合并 · [F02](requirements.md#f02) |
 | N052 | 排序：未静音优先 | `sort_by_unmuted` | `Bool` / `true` | 纳入/合并 · [F02](requirements.md#f02) |
 | N053 | 排序：用户优先 | `sort_by_user` | `Bool` / `true` | 纳入/合并 · [F02](requirements.md#f02) |
@@ -214,7 +214,7 @@
 | N102 | 最近贴纸数量上限 | `maxRecentStickerCount` | `Int` / `20` | 纳入/合并 · [F06](requirements.md#f06) |
 | N103 | 禁用滑动到下个未读频道 | `disableSwipeToNextChannel` | `Bool` / `true` | 纳入/合并 · [F02](requirements.md#f02) |
 | N104 | 禁用远程表情符号交互 | `disableRemoteEmojiInteractions` | `Bool` / `true` | 纳入/合并 · [F06](requirements.md#f06) |
-| N105 | 选择贴纸时输入状态为输入中 | `disableChoosingSticker` | `Bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| N105 | 选择贴纸时输入状态为输入中 | `disableChoosingSticker` | `Bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)；并入 G18，不单独设开关 |
 | N106 | 隐藏群组贴纸 | `hideGroupSticker` | `Bool` / `false` | 纳入/合并 · [F06](requirements.md#f06) |
 | N107 | 禁用会员贴纸动画 | `disablePremiumStickerAnimation` | `Bool` / `false` | 纳入/合并 · [F06](requirements.md#f06) |
 | N108 | 隐藏赞助消息 | `hideSponsoredMessage` | `Bool` / `false` | 纳入/合并 · [F03](requirements.md#f03) |

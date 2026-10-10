@@ -189,6 +189,11 @@ const auto kMeta = BuildHelper({
 		u"nagram/privacy/do-not-share-phone"_q,
 		{ u"share"_q, u"phone"_q, u"contact"_q });
 	builder.addDividerText(tr::lng_nagram_do_not_share_phone_about());
+	AddToggle(builder, Privacy::kHideSendStatus,
+		tr::lng_nagram_hide_send_status(),
+		u"nagram/privacy/hide-send-status"_q,
+		{ u"typing"_q, u"status"_q, u"activity"_q, u"upload"_q });
+	builder.addDividerText(tr::lng_nagram_hide_send_status_about());
 	AddToggle(builder, Privacy::kForceCopy,
 		tr::lng_nagram_force_copy(),
 		u"nagram/privacy/force-copy"_q,

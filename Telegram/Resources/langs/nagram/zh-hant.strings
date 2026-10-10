@@ -166,6 +166,8 @@
 "lng_nagram_hide_share_phone_prompt" = "隱藏分享手機號碼提示";
 "lng_nagram_do_not_share_phone" = "新增聯絡人時預設不分享我的手機號碼";
 "lng_nagram_do_not_share_phone_about" = "只改變「分享我的手機號碼」的初始勾選，仍可在新增時手動勾選。";
+"lng_nagram_hide_send_status" = "不傳送我的輸入和上傳狀態";
+"lng_nagram_hide_send_status_about" = "對方不會看到你正在輸入、錄製、上傳或選擇貼圖。不影響已讀回條和上線狀態。";
 "lng_nagram_force_copy" = "允許複製和儲存受保護的內容";
 "lng_nagram_force_copy_about" = "只作用於本機已收到的訊息和已下載的媒體。轉傳仍由 Telegram 限制，複讀和轉發會改為傳送不帶原傳送者的副本。限時和付費媒體不受影響。";
 "lng_nagram_ignore_restrictions" = "忽略內容限制";

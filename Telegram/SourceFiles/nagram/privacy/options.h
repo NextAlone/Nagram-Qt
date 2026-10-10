@@ -22,6 +22,14 @@ inline constexpr auto kHideSharePhonePrompt = Option<bool>{
 inline constexpr auto kDoNotSharePhone = Option<bool>{
 	"nagram.doNotSharePhone", Scope::Device, false,
 	Category::Privacy, "lng_nagram_do_not_share_phone" };
+inline constexpr auto kHideSendStatus = Option<bool>{
+	"nagram.hideSendStatus", Scope::Device, false,
+	Category::Privacy, "lng_nagram_hide_send_status" };
+
+[[nodiscard]] inline bool HideSendStatus() {
+	return ForDevice().Get(kHideSendStatus);
+}
+
 inline constexpr auto kForceCopy = Option<bool>{
 	"nagram.forceCopy", Scope::Device, false,
 	Category::Privacy, "lng_nagram_force_copy",
@@ -95,6 +103,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kIgnoreContentRestrictions));
 	Expects(registry.Add(kSkipSensitiveWarning));
 	Expects(registry.Add(kShowRegistrationDate));
+	Expects(registry.Add(kHideSendStatus));
 }
 
 } // namespace Nagram::Privacy

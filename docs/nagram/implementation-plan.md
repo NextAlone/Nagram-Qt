@@ -264,6 +264,12 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | ☐ S18 | `build: Nagram update trust root and release workflow`；`feat(core): update feed from GitHub Releases` | — | 未实施：缺 Nagram 的 Ed25519 根密钥与密钥清单、发行签名密钥和发行流程（专项设计 2.4、第 8 节）。自动更新保持在构建层关闭，`UpdateApplication()` 与更新检查代码未改 |
 | ☐ D117 | `feat(config): crash reports to the Nagram collector` | J12（预留） | 未实施：缺崩溃报告收集端、符号文件存储与符号化流程（专项设计 2.5、第 8 节）。崩溃上报保持在构建层关闭，条目与文案未进入代码 |
 
+已实现的步骤（群组反馈，2026-10-11）。每个条目一个提交，macOS arm64 Debug 增量构建与 `test_nagram` 通过；界面未现场核验。
+
+| 步骤 | 提交 | 条目 | 备注 |
+| --- | --- | --- | --- |
+| ✅ S200 | `feat(privacy): do not send typing and upload status` | G18（N050、N105） | 从搁置的 P3-01 中单独启用；本机开关，不含回执、在线状态和预设。上游改动一处 |
+
 | 包 | 专项设计 | 步骤 | 设置页条目 |
 | --- | --- | --- | --- |
 | P3-03（已实现） | [内容保护与敏感内容](p3-03-content-protection.md) | S120–S123 | G13–G16 |

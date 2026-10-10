@@ -191,6 +191,7 @@ P3-07 外部媒体后端：
 | G14 | `data/data_peer.cpp`（`Data::UnavailableReason::Compute`）、`window/window_session_controller.cpp`（构造函数） | `Compute` 在开关开启时返回空原因；控制器构造时调用 `Nagram::Privacy::WatchRestrictions`，开关变化时对当前会话发出上游已有的 `UnavailableReason` 更新，由上游订阅关闭受限会话 | 读取 |
 | G15 | `data/data_peer.cpp`（`Data::UnavailableReason::IgnoreSensitiveMark`）、`main/main_session.cpp`（构造函数）、`info/media/info_media_provider.cpp`（构造函数） | `IgnoreSensitiveMark` 的返回值前加 `Nagram::Privacy::SkipSensitiveWarning(session)`；会话创建时调用 `AttachSensitive`，敏感内容设置加载、可调整状态或应用配置变化后刷新消息视图；共享媒体页订阅 `SensitiveRevealed` 后对私有成员 `_layouts` 调用 `maybeClearSensitiveSpoiler()`（7 行短块） | 读取 |
 | G16 | `boxes/peers/edit_contact_box.cpp` | `Controller::setupSharePhoneNumber()` 中“分享我的手机号”复选框的初始值改为 `!Nagram::Privacy::DoNotSharePhoneByDefault()` | 替换 |
+| G18 | `api/api_send_progress.cpp` | `SendProgressManager::skipRequest` 开头加 4 行：`Nagram::Privacy::HideSendStatus()` 为真且类型不是 `Speaking` 时返回 `true`，不发请求 | 拦截 |
 | G17 | `info/profile/info_profile_actions.cpp` | `DetailsFiller::makeInfo` 在 G05、G06 两行之后加一行 `addInfoOneLine`，行标题与取值来自 `Nagram::Privacy::ProfileRegistrationLabel` / `ProfileRegistrationValue`（读取上游 `PeerData::registrationMonth()` / `registrationYear()`，随 `barSettingsValue()` 刷新；没有下发值时按用户 ID 估算） | 读取 |
 | 本地别名 | `data/data_peer.cpp`（显示名）、`history/history.cpp`、`info/profile/info_profile_values.cpp`、`window/window_peer_menu.cpp` | 显示名与本地搜索使用别名，原名保留 | 替换 |
 
