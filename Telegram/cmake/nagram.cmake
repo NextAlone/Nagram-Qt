@@ -317,3 +317,13 @@ if (DESKTOP_APP_TEST_APPS)
 
     add_dependencies(Telegram test_nagram)
 endif()
+
+# The upstream test harness copies not_null<QAction*> in two range loops. GCC
+# reports that and the Linux Debug build of CI turns warnings into errors.
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set_source_files_properties(
+        ${CMAKE_CURRENT_SOURCE_DIR}/SourceFiles/test/test_menu.cpp
+    PROPERTIES
+        COMPILE_OPTIONS -Wno-error=range-loop-construct
+    )
+endif()
