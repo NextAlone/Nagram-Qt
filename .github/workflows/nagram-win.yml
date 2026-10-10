@@ -76,6 +76,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # A push to the default branch builds both configurations, which
+        # the Channel job posts together; a release asks for Release alone.
+        config: ${{ fromJSON(inputs.config && format('["{0}"]', inputs.config) || github.event_name == 'push' && github.ref_name == github.event.repository.default_branch && '["Debug","Release"]' || '["Debug"]') }}
         arch: ${{ fromJSON(inputs.archs || '["x64","arm64"]') }}
         qt: [qt6]
         generator: [""]
@@ -86,7 +89,7 @@ jobs:
       PREPARE_PATH: "Telegram/build/prepare/prepare.py"
       # Not CONFIG: pacman-key in the msys2 setup reads that variable as the
       # path of its configuration file.
-      BUILD_CONFIG: ${{ inputs.config || 'Debug' }}
+      BUILD_CONFIG: ${{ matrix.config }}
 
     defaults:
       run:
@@ -455,9 +458,10 @@ jobs:
   channel:
     name: Channel
     needs: windows
-    # Debug builds of the default branch are posted to the assets channel;
-    # a release posts its own packages from nagram-release.yml.
-    if: ${{ inputs.config != 'Release' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}
+    # The Debug and Release builds of a push to the default branch go to the
+    # assets channel in one post, even when one of them has failed; a
+    # release posts its own packages from nagram-release.yml.
+    if: ${{ !cancelled() && inputs.config != 'Release' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}
     uses: ./.github/workflows/nagram-channel.yml
     permissions:
       contents: read

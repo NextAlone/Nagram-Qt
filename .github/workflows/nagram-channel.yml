@@ -1,8 +1,9 @@
-# Posts the Debug builds of the calling platform workflow to the assets
-# channel on Telegram. nagram-release.yml posts the packages of a release
-# there as well, and copies them to the official channel; in the assets
-# channel the two are told apart by the hashtags (#debug against #release
-# or #beta) and by the commit in the names of the Debug files.
+# Posts what the calling platform workflow has built from a push to the
+# default branch, its Debug build and its Release packages, to the assets
+# channel on Telegram as one post. nagram-release.yml posts the packages
+# of a release there as well, and sends them to the official channel too;
+# in the assets channel the two are told apart by the hashtags (#dev
+# against #release or #beta) and by the commit in the names of the files.
 #
 # Needs the secret NAGRAM_CHANNEL_BOT_TOKEN and the variable
 # NAGRAM_CHANNEL_ASSETS_CHAT_ID, and posts nothing while one is missing.
@@ -19,8 +20,8 @@ on:
 
 jobs:
 
-  debug:
-    name: Debug build
+  builds:
+    name: Builds
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -47,11 +48,19 @@ jobs:
             Telegram/build
             tools/nagram
 
-      - name: Download the builds.
+      - name: Download the Debug builds.
         if: steps.configuration.outputs.ready == 'true'
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           pattern: Nagram*
+          path: ${{ runner.temp }}/builds
+          merge-multiple: true
+
+      - name: Download the Release packages.
+        if: steps.configuration.outputs.ready == 'true'
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          pattern: release-*
           path: ${{ runner.temp }}/builds
           merge-multiple: true
 
@@ -65,12 +74,16 @@ jobs:
           COMMIT="${GITHUB_SHA::7}"
           mkdir "$RUNNER_TEMP/channel"
           shopt -s nullglob
-          for file in "$RUNNER_TEMP"/builds/Nagram-*-debug.*; do
+          # The update packages are for the feed of a release, not for here.
+          for file in "$RUNNER_TEMP"/builds/Nagram-*; do
             name="$(basename "$file")"
             mv "$file" "$RUNNER_TEMP/channel/${name/Nagram-/Nagram-$VERSION-$COMMIT-}"
           done
           ls -l "$RUNNER_TEMP/channel"
-          test -n "$(ls "$RUNNER_TEMP/channel")"
+          if [ -z "$(ls "$RUNNER_TEMP/channel")" ]; then
+            echo "::notice::Neither configuration has been built, nothing is posted to the channel."
+            exit 0
+          fi
           # The commits of the push, shown grouped by their kind.
           printf '%s\n' "$COMMITS" > "$RUNNER_TEMP/channel-commits.json"
           {
@@ -79,7 +92,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Post to the channel.
-        if: steps.configuration.outputs.ready == 'true'
+        if: steps.builds.outputs.version != ''
         uses: NextAlone/NagramActionRelated/channel-publish@2b74e4cd4e3c89fcc9d50095c039e467c674661f
         with:
           bot-token: ${{ secrets.NAGRAM_CHANNEL_BOT_TOKEN }}
@@ -91,6 +104,21 @@ jobs:
           title: Nagram Desktop
           version: ${{ steps.builds.outputs.version }}
           build: ${{ steps.builds.outputs.commit }}
-          hashtags: desktop debug ${{ inputs.platform }}
+          hashtags: desktop dev ${{ inputs.platform }}
           commits-file: ${{ runner.temp }}/channel-commits.json
+          # One list for the three platforms: a line that matches no file
+          # of the calling platform is passed over.
+          folded-files-title: 其他文件
+          files: |
+            *-macos.dmg | Release · 磁盘镜像
+            *-windows-x64-setup.exe | Release · x64 安装程序
+            *-linux-x86_64.tar.xz | Release
+            *-macos-debug.zip | Debug
+            *-windows-x64-debug.zip | Debug · x64
+            *-linux-x86_64-debug.tar.gz | Debug
+            *-macos.zip | Release · 压缩包 | folded
+            *-windows-x64.zip | Release · x64 便携版 | folded
+            *-windows-arm64-setup.exe | Release · ARM64 安装程序 | folded
+            *-windows-arm64.zip | Release · ARM64 便携版 | folded
+            *-windows-arm64-debug.zip | Debug · ARM64 | folded
           buttons: Commit=${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
