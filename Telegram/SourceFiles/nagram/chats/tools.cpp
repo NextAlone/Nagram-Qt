@@ -2,11 +2,15 @@
 
 #include "nagram/chats/options.h"
 #include "apiwrap.h"
+#include "boxes/peers/edit_participants_box.h"
+#include "data/data_channel.h"
 #include "data/data_peer.h"
+#include "data/data_peer_values.h"
 #include "data/data_changes.h"
 #include "data/data_session.h"
 #include "data/notify/data_notify_settings.h"
 #include "dialogs/dialogs_key.h"
+#include "history/admin_log/history_admin_log_section.h"
 #include "history/history.h"
 #include "history/view/history_view_pinned_section.h"
 #include "info/info_controller.h"
@@ -182,6 +186,42 @@ void ChatTools::rebuild() {
 			? tr::lng_context_mute
 			: tr::lng_context_unmute)(tr::now));
 	}, _stateLifetime);
+	if (const auto channel = peer->asChannel()
+		; channel && (peer->isMegagroup() || peer->isChannel())) {
+		const auto isGroup = peer->isMegagroup();
+		const auto recentActions = addButton({
+			&st::nagramChatToolsRecentActions,
+			&st::nagramChatToolsRecentActionsOver,
+		}, tr::lng_manage_peer_recent_actions(tr::now), [=] {
+			controller->showSection(
+				std::make_shared<AdminLog::SectionMemento>(channel));
+		});
+		const auto adminsActions = addButton({
+			&st::nagramChatToolsAdmins,
+			&st::nagramChatToolsAdminsOver,
+		}, tr::lng_manage_peer_administrators(tr::now), [=] {
+			ParticipantsBoxController::Start(
+				controller,
+				peer,
+				ParticipantsBoxController::Role::Admins);
+		});
+		const auto updateRights = [=] {
+			const auto admin = channel->hasAdminRights()
+				|| channel->amCreator();
+			recentActions->setVisible(admin);
+			adminsActions->setVisible(isGroup || admin);
+			layoutButtons();
+			relayoutBar();
+		};
+		updateRights();
+		channel->adminRightsValue()
+		| rpl::skip(1)
+		| rpl::on_next(updateRights, _stateLifetime);
+		Data::PeerFlagValue(
+			channel,
+			ChannelDataFlag::Creator
+		) | rpl::skip(1) | rpl::on_next(updateRights, _stateLifetime);
+	}
 	peer->session().changes().entryUpdates(
 		history,
 		Data::EntryUpdate::Flag::HasPinnedMessages

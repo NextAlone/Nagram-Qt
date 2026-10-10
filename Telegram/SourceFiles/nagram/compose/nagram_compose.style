@@ -50,6 +50,10 @@ nagramChatToolsMute: icon {{ "menu/mute", menuIconFg }};
 nagramChatToolsMuteOver: icon {{ "menu/mute", menuIconFgOver }};
 nagramChatToolsUnmute: icon {{ "menu/unmute", menuIconFg }};
 nagramChatToolsUnmuteOver: icon {{ "menu/unmute", menuIconFgOver }};
+nagramChatToolsAdmins: icon {{ "menu/admin", menuIconFg }};
+nagramChatToolsAdminsOver: icon {{ "menu/admin", menuIconFgOver }};
+nagramChatToolsRecentActions: icon {{ "menu/group_log", menuIconFg }};
+nagramChatToolsRecentActionsOver: icon {{ "menu/group_log", menuIconFgOver }};
 nagramChatToolsButton: IconButton(defaultIconButton) {
 	width: 36px;
 	height: 54px;
