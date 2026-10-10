@@ -45,6 +45,7 @@ QString Title(Menu::ActionId id) {
 	case Menu::ActionId::Forward: return tr::lng_nagram_menu_forward(tr::now);
 	case Menu::ActionId::Translate: return tr::lng_nagram_menu_translate(tr::now);
 	case Menu::ActionId::Pin: return tr::lng_nagram_menu_pin(tr::now);
+	case Menu::ActionId::MessagesFromSender: return tr::lng_nagram_menu_messages_from_sender(tr::now);
 	case Menu::ActionId::Select: return tr::lng_nagram_menu_select(tr::now);
 	case Menu::ActionId::Statistics: return tr::lng_nagram_menu_statistics(tr::now);
 	case Menu::ActionId::Report: return tr::lng_nagram_menu_report(tr::now);
@@ -93,6 +94,7 @@ const style::icon *Icon(Menu::ActionId id) {
 	case Menu::ActionId::Forward: return &st::menuIconForward;
 	case Menu::ActionId::Translate: return &st::menuIconTranslate;
 	case Menu::ActionId::Pin: return &st::menuIconPin;
+	case Menu::ActionId::MessagesFromSender: return &st::menuIconSearch;
 	case Menu::ActionId::Select: return &st::menuIconSelect;
 	case Menu::ActionId::Statistics: return &st::menuIconStats;
 	case Menu::ActionId::Report: return &st::menuIconReport;

@@ -257,6 +257,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_menu_forward" = "Forward";
 "lng_nagram_menu_translate" = "Translate";
 "lng_nagram_menu_pin" = "Pin / Unpin";
+"lng_nagram_menu_messages_from_sender" = "Other messages from this sender";
 "lng_nagram_menu_select" = "Select";
 "lng_nagram_menu_statistics" = "Statistics";
 "lng_nagram_menu_report" = "Report";

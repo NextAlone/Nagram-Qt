@@ -43,6 +43,7 @@ enum class ActionId : int {
 	Summarize = 36,
 	TranscribeSelected = 37,
 	CopyMarkdown = 39,
+	MessagesFromSender = 40,
 };
 
 enum class Visibility { Show, Hide, WithOption };
@@ -57,7 +58,7 @@ struct Slot {
 	bool separator = false;
 };
 
-inline constexpr auto kEntries = std::array<Entry, 34>({{
+inline constexpr auto kEntries = std::array<Entry, 35>({{
 	{ ActionId::Reply, "lng_nagram_menu_reply" },
 	{ ActionId::Edit, "lng_nagram_menu_edit" },
 	{ ActionId::Copy, "lng_nagram_menu_copy" },
@@ -65,6 +66,7 @@ inline constexpr auto kEntries = std::array<Entry, 34>({{
 	{ ActionId::Forward, "lng_nagram_menu_forward" },
 	{ ActionId::Translate, "lng_nagram_menu_translate" },
 	{ ActionId::Pin, "lng_nagram_menu_pin" },
+	{ ActionId::MessagesFromSender, "lng_nagram_menu_messages_from_sender" },
 	{ ActionId::Select, "lng_nagram_menu_select" },
 	{ ActionId::Statistics, "lng_nagram_menu_statistics" },
 	{ ActionId::Report, "lng_nagram_menu_report" },

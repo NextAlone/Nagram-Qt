@@ -201,6 +201,25 @@ void CopyMarkdown(
 	controller->showToast(tr::lng_nagram_markdown_copied(tr::now));
 }
 
+[[nodiscard]] bool CanShowMessagesFromSender(not_null<HistoryItem*> item) {
+	const auto peer = item->history()->peer;
+	return !item->isService()
+		&& (peer->isChat() || peer->isMegagroup());
+}
+
+void ShowMessagesFromSender(
+		not_null<Window::SessionController*> controller,
+		FullMsgId itemId) {
+	const auto item = controller->session().data().message(itemId);
+	if (!item || !CanShowMessagesFromSender(item)) {
+		return;
+	}
+	const auto peer = item->history()->peer;
+	controller->searchInChat(
+		peer->owner().history(peer).get(),
+		item->from());
+}
+
 void Insert(
 		not_null<Ui::PopupMenu*> menu,
 		int position,
@@ -226,6 +245,14 @@ void InsertMessageToolActions(
 	}
 	const auto itemId = item->fullId();
 	auto position = EndPosition(menu);
+	if (CanShowMessagesFromSender(item)) {
+		Insert(menu, position++, ActionId::MessagesFromSender,
+			tr::lng_nagram_menu_messages_from_sender(tr::now),
+			&st::menuIconSearch,
+			crl::guard(controller, [=] {
+				ShowMessagesFromSender(controller, itemId);
+			}));
+	}
 	Insert(menu, position++, ActionId::MessageDetails,
 		tr::lng_nagram_menu_details(tr::now), &st::menuIconInfo,
 		crl::guard(controller, [=] { ShowDetails(controller, itemId); }));
