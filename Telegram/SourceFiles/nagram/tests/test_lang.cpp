@@ -29,6 +29,7 @@ void TestCleanup();
 void TestNotifications();
 void TestSendTranslation();
 void TestRawJson();
+void TestSearchTerms();
 
 namespace {
 
@@ -191,6 +192,7 @@ int main() {
 		TestNotifications();
 		TestSendTranslation();
 		TestRawJson();
+		TestSearchTerms();
 		const auto root = std::string(NAGRAM_LANG_SOURCE_DIR);
 		const auto upstream = ReadStrings(root + "/lang.strings", false);
 		const auto english = ReadStrings(root + "/nagram/nagram.strings", true);

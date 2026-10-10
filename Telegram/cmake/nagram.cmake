@@ -43,6 +43,7 @@ set(nagram_sources
     nagram/interface/roundness.cpp
     nagram/settings/interface.cpp
     nagram/settings/restart.cpp
+    nagram/settings/search_terms.cpp
     nagram/menu/actions.cpp
     nagram/menu/batch.cpp
     nagram/menu/media.cpp
@@ -271,6 +272,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_notifications.cpp
         nagram/tests/test_send_translation.cpp
         nagram/tests/test_raw_json.cpp
+        nagram/tests/test_search_terms.cpp
         nagram/compose/spacing.cpp
         nagram/core/exchange.cpp
         nagram/core/regex.cpp
@@ -287,6 +289,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/services/summary_model.cpp
         nagram/services/send_translation_model.cpp
         nagram/services/transcription_queue.cpp
+        nagram/settings/search_terms.cpp
         nagram/filters/model.cpp
         nagram/links/model.cpp
         nagram/links/inline_rules.cpp

@@ -13,6 +13,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "core/deep_links/deep_links_settings.h"
 #include "lang/lang_keys.h"
 #include "main/main_session.h"
+#include "nagram/settings/search_terms.h"
 #include "settings/settings_builder.h"
 #include "settings/settings_common.h"
 #include "settings/settings_faq_suggestions.h"
@@ -47,7 +48,8 @@ struct SearchResultItem {
 	for (const auto &keyword : entry.keywords) {
 		combined += ' ' + keyword;
 	}
-	return TextUtilities::PrepareSearchWords(combined);
+	return Nagram::WithCjkSuffixes(
+		TextUtilities::PrepareSearchWords(combined));
 }
 
 [[nodiscard]] int CalculateDepth(
@@ -274,7 +276,8 @@ void Search::buildIndex() {
 		};
 		auto indexed = IndexedEntry{
 			.entry = std::move(entry),
-			.terms = TextUtilities::PrepareSearchWords(faqEntry.title),
+			.terms = Nagram::WithCjkSuffixes(
+				TextUtilities::PrepareSearchWords(faqEntry.title)),
 			.depth = 1000,
 			.faqUrl = faqEntry.url,
 			.faqSection = faqEntry.section,

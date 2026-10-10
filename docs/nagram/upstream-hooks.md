@@ -21,6 +21,7 @@
 | 消息菜单 | 每个上游菜单项创建处一行 `Nagram::Menu::Tag`；两条填充路径结束处各一行 `Nagram::Menu::Apply`，仅显隐并插入新增项，不移动上游动作（见设计文档第 3.4 节） | 旧实现在两个菜单文件中插入约 270 处调用 |
 | 文案 | 英文在 `Resources/langs/nagram/nagram.strings`；简繁通过 `lang/lang_instance.cpp` 的一个挂钩作为缺失键的后备值 | 旧实现修改上游 `lang.strings` 与 `lang_instance.cpp` 81 行 |
 | 设置入口 | `settings/sections/settings_main.cpp` 的 `BuildSectionButtons` 第一项加入 Nagram 分栏按钮；Nagram 页面本身在 `nagram/settings/` | 旧实现在同一文件中加入入口 |
+| 设置搜索 | `settings/settings_search.cpp` 的 `PrepareEntryWords` 与 `buildIndex` 中常见问题条目两处，把 `TextUtilities::PrepareSearchWords` 的结果交给 `Nagram::WithCjkSuffixes`（`nagram/settings/search_terms.cpp`）：上游按空白分词后做词首前缀匹配，中日文标题没有空格，整句只算一个词；这里为每个词补上从各个中日文字符开始的后缀，使中日文可以从标题任意位置匹配。匹配与首字符索引的逻辑不改，上游自己的条目同样受益 | 无 |
 | 存储 | 本机：`Core::Settings::readPref/writePref`；账号：`Storage::Account::readPref/writePref` | 旧实现向 `Main::SessionSettings` 二进制流尾部追加字段 |
 
 消息视图由两套实现渲染：`history/history_inner_widget.cpp`（普通聊天）和 `history/view/history_view_list_widget.cpp`（话题、计划消息等）。所有显示条目必须两处都生效，验收时分别检查。
