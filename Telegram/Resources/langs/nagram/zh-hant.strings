@@ -132,6 +132,7 @@
 "lng_nagram_disable_emoji_hover" = "滑鼠懸停時不開啟表情面板";
 "lng_nagram_disable_attach_hover" = "滑鼠懸停時不開啟附件選單";
 "lng_nagram_bot_commands_to_draft" = "點擊機器人指令時先填入輸入框";
+"lng_nagram_tall_mention_list" = "加高提及、主題標籤和指令的候選清單";
 "lng_nagram_input_placeholder" = "輸入框提示文字";
 "lng_nagram_placeholder_chat" = "對話名稱";
 "lng_nagram_placeholder_sender" = "傳送身分";

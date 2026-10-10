@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "chat_helpers/field_autocomplete.h"
+#include "nagram/compose/options.h"
 
 #include "api/api_chat_participants.h"
 #include "api/api_common.h"
@@ -901,7 +902,9 @@ void FieldAutocomplete::setBoundings(QRect boundings) {
 
 void FieldAutocomplete::recount(bool resetScroll) {
 	const auto oldScrollTop = _scroll->scrollTop();
-	const auto maxHeight = int(4.5 * st::mentionHeight);
+	const auto tall = _srows.empty()
+		&& Nagram::ForDevice().Get(Nagram::Compose::kTallMentionList);
+	const auto maxHeight = int((tall ? 8.5 : 4.5) * st::mentionHeight);
 	auto height = 0;
 	if (!_srows.empty()) {
 		const auto stickersPerRow = std::max(

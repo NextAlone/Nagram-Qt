@@ -243,6 +243,10 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_bot_commands_to_draft(),
 		u"nagram/compose/bot-commands-to-draft"_q,
 		{ u"bot"_q, u"command"_q, u"draft"_q });
+	AddToggle(builder, Compose::kTallMentionList,
+		tr::lng_nagram_tall_mention_list(),
+		u"nagram/compose/tall-mention-list"_q,
+		{ u"mention"_q, u"hashtag"_q, u"command"_q, u"suggestions"_q });
 	const auto controller = builder.controller();
 	builder.addButton({
 		.id = u"nagram/compose/input-placeholder"_q,

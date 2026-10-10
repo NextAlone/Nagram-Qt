@@ -318,7 +318,7 @@ void TestOptions() {
 		"notification delay bounds");
 	auto compose = Registry();
 	Compose::RegisterOptions(compose);
-	Require(compose.All().size() == 31, "compose option count");
+	Require(compose.All().size() == 32, "compose option count");
 	Require(Compose::kDefaultCodeLanguage.validate(QString::fromLatin1("cpp"))
 		&& !Compose::kDefaultCodeLanguage.validate(QString::fromLatin1("c++!")),
 		"code language validation");
@@ -331,6 +331,7 @@ void TestOptions() {
 		if (entry.key != Compose::kDisableEmojiHover.key
 			&& entry.key != Compose::kDisableAttachHover.key
 			&& entry.key != Compose::kBotCommandsToDraft.key
+			&& entry.key != Compose::kTallMentionList.key
 			&& entry.key != Compose::kInputPlaceholderMode.key
 			&& entry.key != Compose::kDisableAutoMarkdown.key
 			&& entry.key != Compose::kFormatToolbar.key

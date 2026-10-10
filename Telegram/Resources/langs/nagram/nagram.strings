@@ -136,6 +136,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_disable_emoji_hover" = "Do not open emoji panel on hover";
 "lng_nagram_disable_attach_hover" = "Do not open attachment menu on hover";
 "lng_nagram_bot_commands_to_draft" = "Put bot commands in the input field first";
+"lng_nagram_tall_mention_list" = "Taller list of mention, hashtag and command suggestions";
 "lng_nagram_input_placeholder" = "Input placeholder";
 "lng_nagram_placeholder_chat" = "Chat name";
 "lng_nagram_placeholder_sender" = "Send As identity";

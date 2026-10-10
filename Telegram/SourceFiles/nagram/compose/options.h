@@ -54,6 +54,9 @@ inline constexpr auto kDisableAttachHover = Option<bool>{
 inline constexpr auto kBotCommandsToDraft = Option<bool>{
 	"nagram.botCommandsToDraft", Scope::Device, false,
 	Category::Compose, "lng_nagram_bot_commands_to_draft" };
+inline constexpr auto kTallMentionList = Option<bool>{
+	"nagram.tallMentionList", Scope::Device, false,
+	Category::Compose, "lng_nagram_tall_mention_list" };
 inline constexpr auto kInputPlaceholderMode = Option<int>{
 	"nagram.inputPlaceholderMode", Scope::Device, 0,
 	Category::Compose, "lng_nagram_input_placeholder", 0,
@@ -150,6 +153,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kDisableEmojiHover));
 	Expects(registry.Add(kDisableAttachHover));
 	Expects(registry.Add(kBotCommandsToDraft));
+	Expects(registry.Add(kTallMentionList));
 	Expects(registry.Add(kInputPlaceholderMode));
 	Expects(registry.Add(kFormatToolbar));
 	Expects(registry.Add(kHiddenFormatItems));

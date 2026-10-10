@@ -127,6 +127,7 @@ B29（清理聊天）没有上游改动：清理框只调用 `ApiWrap::toggleHis
 | D13 | `history/history_widget.cpp`、`history/view/controls/history_view_compose_controls.cpp` | 附件按钮不注册悬停菜单 | 读取 |
 | D14 | `history/history_widget.cpp`、`history/view/history_view_chat_section.cpp`、`history/view/history_view_scheduled_section.cpp` | 命令链接点击改为插入输入框光标处 | 拦截 |
 | D15 | `history/history_widget.cpp`、`history/view/controls/history_view_compose_controls.cpp` | 输入框占位文字 | 替换 |
+| D32 | `chat_helpers/field_autocomplete.cpp`（`FieldAutocomplete::recount`） | 候选列表的高度上限由 4.5 行改为按开关取 8.5 或 4.5 行；贴纸候选（`_srows` 非空）不变 | 读取 |
 | D16 | `chat_helpers/message_field.cpp` | 不做 Markdown 自动转换 | 读取 |
 | D17 | `history/view/controls/history_view_webpage_processor.cpp` | 输入时不请求预览；发送时带无预览标志；手动选择的预览保留 | 读取 |
 | D18、D19 | `api/api_sending.cpp`、`api/api_editing.cpp`、`apiwrap.cpp`、`data/components/ephemeral_messages.cpp` | 发送与编辑前对文本做间距处理，保持实体偏移 | 替换 |
