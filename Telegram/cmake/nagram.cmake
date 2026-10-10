@@ -48,6 +48,8 @@ set(nagram_sources
     nagram/menu/rating.cpp
     nagram/menu/message_tools.cpp
     nagram/menu/model.cpp
+    nagram/menu/raw_json_model.cpp
+    nagram/menu/raw_json_model.h
     nagram/menu/repeat.cpp
     nagram/menu/reading.cpp
     nagram/menu/selection.cpp
@@ -265,12 +267,14 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_cleanup.cpp
         nagram/tests/test_notifications.cpp
         nagram/tests/test_send_translation.cpp
+        nagram/tests/test_raw_json.cpp
         nagram/compose/spacing.cpp
         nagram/core/exchange.cpp
         nagram/core/regex.cpp
         nagram/export/range_model.cpp
         nagram/interface/main_menu_model.cpp
         nagram/menu/model.cpp
+        nagram/menu/raw_json_model.cpp
         nagram/messages/markdown.cpp
         nagram/services/auto_translate_model.cpp
         nagram/services/chat_translation_model.cpp

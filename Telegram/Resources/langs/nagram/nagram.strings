@@ -325,6 +325,9 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_details_views" = "Views";
 "lng_nagram_details_copy" = "Copy";
 "lng_nagram_details_copied" = "Details copied.";
+"lng_nagram_details_json" = "JSON";
+"lng_nagram_details_json_title" = "Message JSON";
+"lng_nagram_details_json_failed" = "Could not load this message from Telegram.";
 "lng_nagram_hide_message" = "Hide this message locally";
 "lng_nagram_hide_message_undo" = "Show this hidden message";
 "lng_nagram_hide_message_limit" = "Too many hidden messages. Restore some in Rules first.";

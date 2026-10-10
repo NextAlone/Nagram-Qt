@@ -321,6 +321,9 @@
 "lng_nagram_details_views" = "浏览数";
 "lng_nagram_details_copy" = "复制";
 "lng_nagram_details_copied" = "已复制详情。";
+"lng_nagram_details_json" = "JSON";
+"lng_nagram_details_json_title" = "消息 JSON";
+"lng_nagram_details_json_failed" = "无法从 Telegram 获取这条消息。";
 "lng_nagram_hide_message" = "在本地隐藏此消息";
 "lng_nagram_hide_message_undo" = "显示这条已隐藏的消息";
 "lng_nagram_hide_message_limit" = "隐藏的消息太多，请先在“规则”中恢复一些。";

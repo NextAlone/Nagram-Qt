@@ -290,6 +290,8 @@ Nagram 侧代码在 `nagram/network/`：`model.*` 是纯逻辑，`runtime.*` 读
 
 K01、K03 修改后由 `nagram/network/runtime.cpp` 对每个账号的 `MTP::Instance` 调用 `restart()`，不经过上游文件。策略为 0 时各函数原样返回传入值。`SetDohEndpoint` 对不含协议的内置主机名的结果与上游原来的两行相同（`test_nagram` 覆盖）。`CheckDohReply` 只处理发往自定义地址的响应：失败时记录日志、提示一次并更新 K04 的状态，Firestore 与内置端点的响应不受影响。K05、K06 的取值在进程内第一次读取时固化，重启后才变化；档位为 `none`、开关关闭时取值函数原样返回上游常量或 0，走上游原分支。
 
+E29 的“JSON”没有上游改动：`nagram/menu/message_tools.cpp` 用 `messages.getMessages`、`channels.getMessages` 或 `messages.getScheduledMessages` 取回消息，经上游的 `MTP::details::DumpToTextType` 转成文本，再由 `nagram/menu/raw_json_model.cpp` 转成 JSON。它依赖该文本的格式（`{ 构造器`、`字段: 值 [类型]`、`[ vector<…> (n)`、`YES [ BY BIT … ]`）；上游改动 `mtproto_dump_to_text.cpp` 或 `codegen/scheme` 的文本输出时，`test_nagram` 的“raw message JSON”用例需要同步。
+
 ## 3. 改动面预估
 
 当前实际修改了 159 个上游 `Telegram/SourceFiles/` 文件（2026-10-01，`jj diff --from dev@upstream --to @ --summary` 中状态为 `M` 的路径；只计上游 `dev` 中已存在的文件，不含新增的 `nagram/`），整个仓库为 217 个（含品牌图标等二进制资源）：这些功能本身就分布在这些位置。上游改动以 `#include`、已有判断中的条件及单行调用为主；调用上游类私有方法时允许约 10 行以内的短块，并在提交正文说明原因。每个里程碑统计上游新增行数，解释集中改动，不再要求每个文件只改一行。M2 的 152 行调用／条件主要分布在输入按钮的既有判断处；D14 命令草稿分支与按钮刷新订阅因调用 `HistoryWidget` 私有方法而保留在上游文件。热点文件及其承载的条目：

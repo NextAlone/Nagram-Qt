@@ -1,11 +1,14 @@
 #include "nagram/menu/message_tools.h"
 
 #include "nagram/menu/actions.h"
+#include "nagram/menu/raw_json_model.h"
 #include "nagram/messages/markdown.h"
 #include "nagram/privacy/protection.h"
 #include "api/api_common.h"
 #include "apiwrap.h"
 #include "base/unixtime.h"
+#include "data/components/scheduled_messages.h"
+#include "data/data_channel.h"
 #include "data/data_peer.h"
 #include "data/data_session.h"
 #include "data/data_user.h"
@@ -14,6 +17,8 @@
 #include "history/history_item_components.h"
 #include "lang/lang_keys.h"
 #include "main/main_session.h"
+#include "mtproto/details/mtproto_dump_to_text.h"
+#include "scheme-dump_to_text.h"
 #include "ui/layers/generic_box.h"
 #include "ui/widgets/labels.h"
 #include "ui/widgets/menu/menu_action.h"
@@ -83,6 +88,94 @@ QString Details(not_null<HistoryItem*> item) {
 	return lines.join(u'\n');
 }
 
+bool HasRawJson(not_null<HistoryItem*> item) {
+	return item->isRegular() || (item->isScheduled() && !item->isSending());
+}
+
+std::optional<QString> RawJson(const MTPmessages_Messages &result) {
+	const auto list = result.match([](
+			const MTPDmessages_messagesNotModified &) {
+		return (const QVector<MTPMessage>*)nullptr;
+	}, [](const auto &data) {
+		return &data.vmessages().v;
+	});
+	if (!list || list->isEmpty()) {
+		return std::nullopt;
+	}
+	auto buffer = mtpBuffer();
+	list->front().write(buffer);
+	auto from = buffer.constData();
+	const auto end = from + buffer.size();
+	auto dump = MTP::details::DumpToTextBuffer();
+	if (!MTP::details::DumpToTextType(dump, from, end)) {
+		return std::nullopt;
+	}
+	return TlTextToJson(QString::fromUtf8(dump.p, dump.size));
+}
+
+void ShowRawJson(
+		not_null<Window::SessionController*> controller,
+		FullMsgId itemId) {
+	const auto session = &controller->session();
+	if (!session->data().message(itemId)) {
+		return;
+	}
+	controller->show(Box([=](not_null<Ui::GenericBox*> box) {
+		const auto item = session->data().message(itemId);
+		if (!item) {
+			return;
+		}
+		box->setTitle(tr::lng_nagram_details_json_title());
+		const auto label = box->addRow(object_ptr<Ui::FlatLabel>(
+			box, tr::lng_contacts_loading(tr::now), st::boxLabel));
+		label->setSelectable(true);
+		label->setBreakEverywhere(true);
+		const auto json = box->lifetime().make_state<QString>();
+		const auto fail = [=] {
+			label->setText(tr::lng_nagram_details_json_failed(tr::now));
+		};
+		const auto done = [=](const MTPmessages_Messages &result) {
+			if (const auto text = RawJson(result)) {
+				*json = *text;
+				label->setText(*text);
+			} else {
+				fail();
+			}
+		};
+		const auto api = &session->api();
+		const auto send = [&](auto &&request) {
+			const auto id = api->request(
+				std::move(request)
+			).done(done).fail(fail).send();
+			box->lifetime().add([=] { api->request(id).cancel(); });
+		};
+		const auto peer = item->history()->peer;
+		if (item->isScheduled()) {
+			send(MTPmessages_GetScheduledMessages(
+				peer->input(),
+				MTP_vector<MTPint>(1, MTP_int(
+					session->scheduledMessages().lookupId(item)))));
+		} else if (const auto channel = peer->asChannel()) {
+			send(MTPchannels_GetMessages(
+				channel->inputChannel(),
+				MTP_vector<MTPInputMessage>(
+					1,
+					MTP_inputMessageID(MTP_int(item->id)))));
+		} else {
+			send(MTPmessages_GetMessages(MTP_vector<MTPInputMessage>(
+				1,
+				MTP_inputMessageID(MTP_int(item->id)))));
+		}
+		box->addButton(tr::lng_nagram_details_copy(), [=] {
+			if (!json->isEmpty()) {
+				QGuiApplication::clipboard()->setText(*json);
+				box->showToast(tr::lng_nagram_details_copied(tr::now));
+			}
+		});
+		box->addButton(tr::lng_close(), [=] { box->closeBox(); });
+	}));
+}
+
 void ShowDetails(
 		not_null<Window::SessionController*> controller,
 		FullMsgId itemId) {
@@ -91,6 +184,7 @@ void ShowDetails(
 		return;
 	}
 	const auto text = Details(item);
+	const auto json = HasRawJson(item);
 	controller->show(Box([=](not_null<Ui::GenericBox*> box) {
 		box->setTitle(tr::lng_nagram_menu_details());
 		box->addRow(object_ptr<Ui::FlatLabel>(
@@ -100,6 +194,11 @@ void ShowDetails(
 			box->showToast(tr::lng_nagram_details_copied(tr::now));
 		});
 		box->addButton(tr::lng_close(), [=] { box->closeBox(); });
+		if (json) {
+			box->addLeftButton(tr::lng_nagram_details_json(), [=] {
+				ShowRawJson(controller, itemId);
+			});
+		}
 	}));
 }
 
