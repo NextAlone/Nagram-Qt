@@ -116,8 +116,8 @@ jobs:
           path: |
             Libraries
             ThirdParty
-          key: ${{ runner.OS }}-libs-v2-${{ env.REPO_NAME }}-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
-          restore-keys: ${{ runner.OS }}-libs-v2-${{ env.REPO_NAME }}-
+          key: ${{ runner.OS }}-libs-v3-${{ env.REPO_NAME }}-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
+          restore-keys: ${{ runner.OS }}-libs-v3-${{ env.REPO_NAME }}-
 
       - name: Libraries.
         run: |
@@ -129,12 +129,19 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
-          LIBS_KEY: ${{ runner.OS }}-libs-v2-${{ env.REPO_NAME }}-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
+          LIBS_KEY: ${{ runner.OS }}-libs-v3-${{ env.REPO_NAME }}-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
         run: |
           bash "$REPO_NAME/tools/nagram/drop_superseded_caches.sh" "$LIBS_KEY"
 
+      # local/src/wallet_engine holds the generated wallet_engine.cpp, which
+      # cmake/external/wallet_engine compiles into the app: a build input that
+      # matches none of the extensions kept below. The tlottie and
+      # wallet-engine checkouts are the sources of the tdesktop_rust stage, so
+      # a cache without them restores a valid stage key and cannot rebuild the
+      # stage; only their cargo target trees are dropped. The expression is
+      # the one of the macOS job of canary.yml.
       - name: Free up some disk space.
-        run: find Libraries '(' '(' ! '(' -name '*.a' -o -name '*.h' -o -name '*.hpp' -o -name '*.inc' -o -name '*.cmake' -o -name '*.pc' -o -path '*/include/*' -o -path '*/objects-*' -o -path '*/cache_keys/*' -o -path '*/patches/*' -o -perm +111 ')' -type f ')' -o -empty ')' -delete
+        run: find Libraries '(' '(' ! '(' -name '*.a' -o -name '*.h' -o -name '*.hpp' -o -name '*.inc' -o -name '*.cmake' -o -name '*.pc' -o -name 'macos_toolchain.json' -o -path '*/include/*' -o -path '*/objects-*' -o -path '*/cache_keys/*' -o -path '*/patches/*' -o -path '*/src/wallet_engine/*' -o '(' '(' -path '*/tlottie/*' -o -path '*/wallet-engine/*' ')' ! -path '*/target/*' ')' -o -perm +111 ')' -type f ')' -o '(' -empty ! -path '*/tlottie/*' ! -path '*/wallet-engine/*' ')' ')' -delete
 
       # The combined cache step saves only when the whole job succeeds, which
       # would lose hours of libraries to a later failure.
@@ -145,7 +152,7 @@ jobs:
           path: |
             Libraries
             ThirdParty
-          key: ${{ runner.OS }}-libs-v2-${{ env.REPO_NAME }}-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
+          key: ${{ runner.OS }}-libs-v3-${{ env.REPO_NAME }}-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
 
       - name: Nagram build.
         if: env.ONLY_CACHE == 'false'

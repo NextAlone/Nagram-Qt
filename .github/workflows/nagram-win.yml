@@ -242,10 +242,9 @@ jobs:
             !${{ env.LibrariesPath }}\[qQ]t[_-]*
             ${{ env.LibrariesPath }}\cache_keys\*
             !${{ env.LibrariesPath }}\cache_keys\[qQ]t[_-]*
-          key: ${{ runner.OS }}-${{ matrix.arch }}-libs-v3-${{ env.CACHE_KEY }}
+          key: ${{ runner.OS }}-${{ matrix.arch }}-libs-v4-${{ env.CACHE_KEY }}
           restore-keys: |
-            ${{ runner.OS }}-${{ matrix.arch }}-libs-v3-
-            ${{ runner.OS }}-${{ matrix.arch }}-libs-v2-
+            ${{ runner.OS }}-${{ matrix.arch }}-libs-v4-
 
       - name: Qt cache.
         id: cache-qt
@@ -262,9 +261,16 @@ jobs:
           %TBUILD%\%REPO_NAME%\Telegram\build\prepare\win.bat silent ${{ matrix.qt }}
 
       # Before the caches are saved, so they hold only what the build needs.
+      # tdesktop_rust/out/src/wallet_engine holds the generated
+      # wallet_engine.cpp, which cmake/external/wallet_engine compiles into the
+      # app: a build input that matches none of the extensions kept below. The
+      # tlottie and wallet-engine checkouts are the sources of the
+      # tdesktop_rust stage, so a cache without them restores a valid stage key
+      # and cannot rebuild the stage; only their cargo target trees are
+      # dropped. The expression is the one of the Windows job of canary.yml.
       - name: Free up some disk space.
         shell: bash
-        run: find $LibrariesPath '(' '(' ! '(' -name '*.lib' -o -name '*.a' -o -name '*.exe' -o -name '*.h' -o -name '*.hpp' -o -name '*.inc' -o -name '*.cmake' -o -name '*.pc' -o -path '*/include/*' -o -path '*/objects-*' -o -path '*/cache_keys/*' -o -path '*/patches/*' -o -path '*/nv-codec-headers/*' ')' -type f ')' -o -empty ')' -delete
+        run: find $LibrariesPath '(' '(' ! '(' -name '*.lib' -o -name '*.a' -o -name '*.exe' -o -name '*.h' -o -name '*.hpp' -o -name '*.inc' -o -name '*.cmake' -o -name '*.pc' -o -path '*/include/*' -o -path '*/objects-*' -o -path '*/cache_keys/*' -o -path '*/patches/*' -o -path '*/nv-codec-headers/*' -o -path '*/src/wallet_engine/*' -o '(' '(' -path '*/tlottie/*' -o -path '*/wallet-engine/*' ')' ! -path '*/target/*' ')' ')' -type f ')' -o '(' -empty ! -path '*/tlottie/*' ! -path '*/wallet-engine/*' ')' ')' -delete
 
       # The combined cache steps save only when the whole job succeeds, which
       # would lose hours of libraries to a later failure.
@@ -285,7 +291,7 @@ jobs:
             !${{ env.LibrariesPath }}\[qQ]t[_-]*
             ${{ env.LibrariesPath }}\cache_keys\*
             !${{ env.LibrariesPath }}\cache_keys\[qQ]t[_-]*
-          key: ${{ runner.OS }}-${{ matrix.arch }}-libs-v3-${{ env.CACHE_KEY }}
+          key: ${{ runner.OS }}-${{ matrix.arch }}-libs-v4-${{ env.CACHE_KEY }}
 
       - name: Save Qt cache.
         if: steps.cache-qt.outputs.cache-hit != 'true'
@@ -304,7 +310,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           THIRD_PARTY_KEY: ${{ runner.OS }}-${{ runner.arch }}-third-party-${{ env.CACHE_KEY }}
-          LIBS_KEY: ${{ runner.OS }}-${{ matrix.arch }}-libs-v3-${{ env.CACHE_KEY }}
+          LIBS_KEY: ${{ runner.OS }}-${{ matrix.arch }}-libs-v4-${{ env.CACHE_KEY }}
           QT_KEY: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}-v2-${{ env.CACHE_KEY }}
         run: |
           bash "$TBUILD/$REPO_NAME/tools/nagram/drop_superseded_caches.sh" \
