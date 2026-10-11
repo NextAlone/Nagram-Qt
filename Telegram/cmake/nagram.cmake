@@ -16,6 +16,7 @@ set(nagram_sources
     nagram/core/diagnostics.cpp
     nagram/core/relaunch.cpp
     nagram/core/updates.cpp
+    nagram/core/updates_model.cpp
     nagram/core/version.cpp
     nagram/display/view_refresher.cpp
     nagram/export/range_model.cpp
@@ -48,6 +49,7 @@ set(nagram_sources
     nagram/interface/roundness.cpp
     nagram/settings/interface.cpp
     nagram/settings/restart.cpp
+    nagram/settings/updates.cpp
     nagram/settings/search_terms.cpp
     nagram/settings/link_format.cpp
     nagram/settings/links.cpp
@@ -277,6 +279,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_markdown.cpp
         nagram/tests/test_cleanup.cpp
         nagram/tests/test_jump.cpp
+        nagram/tests/test_updates.cpp
         nagram/tests/test_notifications.cpp
         nagram/tests/test_send_translation.cpp
         nagram/tests/test_raw_json.cpp
@@ -285,6 +288,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/compose/spacing.cpp
         nagram/core/exchange.cpp
         nagram/core/regex.cpp
+        nagram/core/updates_model.cpp
         nagram/export/range_model.cpp
         nagram/interface/main_menu_model.cpp
         nagram/menu/model.cpp

@@ -648,6 +648,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_catalog_submitted" = "Order submitted. Waiting for Telegram to confirm.";
 "lng_nagram_catalog_order_saved" = "Pack order saved.";
 "lng_nagram_catalog_order_failed" = "Telegram could not save part of the order. The installed lists will be refreshed from the server; reopen this preview to retry.";
+"lng_nagram_updates_ci" = "Install builds of the latest changes";
 "lng_nagram_config_title" = "Configuration";
 "lng_nagram_config_scope" = "Back up changed Nagram preferences on this device. Accounts, messages, credentials and Telegram settings are excluded.";
 "lng_nagram_config_modified" = "Modified settings";

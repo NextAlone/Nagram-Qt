@@ -84,6 +84,7 @@ jobs:
       ONLY_CACHE: "false"
       IMAGE_TAG: tdesktop:centos_env
       CONFIG: ${{ matrix.config }}
+      CI_UPDATES: ${{ inputs.config != 'Release' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}
 
     steps:
       - name: Clone.
@@ -91,6 +92,17 @@ jobs:
         with:
           submodules: recursive
           ref: ${{ inputs.ref }}
+
+      # The Release build of a push to the default branch is offered to the
+      # installed copies that follow these builds, so it has a build number;
+      # any other build has 0, a release among them.
+      - name: Build number.
+        run: |
+          BUILD=0
+          if [ "$CONFIG" = "Release" ] && [ "$CI_UPDATES" = "true" ]; then
+            BUILD="$(python3 tools/nagram/release_version.py --ci-build)"
+          fi
+          echo "NAGRAM_CI_BUILD=$BUILD" >> $GITHUB_ENV
 
       - name: First set up.
         env:
@@ -208,6 +220,7 @@ jobs:
           -D CMAKE_CXX_FLAGS_DEBUG="-O0 -fpch-preprocess" \
           -D CMAKE_COMPILE_WARNING_AS_ERROR=${{ env.CONFIG == 'Debug' && 'ON' || 'OFF' }} \
           -D DESKTOP_APP_DISABLE_AUTOUPDATE=${{ env.CONFIG == 'Release' && 'OFF' || 'ON' }} \
+          -D NAGRAM_CI_BUILD=$NAGRAM_CI_BUILD \
           $API \
           $DEFINE
 
@@ -292,7 +305,8 @@ jobs:
               -cJf artifact/Nagram-linux-x86_64.tar.xz -C package Nagram
             if [ -n "$NAGRAM_UPDATE_KEY" ]; then
               python3 ../../tools/nagram/pack_update.py --packer Packer --out artifact \
-                --app stripped/Nagram --updater stripped/Updater
+                --app stripped/Nagram --updater stripped/Updater \
+                --ci-build "$NAGRAM_CI_BUILD"
             else
               echo "::warning::NAGRAM_UPDATE_KEY is not set: no update package, this build is not offered to installed copies."
             fi
@@ -323,3 +337,15 @@ jobs:
     with:
       platform: linux
     secrets: inherit
+
+  updates:
+    name: Updates
+    needs: linux
+    # The update packages of the Release build of a push to the default
+    # branch; a release publishes its own from nagram-release.yml.
+    if: ${{ !cancelled() && inputs.config != 'Release' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}
+    uses: ./.github/workflows/nagram-ci-updates.yml
+    permissions:
+      contents: write
+    with:
+      platform: linux

@@ -47,7 +47,9 @@ class PackUpdateTest(unittest.TestCase):
             "AppVersion         7002010\nAppVersionStr      7.2.10\n", encoding="utf-8"
         )
         self.release(3, "beta")
-        self.manifest({"stable": [["release-a"]], "beta": [["release-a"]]})
+        self.manifest(
+            {"stable": [["release-a"]], "beta": [["release-a"]], "canary-public": [["ci-a"]]}
+        )
         self.packer = self.dir / "Packer"
         self.packer.write_text(FAKE)
         self.packer.chmod(self.packer.stat().st_mode | stat.S_IXUSR)
@@ -76,13 +78,15 @@ class PackUpdateTest(unittest.TestCase):
         keys.mkdir(parents=True, exist_ok=True)
         (keys / "manifest.min.json").write_text(json.dumps({"channels": channels}))
 
-    def run_pack(self, system, output, app=None, updater=None, arch=None, target=None, code=0):
+    def run_pack(
+        self, system, output, app=None, updater=None, arch=None, target=None, code=0, build=0
+    ):
         environment = {"FAKE_RECORD": str(self.record), "FAKE_EXIT": str(code)}
         if output:
             environment["FAKE_OUTPUT"] = output
         with mock.patch.dict(os.environ, environment):
             return pack.pack(
-                self.root, self.packer, self.out, system, app, updater, arch, target, KEY
+                self.root, self.packer, self.out, system, app, updater, arch, target, KEY, build
             )
 
     def recorded(self):
@@ -102,7 +106,7 @@ class PackUpdateTest(unittest.TestCase):
         self.assertEqual(arguments[:4], ["-path", "Telegram.app", "-arch", "arm64"])
         self.assertEqual(
             arguments[4:12],
-            ["-version", "7002010", "-counter", "3", "-channel", "beta", "-keys-loc",
+            ["-version", "7002010", "-counter", str(3 << 22), "-channel", "beta", "-keys-loc",
              str(self.root / pack.KEYS)],
         )
         self.assertEqual(arguments[14:], ["-local-key-id", "release-a"])
@@ -125,7 +129,23 @@ class PackUpdateTest(unittest.TestCase):
         self.assertEqual(package.name, "td-update-linux-x64-7002010")
         record = self.recorded()
         self.assertEqual(record["files"], ["Telegram", "Updater"])
-        self.assertEqual(record["arguments"][4:8], ["-version", "7002010", "-counter", "4"])
+        self.assertEqual(
+            record["arguments"][4:8], ["-version", "7002010", "-counter", str(4 << 22)]
+        )
+
+    def test_packs_a_build_of_the_default_branch_for_its_own_channel(self):
+        counter = (3 << 22) + 500
+        name = f"td-update-linux-x64-7002010-canary-{counter}"
+        package = self.run_pack("linux", name, self.binary, self.updater, build=500)
+        self.assertEqual(package, self.out / name)
+        arguments = self.recorded()["arguments"]
+        self.assertEqual(
+            arguments[4:10],
+            ["-version", "7002010", "-counter", str(counter), "-channel", "canary-public"],
+        )
+        self.assertEqual(arguments[-2:], ["-local-key-id", "ci-a"])
+        with self.assertRaises(release_version.VersionError):
+            self.run_pack("linux", name, self.binary, self.updater, build=1 << 22)
 
     def test_fails_when_the_packer_fails_or_writes_another_name(self):
         for output, code in (("td-update-mac-arm-7002010-beta", 1), ("td-update-mac-arm-1", 0)):

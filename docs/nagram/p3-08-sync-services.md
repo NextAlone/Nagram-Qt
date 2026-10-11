@@ -195,8 +195,16 @@ S31（配置的 load/save/reset/validate 生命周期）不是独立功能：本
 5. 打包：`Packer` 需要 `-counter <N>`（`_other/packer.cpp` 的参数检查改了一行），并以 `PACKER_DISABLE_PRIVATE` 编译，不依赖上游私有仓库里的旧 RSA 密钥。三个平台的更新器都按上游的文件名找文件再改成实际安装的名字，所以 `tools/nagram/pack_update.py` 把文件暂存成 `Telegram.app`、`Telegram.exe`／`Updater.exe`、`Telegram`／`Updater` 再打包，更新器本身不用改。包名是 `td-update-<系统>-<架构>-<AppVersion>[-beta]`。客户端限制压缩后不超过 256 MB、解压后不超过 1 GB，`pack_update.py` 超出时报错；macOS 的 Release 构建因此在签名前去掉符号。CI 出的 macOS 包是通用二进制（x86_64 和 arm64），它原样放进两个架构各自的更新包（`td-update-mac-arm-…`、`td-update-mac-x64-…`），不拆分架构，因为拆分要重新签名。
 6. 发行工作流：三个平台的 Release 构建带 `-D DESKTOP_APP_DISABLE_AUTOUPDATE=OFF`。macOS 的应用包和 Linux 的归档里带上 `Updater`；Windows 的便携 zip 仍只有 `Nagram.exe` 一个文件，因为 Windows 上重启是直接拉起自身，而更新包自带 `Updater.exe`，安装前会先复制到 `Nagram.exe` 旁边（按代码核对，未在 Windows 上实测）。在配置了 Secret `NAGRAM_UPDATE_KEY`（发布私钥的 PEM 文本）时打出更新包；没配时只给出警告，这次发布不会推送给已安装的用户。`nagram-release.yml` 的 `Publish` 把更新包传到该版本的 release，再用 `tools/nagram/update_feed.py` 把它们并入 feed 并覆盖 `updates` release 里的文件；其他平台、另一个通道的条目保留，已有条目不会被更旧的版本替换。
 7. 手动更新入口：`UpdateApplication()` 在更新器关闭时打开本仓库的发行页。
+8. 默认分支构建的通道（2026-10-11）：每次推送到默认分支，三个平台的 Release 构建也作为更新提供，接收它的安装称为“跟随默认分支构建”。
+   - 版本号：64 位更新版本号的低 32 位从 `N` 改成 `N << 22 | 构建号`。发行版的构建号为 0；默认分支构建的构建号是 HEAD 提交时间距 2026-01-01 的分钟数（`tools/nagram/release_version.py --ci-build`，22 位，够用到 2033 年底），三个平台同一提交得到同一个数，浅克隆也能算。顺序因此是：发行版 `N` < 它之后的默认分支构建 < 发行版 `N+1`。已发布的 7.3.0.1 低 32 位是 1，小于以后任何版本，升级不受影响。构建号由 CMake 参数 `NAGRAM_CI_BUILD` 编进 `nagram_version_data.h`（默认 0），版本字符串带 `-ci.<构建号>`。
+   - 签名通道：这类更新包以 `canary-public` 通道签名，包名是 `td-update-<系统>-<架构>-<AppVersion>-canary-<低 32 位>`。清单里发布密钥本来就被授权签这个通道，不需要动根密钥。没有跟随的安装按 `stable`／`beta` 校验，会以“Package channel is not allowed”拒绝它，所以即使 feed 被改写，只开了测试版的用户也装不上默认分支构建。
+   - 托管：固定 tag `ci` 的 prerelease。每个平台一个 feed 文件 `nagram-updates-<平台键>.json`，内容与发行版 feed 同形：`{ "<平台键>": { "ci": { "released": "<64 位版本号的十进制字符串>", "link": "/ci/<包名>" } } }`（JSON 数字放不下 64 位，所以是字符串）。分成每平台一个文件，是因为三个平台的工作流各自发布，同写一个文件会互相覆盖；发行版的 feed（`updates` release）完全不动。每个平台保留最近 3 个包，其余删除。
+   - 客户端：是否跟随存在 `tdata/ciupdates`（`1`／`0`）；没有这个文件时，默认分支构建默认跟随，发行版默认不跟随，和测试版开关的默认值同理。跟随时 `Nagram::Updates::FeedUrl()` 返回本平台的 `ci` feed，`HttpChecker::handleResponse` 交给 `Nagram::Updates::CiUpdateUrl()`（纯函数 `PickCiLink` 在 `nagram/core/updates_model.cpp`，`test_nagram` 覆盖），`UnpackUpdateV2` 校验时的构建通道由 `Nagram::Updates::Channel()` 给出，跟随时是 `canary-public`。按上游的通道规则，跟随的安装只接受默认分支构建和上游版本号更高的发行版，同一上游版本的发行版不接受；它也不读发行版的 feed，所以默认分支停止出包时不会自动回到发行版，要用户自己关掉开关。关掉后不降级，等下一个发行版（`N+1` 或更高的上游版本）才回到发行线。
+   - 设置：“高级 → 版本与更新”里“安装测试版”下面多一个开关“安装最新改动的构建”（`advanced/install_ci`），切换后立即重新检查。更新器被关闭的安装（AUR、Nix 等由包管理器更新的）没有这一组选项。Linux 上装在需要提权才能写入的位置时也不显示：那种安装由提权进程再校验一次更新包，它只知道编译期通道和测试版开关，会拒绝这类包。
+   - CI：三个平台的工作流在检出后算出构建号（只有“推送到默认分支的 Release 构建”非 0），传给 CMake 和 `pack_update.py --ci-build`；新增的 `updates` job 调用 `nagram-ci-updates.yml`，把 `td-update-*-canary-*` 传到 `ci` release、写本平台的 feed（`update_feed.py --ci`，已发布的更新的条目不会被更旧的构建替换）、删掉多余的旧包（`update_feed.py --stale`）。同一平台的两次发布用并发组排队。这个 job 需要 `contents: write`；被调用的工作流里任何 job 要的权限都不能超过调用方给的，所以 `nagram-release.yml` 调用三个平台工作流时给的上限也改成了 `contents: write`，构建 job 自己声明的权限不变，发行时这个 job 不运行。没有 `NAGRAM_UPDATE_KEY` 时不出包，这个 job 什么也不发布。带 `[xxx-only]` 标记而跳过的平台和只改文档的推送没有新构建，feed 保持原样。
+   - 已核对（2026-10-11）：`test_nagram`（macOS arm64 Debug）、`tools/nagram` 下三个脚本的测试、`actionlint`；发布步骤的 shell 对着假的 `gh` 跑过（首次创建 release、三个平台各写各的 feed、保留 3 个包、旧构建重跑不回退 feed）。没有验证：真实的工作流运行、对着 GitHub 的下载与安装、Windows 与 Linux 上的安装过程；本机的 Debug 构建不带更新器，`UnpackUpdateV2` 里改的那一行只在 Linux 的 GCC 检查里编译过。
 
-上游改动：`core/update_checker.cpp`（9 处）、`core/update_channel.h`、`core/launcher.cpp`、`settings.cpp`、`platform/linux/update_install_linux.cpp`、`_other/packer.cpp`，以及根 `CMakeLists.txt`（不再强制关闭更新器）和 `Telegram/CMakeLists.txt`（信任目录、无特殊目标时也构建 `Packer`）。
+上游改动：`core/update_checker.cpp`（9 处，默认分支构建的通道另加 2 处）、`core/update_channel.h`、`settings/sections/settings_advanced.cpp`（1 处，默认分支构建的开关）、`core/launcher.cpp`、`settings.cpp`、`platform/linux/update_install_linux.cpp`、`_other/packer.cpp`，以及根 `CMakeLists.txt`（不再强制关闭更新器）和 `Telegram/CMakeLists.txt`（信任目录、无特殊目标时也构建 `Packer`）。
 
 本机验证（2026-10-04，macOS arm64 Debug）：用一次性密钥和本地 HTTP 服务，装好的 7.2.10.2 读到 feed、下载并校验更新包，重启后由 `Updater` 替换应用并重新启动为 7.2.10.3，再次启动不会重复下载。一次性密钥和临时改动都已清除。
 
@@ -207,7 +215,7 @@ S31（配置的 load/save/reset/validate 生命周期）不是独立功能：本
 - 隐私：更新检查只向 GitHub 发起匿名 GET，不带账号、设备或设置信息；设置页说明文字写明这一点。
 - 关闭：构建开关关闭时行为与现在完全相同（`UpdaterDisabled()` 为真，无任何网络请求）。构建开关打开后，用户关闭上游“自动更新”即不再检查。
 
-注册表与设置页：不新增条目。发行通道是构建配置加上游已有的“安装测试版”开关。
+注册表与设置页：注册表不新增条目。发行通道是构建配置加上游已有的“安装测试版”开关；默认分支构建的开关挂在上游的更新选项里，状态存在 `tdata/ciupdates`，不进注册表，也不随配置导出。
 
 ### 2.5 D117 独立崩溃报告服务
 

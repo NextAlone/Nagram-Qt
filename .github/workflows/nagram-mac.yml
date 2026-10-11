@@ -79,6 +79,7 @@ jobs:
       ONLY_CACHE: "false"
       PREPARE_PATH: "Telegram/build/prepare/prepare.py"
       CONFIG: ${{ matrix.config }}
+      CI_UPDATES: ${{ inputs.config != 'Release' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}
 
     steps:
       - name: Get repository name.
@@ -90,6 +91,17 @@ jobs:
           submodules: recursive
           path: ${{ env.REPO_NAME }}
           ref: ${{ inputs.ref }}
+
+      # The Release build of a push to the default branch is offered to the
+      # installed copies that follow these builds, so it has a build number;
+      # any other build has 0, a release among them.
+      - name: Build number.
+        run: |
+          BUILD=0
+          if [ "$CONFIG" = "Release" ] && [ "$CI_UPDATES" = "true" ]; then
+            BUILD="$(python3 "$REPO_NAME/tools/nagram/release_version.py" --ci-build)"
+          fi
+          echo "NAGRAM_CI_BUILD=$BUILD" >> $GITHUB_ENV
 
       - name: First set up.
         run: |
@@ -187,6 +199,7 @@ jobs:
           -D CMAKE_COMPILE_WARNING_AS_ERROR=${{ env.CONFIG == 'Debug' && 'ON' || 'OFF' }} \
           -D CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO \
           -D DESKTOP_APP_DISABLE_AUTOUPDATE=${{ env.CONFIG == 'Release' && 'OFF' || 'ON' }} \
+          -D NAGRAM_CI_BUILD=$NAGRAM_CI_BUILD \
           $API \
           $DEFINE
 
@@ -250,7 +263,7 @@ jobs:
               # as it is: thinning it would break the signature.
               for arch in $(lipo -archs Nagram.app/Contents/MacOS/Nagram); do
                 python3 ../../tools/nagram/pack_update.py --packer Packer --out artifact \
-                  --app Nagram.app --arch "$arch"
+                  --app Nagram.app --arch "$arch" --ci-build "$NAGRAM_CI_BUILD"
               done
             else
               echo "::warning::NAGRAM_UPDATE_KEY is not set: no update package, this build is not offered to installed copies."
@@ -282,3 +295,15 @@ jobs:
     with:
       platform: macos
     secrets: inherit
+
+  updates:
+    name: Updates
+    needs: macos
+    # The update packages of the Release build of a push to the default
+    # branch; a release publishes its own from nagram-release.yml.
+    if: ${{ !cancelled() && inputs.config != 'Release' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}
+    uses: ./.github/workflows/nagram-ci-updates.yml
+    permissions:
+      contents: write
+    with:
+      platform: macos

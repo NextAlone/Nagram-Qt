@@ -90,6 +90,7 @@ jobs:
       # Not CONFIG: pacman-key in the msys2 setup reads that variable as the
       # path of its configuration file.
       BUILD_CONFIG: ${{ matrix.config }}
+      CI_UPDATES: ${{ inputs.config != 'Release' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}
 
     defaults:
       run:
@@ -153,6 +154,18 @@ jobs:
           submodules: recursive
           path: ${{ env.TBUILD }}\${{ env.REPO_NAME }}
           ref: ${{ inputs.ref }}
+
+      # The Release build of a push to the default branch is offered to the
+      # installed copies that follow these builds, so it has a build number;
+      # any other build has 0, a release among them.
+      - name: Build number.
+        shell: bash
+        run: |
+          BUILD=0
+          if [ "$BUILD_CONFIG" = "Release" ] && [ "$CI_UPDATES" = "true" ]; then
+            BUILD="$(python "$TBUILD/$REPO_NAME/tools/nagram/release_version.py" --ci-build)"
+          fi
+          echo "NAGRAM_CI_BUILD=$BUILD" >> $GITHUB_ENV
 
       - name: First set up.
         shell: bash
@@ -379,6 +392,7 @@ jobs:
           -D CMAKE_COMPILE_WARNING_AS_ERROR=${{ env.BUILD_CONFIG == 'Debug' && 'ON' || 'OFF' }} ^
           -D CMAKE_MSVC_DEBUG_INFORMATION_FORMAT= ^
           -D DESKTOP_APP_DISABLE_AUTOUPDATE=${{ env.BUILD_CONFIG == 'Release' && 'OFF' || 'ON' }} ^
+          -D NAGRAM_CI_BUILD=%NAGRAM_CI_BUILD% ^
           %TDESKTOP_BUILD_DEFINE%
 
           cmake --build ..\out --config %BUILD_CONFIG% --parallel
@@ -402,7 +416,7 @@ jobs:
             powershell -Command "Compress-Archive -Path '%OUT%\Nagram.exe' -DestinationPath 'artifact\Nagram-windows-${{ matrix.arch }}.zip'"
             if errorlevel 1 exit /b 1
             if defined NAGRAM_UPDATE_KEY (
-              python %TBUILD%\%REPO_NAME%\tools\nagram\pack_update.py --packer %OUT%\Packer.exe --out artifact --app %OUT%\Nagram.exe --updater %OUT%\Updater.exe --target ${{ matrix.arch == 'arm64' && 'winarm' || 'win64' }}
+              python %TBUILD%\%REPO_NAME%\tools\nagram\pack_update.py --packer %OUT%\Packer.exe --out artifact --app %OUT%\Nagram.exe --updater %OUT%\Updater.exe --target ${{ matrix.arch == 'arm64' && 'winarm' || 'win64' }} --ci-build %NAGRAM_CI_BUILD%
               if errorlevel 1 exit /b 1
             ) else (
               echo ::warning::NAGRAM_UPDATE_KEY is not set: no update package, this build is not offered to installed copies.
@@ -460,3 +474,15 @@ jobs:
     with:
       platform: windows
     secrets: inherit
+
+  updates:
+    name: Updates
+    needs: windows
+    # The update packages of the Release build of a push to the default
+    # branch; a release publishes its own from nagram-release.yml.
+    if: ${{ !cancelled() && inputs.config != 'Release' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch }}
+    uses: ./.github/workflows/nagram-ci-updates.yml
+    permissions:
+      contents: write
+    with:
+      platform: windows

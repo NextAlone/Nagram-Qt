@@ -6,6 +6,10 @@ to the installed ones, so the files are staged as Telegram.app, Telegram.exe
 or Telegram, with Updater next to the last two. The package is signed with
 the key in NAGRAM_UPDATE_KEY, which the manifest in
 Telegram/Resources/nagram/update must name for the channel of the release.
+
+With --ci-build the package is the one of a build of the default branch: it
+is signed for the canary-public channel, which only clients that follow
+these builds take, and its name carries the low half of its version.
 """
 
 import argparse
@@ -63,8 +67,11 @@ def staged(stage, system, app, updater):
     return ["-path", names[0], "-path", names[1]]
 
 
-def pack(root, packer, out, system, app, updater, arch, target, key):
+def pack(root, packer, out, system, app, updater, arch, target, key, build=0):
     version, revision, channel = release_version.update_version(root)
+    counter = release_version.update_counter(revision, build)
+    if build:
+        channel = release_version.CI_PACKAGE_CHANNEL
     if system == "mac":
         if arch not in MAC_ARCHS:
             raise PackError(f"--arch must be one of {sorted(MAC_ARCHS)} on macOS")
@@ -75,7 +82,7 @@ def pack(root, packer, out, system, app, updater, arch, target, key):
         platform, extra = WIN_TARGETS[target], ["-target", target]
     else:
         platform, extra = "x64", []
-    suffix = "-beta" if channel == "beta" else ""
+    suffix = f"-canary-{counter}" if build else "-beta" if channel == "beta" else ""
     name = f"td-update-{system}-{platform}-{version}{suffix}"
     with tempfile.TemporaryDirectory() as temp:
         stage = Path(temp) / "stage"
@@ -88,7 +95,7 @@ def pack(root, packer, out, system, app, updater, arch, target, key):
         with os.fdopen(os.open(key_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w") as f:
             f.write(key.strip() + "\n")
         command = [str(packer), *paths, *extra]
-        command += ["-version", str(version), "-counter", str(revision), "-channel", channel]
+        command += ["-version", str(version), "-counter", str(counter), "-channel", channel]
         command += ["-keys-loc", str(root / KEYS)]
         command += ["-local-key", str(key_file), "-local-key-id", key_id(root, channel)]
         result = subprocess.run(command, cwd=stage, check=False)
@@ -110,6 +117,10 @@ def main(argv=None):
     parser.add_argument("--updater", help="the built Updater, on Windows and Linux")
     parser.add_argument("--arch", help="macOS: the architecture of the bundle")
     parser.add_argument("--target", help="Windows: win64 or winarm")
+    parser.add_argument(
+        "--ci-build", type=int, default=0,
+        help="the build number of a build of the default branch, 0 for a release",
+    )
     parser.add_argument("--root", default=release_version.ROOT)
     args = parser.parse_args(argv)
     system = {"darwin": "mac", "win32": "win"}.get(sys.platform, "linux")
@@ -127,6 +138,7 @@ def main(argv=None):
             args.arch,
             args.target,
             key,
+            args.ci_build,
         )
     except (PackError, release_version.VersionError) as error:
         print(error, file=sys.stderr)

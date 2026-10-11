@@ -109,6 +109,94 @@ class UpdateFeedTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("v7.2.10.3, not v7.2.10.4", err)
 
+    def publish_ci(self, revision, packages, current=True):
+        (self.root / release_version.NAGRAM).write_text(
+            f"NagramRevision {revision}\nNagramChannel beta\n", encoding="utf-8"
+        )
+        self.out = self.root / f"out-{len(list(self.root.glob('out-*')))}"
+        arguments = ["--feed", str(self.out), "--ci", "--root", str(self.root)]
+        if current:
+            arguments += ["--current", str(self.root / "published")]
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = feed.main([*arguments, *packages])
+        return code, out.getvalue(), err.getvalue()
+
+    def written(self):
+        return {path.name: json.loads(path.read_text("utf-8")) for path in self.out.iterdir()}
+
+    def test_writes_one_feed_for_a_platform_of_a_build_of_the_default_branch(self):
+        counter = (3 << 22) + 500
+        name = f"td-update-linux-x64-7002010-canary-{counter}"
+        other = name.replace("linux-x64", "mac-arm")
+        code, out, err = self.publish_ci(3, [f"some/dir/{name}", other])
+        self.assertEqual((code, err), (0, ""))
+        released = str((7002010 << 32) + counter)
+        self.assertEqual(
+            self.written(),
+            {
+                "nagram-updates-linux.json": {
+                    "linux": {"ci": {"released": released, "link": f"/ci/{name}"}}
+                },
+                "nagram-updates-armac.json": {
+                    "armac": {"ci": {"released": released, "link": f"/ci/{other}"}}
+                },
+            },
+        )
+        self.assertIn(f"linux ci: {released}", out)
+        self.assertFalse(self.path.exists())
+
+    def test_an_older_build_does_not_replace_a_published_newer_one(self):
+        newer = f"td-update-linux-x64-7002010-canary-{(3 << 22) + 501}"
+        older = [f"td-update-{system}-x64-7002010-canary-{(3 << 22) + 500}" for system in ("linux", "win")]
+        self.publish_ci(3, [newer])
+        self.out.rename(self.root / "published")
+        code, out, _ = self.publish_ci(3, older)
+        self.assertEqual(code, 0)
+        self.assertIn("linux ci: kept", out)
+        self.assertEqual(list(self.written()), ["nagram-updates-win64.json"])
+        code, out, _ = self.publish_ci(3, older, current=False)
+        self.assertEqual(sorted(self.written()), ["nagram-updates-linux.json", "nagram-updates-win64.json"])
+
+    def test_rejects_a_published_feed_that_is_not_a_platform_map(self):
+        (self.root / "published").mkdir()
+        (self.root / "published" / "nagram-updates-linux.json").write_text("[]", encoding="utf-8")
+        code, _, err = self.publish_ci(3, [f"td-update-linux-x64-7002010-canary-{(3 << 22) + 500}"])
+        self.assertEqual(code, 1)
+        self.assertIn("nagram-updates-linux.json", err)
+        self.assertFalse(self.out.exists())
+
+    def test_rejects_packages_that_are_not_of_this_build(self):
+        for package in (
+            "td-update-linux-x64-7002010-beta",
+            f"td-update-linux-x64-7002010-canary-{3 << 22}",
+            f"td-update-linux-x64-7002010-canary-{(4 << 22) + 500}",
+            f"td-update-linux-x64-7002009-canary-{(3 << 22) + 500}",
+            f"td-update-linux-x64-7002010-canary-{1 << 32}",
+            f"td-update-linux-arm-7002010-canary-{(3 << 22) + 500}",
+            f"td-update-linux-x64-7002010-canary-{(3 << 22) + 500}-private",
+        ):
+            code, out, err = self.publish_ci(3, [package])
+            self.assertEqual((code, out), (1, ""), package)
+            self.assertIn(package, err)
+            self.assertFalse(self.out.exists())
+
+    def test_names_the_packages_that_are_no_longer_needed(self):
+        def name(platform, version, counter):
+            return f"td-update-{platform}-{version}-canary-{counter}"
+
+        names = [name("linux-x64", 7002010, (3 << 22) + build) for build in (9, 10, 500, 501)]
+        names += [name("linux-x64", 7002009, (9 << 22) + 900), name("mac-arm", 7002010, (3 << 22) + 9)]
+        names += ["nagram-updates.json", "td-update-linux-x64-7002010-beta"]
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(feed.main(["--stale", "2", *reversed(names)]), 0)
+        self.assertEqual(out.getvalue().split(), sorted([names[4], names[0], names[1]]))
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(feed.main(["--stale", "4"]), 0)
+        self.assertEqual(out.getvalue(), "")
+
     def test_rejects_a_feed_that_is_not_a_platform_map(self):
         for content in ("[]", "{", '{"linux": 1}'):
             self.path.write_text(content, encoding="utf-8")

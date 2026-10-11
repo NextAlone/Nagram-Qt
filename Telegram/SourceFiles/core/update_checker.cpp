@@ -478,7 +478,7 @@ enum class ManifestAdoption {
 	auto error = QString();
 	const auto verified = Updates::VerifyUpdate(
 		content,
-		BuildUpdateChannel,
+		Nagram::Updates::Channel(),
 		Nagram::VersionIsBeta() || cInstallBetaVersion(),
 		*target,
 		RunningUpdateVersion(),
@@ -764,6 +764,10 @@ bool HttpChecker::handleResponse(const QByteArray &response) {
 		done(url.isEmpty() ? nullptr : std::make_shared<HttpLoader>(url));
 		return true;
 	};
+	if (Nagram::Updates::FollowsCi()) {
+		const auto url = Nagram::Updates::CiUpdateUrl(response);
+		return url && handle(*url);
+	}
 	if (const auto url = parseOldResponse(response)) {
 		return handle(*url);
 	} else if (const auto url = parseResponse(response)) {

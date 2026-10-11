@@ -37,6 +37,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "main/main_session_settings.h"
 #include "mtproto/facade.h"
 #include "mtproto/mtp_instance.h"
+#include "nagram/settings/updates.h"
 #include "platform/platform_specific.h"
 #include "settings/settings_builder.h"
 #include "settings/sections/settings_local_storage.h"
@@ -1099,6 +1100,7 @@ void BuildUpdateSection(SectionBuilder &builder, bool atTop) {
 				.toggled = rpl::single(cInstallBetaVersion()),
 				.keywords = { u"beta"_q, u"update"_q, u"version"_q },
 			});
+		Nagram::AddCiUpdatesButton(builder);
 
 		check = builder.addButton({
 			.id = u"advanced/check_update"_q,

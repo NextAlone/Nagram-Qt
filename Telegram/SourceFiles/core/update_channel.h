@@ -69,7 +69,7 @@ inline constexpr auto CanaryMetadataMessageId
 [[nodiscard]] inline quint64 RunningUpdateVersion() {
 	return Updates::MakeUpdateVersion(
 		quint32(AppVersion),
-		Nagram::UpdateRevision());
+		Nagram::UpdateCounter());
 }
 
 [[nodiscard]] inline QString CanaryVersionSuffix() {

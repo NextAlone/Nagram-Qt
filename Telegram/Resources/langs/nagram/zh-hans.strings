@@ -644,6 +644,7 @@
 "lng_nagram_catalog_submitted" = "顺序已提交，等待 Telegram 确认。";
 "lng_nagram_catalog_order_saved" = "包顺序已保存。";
 "lng_nagram_catalog_order_failed" = "Telegram 未能保存部分顺序。正在从服务器刷新已安装列表，请重新打开预览后重试。";
+"lng_nagram_updates_ci" = "安装最新改动的构建";
 "lng_nagram_config_title" = "配置管理";
 "lng_nagram_config_scope" = "备份本机已修改的 Nagram 设置，不包含账号、消息、凭据和 Telegram 设置。";
 "lng_nagram_config_modified" = "已修改的设置";

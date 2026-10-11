@@ -60,8 +60,12 @@ jobs:
     needs: version
     if: ${{ !inputs.only || inputs.only == 'all' || inputs.only == 'macos' }}
     uses: ./.github/workflows/nagram-mac.yml
+    # The platform workflows have a job that publishes the builds of the
+    # default branch. It never runs for a release, but a called workflow is
+    # refused when one of its jobs asks for more than the caller grants;
+    # the build jobs keep their own narrower permissions.
     permissions:
-      contents: read
+      contents: write
       actions: write
     with:
       config: Release
@@ -73,7 +77,7 @@ jobs:
     if: ${{ !inputs.only || inputs.only == 'all' || inputs.only == 'windows' }}
     uses: ./.github/workflows/nagram-win.yml
     permissions:
-      contents: read
+      contents: write
       actions: write
     with:
       config: Release
@@ -86,7 +90,7 @@ jobs:
     if: ${{ !inputs.only || inputs.only == 'all' || inputs.only == 'linux' }}
     uses: ./.github/workflows/nagram-linux.yml
     permissions:
-      contents: read
+      contents: write
       actions: write
     with:
       config: Release

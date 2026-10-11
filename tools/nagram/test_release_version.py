@@ -105,6 +105,28 @@ class ReleaseVersionTest(unittest.TestCase):
         self.run_main(MINOR, STABLE)
         self.assertEqual(release.update_version(self.root), (7003000, 3, "stable"))
 
+    def test_a_build_number_sorts_between_two_releases(self):
+        self.assertEqual(release.update_counter(3), 3 << 22)
+        self.assertEqual(release.update_counter(3, 500), (3 << 22) + 500)
+        self.assertLess(release.update_counter(3, (1 << 22) - 1), release.update_counter(4))
+        self.assertLess(release.update_counter(999, (1 << 22) - 1), 1 << 32)
+        for build in (-1, 1 << 22):
+            with self.assertRaises(release.VersionError):
+                release.update_counter(3, build)
+
+    def test_a_build_number_counts_the_minutes_of_the_commit_time(self):
+        self.assertEqual(release.build_number(release.BUILD_EPOCH + 60), 1)
+        self.assertEqual(release.build_number(release.BUILD_EPOCH + 60 * 500 + 59), 500)
+        for time in (0, release.BUILD_EPOCH + 59, release.BUILD_EPOCH + 60 * (1 << 22)):
+            with self.assertRaises(release.VersionError):
+                release.build_number(time)
+
+    def test_prints_the_build_number_of_the_commit(self):
+        code, out, err = self.run_main(UPSTREAM, BETA, "--ci-build")
+        self.assertEqual((code, out), (2, ""))
+        self.assertIn("cannot read the commit time", err)
+        self.assertGreater(release.ci_build(release.ROOT), 0)
+
     def test_the_repository_files_describe_a_release(self):
         self.assertRegex(release.release_tag(release.ROOT), r"^v\d+\.\d+\.\d+\.\d+(-beta)?$")
 

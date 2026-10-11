@@ -1,0 +1,88 @@
+# Offers what the calling platform workflow has built from a push to the
+# default branch to the installed copies that follow these builds. The
+# update packages of its Release build go to the 'ci' release, and then
+# the feed of each of their platforms, nagram-updates-<platform>.json of
+# that release, is pointed at them. Every platform has a feed of its own,
+# so the three workflows never rewrite the same file. The feed of the
+# releases, in the 'updates' release, is not touched.
+#
+# The packages are built only with the secret NAGRAM_UPDATE_KEY; without
+# them nothing is published.
+
+name: Nagram CI updates.
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        description: Name of the calling platform, 'macos', 'windows' or 'linux'.
+        type: string
+        required: true
+
+jobs:
+
+  publish:
+    name: Publish
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    # Two pushes are published one after the other.
+    concurrency:
+      group: nagram-ci-updates-${{ inputs.platform }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      # A copy may still be loading the package before the newest one.
+      KEEP: 3
+
+    steps:
+      - name: Clone.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            Telegram/build
+            tools/nagram
+
+      - name: Download the packages.
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          pattern: release-*
+          path: packages
+          merge-multiple: true
+
+      - name: Publish.
+        run: |
+          shopt -s nullglob
+          packages=(packages/td-update-*-canary-*)
+          if [ ${#packages[@]} -eq 0 ]; then
+            echo "::notice::This run has no update packages, nothing is offered to installed copies."
+            exit 0
+          fi
+          if ! gh release view ci --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release create ci \
+              --repo "$GITHUB_REPOSITORY" \
+              --prerelease \
+              --target "$GITHUB_SHA" \
+              --title "Builds of the default branch" \
+              --notes "Update packages of the latest builds of the default branch, for the installed copies of Nagram Desktop that follow them. They are not releases and are replaced with every push; the tag only holds this page. Download the application from the other releases."
+          fi
+          gh release upload ci "${packages[@]}" --clobber --repo "$GITHUB_REPOSITORY"
+
+          # A feed is written only after the package it links to is published.
+          gh release view ci --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' > assets.txt
+          mkdir published feeds
+          if grep -q '^nagram-updates-.*\.json$' assets.txt; then
+            gh release download ci --repo "$GITHUB_REPOSITORY" \
+              --pattern 'nagram-updates-*.json' --dir published
+          fi
+          python3 tools/nagram/update_feed.py \
+            --ci --feed feeds --current published "${packages[@]}"
+          feeds=(feeds/*.json)
+          if [ ${#feeds[@]} -gt 0 ]; then
+            gh release upload ci "${feeds[@]}" --clobber --repo "$GITHUB_REPOSITORY"
+          fi
+
+          xargs python3 tools/nagram/update_feed.py --stale "$KEEP" < assets.txt > stale.txt
+          while read -r name; do
+            gh release delete-asset ci "$name" --yes --repo "$GITHUB_REPOSITORY"
+          done < stale.txt
