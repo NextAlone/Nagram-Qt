@@ -58,23 +58,18 @@ void TestBox(not_null<Ui::GenericBox*> box) {
 		box,
 		st::defaultInputField,
 		Ui::InputField::Mode::SingleLine,
-		tr::lng_nagram_link_sample()));
-	field->setMaxLength(kMaxInlineLink);
+		tr::lng_nagram_inline_test_text()));
 	const auto result = box->addRow(object_ptr<Ui::FlatLabel>(
 		box,
 		tr::lng_nagram_inline_test_about(),
 		st::boxLabel));
 	result->setSelectable(true);
 	box->addButton(tr::lng_nagram_inline_test(), [=] {
-		const auto link = SingleLink(field->getLastText(), false);
-		const auto match = link.isEmpty()
-			? InlineMatch()
-			: MatchInlineRules(
-				CompileInlineRules(ForDevice().Get(kInlineBotRules)),
-				link);
-		result->setText(link.isEmpty()
-			? tr::lng_nagram_inline_test_not_link(tr::now)
-			: !match.error.isEmpty()
+		const auto match = AutomaticInlineBot(
+			true,
+			CompileInlineRules(ForDevice().Get(kInlineBotRules)),
+			field->getLastText());
+		result->setText(!match.error.isEmpty()
 			? match.error
 			: match.username.isEmpty()
 			? tr::lng_nagram_inline_test_none(tr::now)
@@ -119,16 +114,19 @@ void RuleBox(
 	const auto enabled = box->addRow(object_ptr<Ui::Checkbox>(
 		box,
 		tr::lng_nagram_inline_rule_enabled(tr::now),
-		rule.value(u"enabled"_q).toBool()));
+		(index >= rules.size()) || rule.value(u"enabled"_q).toBool()));
 	box->addButton(tr::lng_settings_save(), [=] {
 		auto name = username->getLastText().trimmed();
 		if (name.startsWith(u'@')) {
 			name.remove(0, 1);
 		}
-		const auto list = patterns->getLastText().split(
-			u'\n',
-			Qt::SkipEmptyParts);
-		if (!ValidInlineUsername(name)) {
+		auto list = QStringList();
+		for (const auto &line : patterns->getLastText().split(u'\n')) {
+			if (const auto pattern = line.trimmed(); !pattern.isEmpty()) {
+				list.push_back(pattern);
+			}
+		}
+		if (!ValidInlineUsername(name) || list.isEmpty()) {
 			box->showToast(tr::lng_nagram_inline_invalid(tr::now));
 			return;
 		} else if (const auto problem = CheckInlinePatterns(list)) {
@@ -148,7 +146,7 @@ void RuleBox(
 		if (index < updated.size()) {
 			updated[index] = changed;
 		} else {
-			updated.push_back(changed);
+			updated.push_front(changed);
 		}
 		if (Save(box, rules, updated)) {
 			box->closeBox();

@@ -29,8 +29,6 @@ struct InlineProblem {
 	QString text;
 };
 
-inline constexpr auto kMaxInlineLink = 2048;
-
 [[nodiscard]] QJsonObject InlineDefaults();
 [[nodiscard]] QJsonObject NewInlineRule(
 	const QString &username,
@@ -41,15 +39,13 @@ inline constexpr auto kMaxInlineLink = 2048;
 	const QStringList &patterns);
 [[nodiscard]] QByteArray DisableInlineRules(const QByteArray &raw);
 [[nodiscard]] InlineMatcher CompileInlineRules(const QByteArray &raw);
-[[nodiscard]] QString SingleLink(const QString &text, bool formatted);
 [[nodiscard]] InlineMatch MatchInlineRules(
 	const InlineMatcher &matcher,
-	const QString &link);
+	const QString &text);
 [[nodiscard]] InlineMatch AutomaticInlineBot(
 	bool enabled,
 	const InlineMatcher &matcher,
-	const QString &text,
-	bool formatted);
+	const QString &text);
 
 inline constexpr auto kAutoInlineBot = Option<bool>{
 	"nagram.autoInlineBotEnabled", Scope::Device, false,

@@ -18,26 +18,22 @@ struct State {
 	bool matched = false;
 };
 
-[[nodiscard]] QString AutomaticUsername(const TextWithTags &text) {
+[[nodiscard]] QString AutomaticUsername(const QString &text) {
 	static auto state = State();
 	const auto rules = ForDevice().Get(kInlineBotRules);
 	if (state.rules != rules) {
 		state = { .rules = rules, .matcher = CompileInlineRules(rules) };
 	}
-	if (!state.matched || state.text != text.text) {
-		const auto match = AutomaticInlineBot(
-			true,
-			state.matcher,
-			text.text,
-			false);
+	if (!state.matched || state.text != text) {
+		const auto match = AutomaticInlineBot(true, state.matcher, text);
 		if (!match.error.isEmpty()) {
 			LOG(("Nagram inline bot: %1.").arg(match.error));
 		}
-		state.text = text.text;
+		state.text = text;
 		state.username = match.username;
 		state.matched = true;
 	}
-	return text.tags.isEmpty() ? state.username : QString();
+	return state.username;
 }
 
 } // namespace
@@ -48,7 +44,7 @@ bool AutoInlineBotEnabled() {
 
 bool AutomaticInlineQuery(not_null<const Ui::InputField*> field) {
 	return AutoInlineBotEnabled()
-		&& !AutomaticUsername(field->getTextWithTags()).isEmpty();
+		&& !AutomaticUsername(field->getLastText()).isEmpty();
 }
 
 void FillAutomaticInlineQuery(
@@ -58,7 +54,7 @@ void FillAutomaticInlineQuery(
 	if (!AutoInlineBotEnabled()) {
 		return;
 	}
-	const auto username = AutomaticUsername(text);
+	const auto username = AutomaticUsername(text.text);
 	if (username.isEmpty()) {
 		return;
 	}
@@ -70,7 +66,7 @@ void FillAutomaticInlineQuery(
 		return;
 	}
 	result.username = username;
-	result.query = text.text.trimmed();
+	result.query = text.text;
 	result.bot = user;
 	result.lookingUpBot = !user;
 }

@@ -752,7 +752,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_filter_too_many" = "Too many rules apply here ({amount} of {limit}). Turn off or remove some rules.";
 "lng_nagram_filter_scopes_invalid" = "The saved chat and topic filter settings are invalid and are ignored. Import a valid configuration to replace them.";
 "lng_nagram_inline_auto" = "Query inline bots for links automatically";
-"lng_nagram_inline_auto_about" = "When the message field contains only a link that matches an enabled rule, the link is sent to that rule's bot to show results. Nothing is sent to the chat until you choose a result.";
+"lng_nagram_inline_auto_about" = "When the text in the message field matches an enabled rule, the whole text is sent to that rule's bot to show results. Nothing is sent to the chat until you choose a result.";
 "lng_nagram_inline_rules" = "Inline bot rules";
 "lng_nagram_inline_rule" = "Edit inline bot rule";
 "lng_nagram_inline_username" = "Bot username";
@@ -762,10 +762,10 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_inline_invalid" = "Invalid inline bot rule. Check the username and the patterns.";
 "lng_nagram_inline_pattern_error" = "Pattern {index}: {error}";
 "lng_nagram_inline_test" = "Test a link";
-"lng_nagram_inline_test_about" = "Enter a link to see which rule matches. No request is sent.";
+"lng_nagram_inline_test_about" = "Enter a text to see which rule matches. No request is sent.";
 "lng_nagram_inline_test_match" = "Matches the rule for @{username}.";
 "lng_nagram_inline_test_none" = "No enabled rule matches.";
-"lng_nagram_inline_test_not_link" = "Enter a single http or https link without spaces.";
+"lng_nagram_inline_test_text" = "Message text";
 "lng_nagram_inline_import_disabled" = "Imported inline bot rules are turned off. Enable them in Nagram → Rules.";
 "lng_nagram_webview_external" = "Links from web apps to open in the browser";
 "lng_nagram_webview_external_about" = "A regular expression. When a web app navigates to a matching address, it opens in your browser instead. The app's own start address always opens inside the app. Leave empty to turn this off.";

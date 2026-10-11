@@ -54,12 +54,8 @@ QByteArray Config(const QJsonArray &rules) {
 	return QJsonDocument(config).toJson(QJsonDocument::Compact);
 }
 
-QString Auto(const QByteArray &raw, const QString &text, bool formatted) {
-	return AutomaticInlineBot(
-		true,
-		CompileInlineRules(raw),
-		text,
-		formatted).username;
+QString Auto(const QByteArray &raw, const QString &text) {
+	return AutomaticInlineBot(true, CompileInlineRules(raw), text).username;
 }
 
 void TestTrigger() {
@@ -67,34 +63,34 @@ void TestTrigger() {
 		Rule(u"video_bot"_q, { u"^https?://video\\.example/\\S+"_q }),
 	});
 	const auto link = u"https://video.example/watch?v=1"_q;
-	Require(Auto(raw, link, false) == u"video_bot"_q
-		&& Auto(raw, u"  "_q + link + u"\n"_q, false) == u"video_bot"_q,
-		"a single matching link must select the rule's bot");
-	const auto rejected = std::vector<std::pair<QString, const char*>>{
-		{ link + u" hello"_q, "link followed by text matched" },
-		{ u"look "_q + link, "link after text matched" },
-		{ link + u" "_q + link, "two links matched" },
-		{ link + u"\n"_q + link, "two lines of links matched" },
-		{ u"@video_bot "_q + link, "explicit inline query matched" },
-		{ u"ftp://video.example/watch"_q, "non-http scheme matched" },
-		{ u"tg://resolve?domain=video"_q, "tg scheme matched" },
-		{ u"HTTPS://video.example/watch"_q, "upper-case scheme matched" },
-		{ u"video.example/watch"_q, "link without a scheme matched" },
-		{ u"https://other.example/watch"_q, "unrelated link matched" },
-		{ u"https://video.example/"_q + QString(kMaxInlineLink, u'a'),
-			"link above 2048 characters matched" },
-		{ QString(), "empty text matched" },
+	const auto anywhere = Config(QJsonArray{
+		Rule(u"video_bot"_q, { u"video\\.example/\\S+"_q }),
+	});
+	// Like Nagram Android, the whole text is searched for a match.
+	const auto accepted = std::vector<std::pair<QString, const char*>>{
+		{ link, "a matching link" },
+		{ u"  "_q + link + u"\n"_q, "a link with spaces around" },
+		{ link + u" hello"_q, "a link followed by text" },
+		{ u"look "_q + link, "a link after text" },
+		{ u"first line\nlook "_q + link, "a link on a second line" },
+		{ link + u" "_q + link, "two links" },
+		{ u"video.example/watch"_q, "a link without a scheme" },
+		{ u"https://video.example/"_q + QString(4096, u'a'), "a long link" },
 	};
-	for (const auto &[text, message] : rejected) {
-		Require(Auto(raw, text, false).isEmpty(), message);
+	for (const auto &[text, message] : accepted) {
+		Require(Auto(anywhere, text) == u"video_bot"_q, message);
 	}
-	Require(Auto(raw, link, true).isEmpty(),
-		"formatted text must not start an automatic query");
+	Require(Auto(raw, link) == u"video_bot"_q
+		&& Auto(raw, u"look "_q + link).isEmpty(),
+		"an anchored pattern must match at the start only");
+	Require(Auto(anywhere, u"https://other.example/watch"_q).isEmpty()
+		&& Auto(anywhere, QString()).isEmpty(),
+		"unrelated or empty text must not match");
 	Require(AutomaticInlineBot(
-		false, CompileInlineRules(raw), link, false).username.isEmpty(),
+		false, CompileInlineRules(raw), link).username.isEmpty(),
 		"the master switch must turn automatic queries off");
-	Require(Auto({}, link, false).isEmpty()
-		&& Auto("broken", link, false).isEmpty(),
+	Require(Auto({}, link).isEmpty()
+		&& Auto("broken", link).isEmpty(),
 		"empty or invalid rules must not match");
 }
 
@@ -104,16 +100,16 @@ void TestOrder() {
 	Require(Auto(Config(QJsonArray{
 		Rule(u"first_bot"_q, any),
 		Rule(u"second_bot"_q, any),
-	}), link, false) == u"first_bot"_q,
+	}), link) == u"first_bot"_q,
 		"the first matching rule must win");
 	Require(Auto(Config(QJsonArray{
 		Rule(u"first_bot"_q, any, false),
 		Rule(u"second_bot"_q, any),
-	}), link, false) == u"second_bot"_q,
+	}), link) == u"second_bot"_q,
 		"a disabled rule must not take part");
 	Require(Auto(Config(QJsonArray{
 		Rule(u"first_bot"_q, { u"nothing"_q, u"example\\.com/a$"_q }),
-	}), link, false) == u"first_bot"_q,
+	}), link) == u"first_bot"_q,
 		"any pattern of a rule may match");
 	Require(!NewInlineRule(u"some_bot"_q, any).value(u"enabled"_q).toBool(),
 		"a new inline bot rule must start disabled");
@@ -123,9 +119,9 @@ void TestOrder() {
 	};
 	Require(!CheckInlinePatterns(lookahead)
 		&& Auto(Config(QJsonArray{ Rule(u"repo_bot"_q, lookahead) }),
-			u"https://github.com/owner/project"_q, false) == u"repo_bot"_q
+			u"https://github.com/owner/project"_q) == u"repo_bot"_q
 		&& Auto(Config(QJsonArray{ Rule(u"repo_bot"_q, lookahead) }),
-			u"https://github.com/owner/project.git"_q, false).isEmpty(),
+			u"https://github.com/owner/project.git"_q).isEmpty(),
 		"a lookahead rule must compile and match its sample link");
 }
 
@@ -149,13 +145,24 @@ void TestValidation() {
 	auto wrongVersion = InlineDefaults();
 	wrongVersion.insert(u"version"_q, 2);
 	auto many = QJsonArray();
-	for (auto i = 0; i != 65; ++i) {
+	for (auto i = 0; i != 100; ++i) {
 		many.push_back(Rule(u"bot_%1"_q.arg(i), pattern));
 	}
 	auto manyPatterns = QJsonArray();
-	for (auto i = 0; i != 17; ++i) {
+	for (auto i = 0; i != 100; ++i) {
 		manyPatterns.push_back(u"a"_q);
 	}
+	Require(ValidateInlineRules(Config(many))
+		&& ValidateInlineRules(with(u"patterns"_q, manyPatterns))
+		&& ValidateInlineRules(with(
+			u"patterns"_q,
+			QJsonArray{ QString(4096, u'a') })),
+		"the rule, pattern and length counts must not be limited");
+	Require(Auto(Config(QJsonArray{
+		Rule(u"some_bot"_q, { u"nothing"_q }),
+		Rule(u"SOME_BOT"_q, pattern),
+	}), u"https://example.com/a"_q) == u"SOME_BOT"_q,
+		"rules may share a username");
 	const auto same = Rule(u"some_bot"_q, pattern);
 	auto sameId = Rule(u"other_bot"_q, pattern);
 	sameId.insert(u"id"_q, same.value(u"id"_q));
@@ -174,11 +181,8 @@ void TestValidation() {
 		{ with(u"username"_q, QString(33, u'a')), "33 characters accepted" },
 		{ with(u"username"_q, 5), "numeric username accepted" },
 		{ with(u"patterns"_q, QJsonArray()), "empty pattern list accepted" },
-		{ with(u"patterns"_q, manyPatterns), "17 patterns accepted" },
 		{ with(u"patterns"_q, QJsonArray{ QString() }),
 			"empty pattern accepted" },
-		{ with(u"patterns"_q, QJsonArray{ QString(513, u'a') }),
-			"513-character pattern accepted" },
 		{ with(u"patterns"_q, QJsonArray{ u"a\nb"_q }),
 			"pattern with a line break accepted" },
 		{ with(u"patterns"_q, QJsonArray{ 1 }), "numeric pattern accepted" },
@@ -189,12 +193,7 @@ void TestValidation() {
 			"Java class intersection accepted" },
 		{ with(u"patterns"_q, QJsonArray{ u"\\p{javaLowerCase}"_q }),
 			"Java character property accepted" },
-		{ Config(many), "65 rules accepted" },
 		{ Config(QJsonArray{ same, sameId }), "duplicate id accepted" },
-		{ Config(QJsonArray{
-			Rule(u"some_bot"_q, pattern),
-			Rule(u"SOME_BOT"_q, pattern),
-		}), "duplicate username accepted" },
 	};
 	for (const auto &[raw, message] : bad) {
 		Require(!ValidateInlineRules(raw), message);
@@ -216,8 +215,7 @@ void TestBudget() {
 			Rule(u"slow_bot"_q, { u"(a+)+$"_q }),
 			Rule(u"next_bot"_q, { u"example"_q }),
 		})),
-		u"https://example.com/"_q + QString(40, u'a') + u'!',
-		false);
+		u"https://example.com/"_q + QString(40, u'a') + u'!');
 	Require(runaway.username.isEmpty() && !runaway.error.isEmpty(),
 		"a runaway pattern must report its limit and match nothing");
 
@@ -233,12 +231,33 @@ void TestBudget() {
 	Require(ValidateInlineRules(raw), "full inline rule set rejected");
 	const auto matcher = CompileInlineRules(raw);
 	const auto link = (u"https://unrelated.example/"_q
-		+ QString(kMaxInlineLink, u'a')).left(kMaxInlineLink);
+		+ QString(4096, u'a'));
 	clock.restart();
-	const auto result = AutomaticInlineBot(true, matcher, link, false);
+	const auto result = AutomaticInlineBot(true, matcher, link);
 	Require(clock.elapsed() < 200,
 		"a full rule set exceeded the matching time limit");
 	Require(result.username.isEmpty(), "a full rule set matched nothing");
+
+	// One site per line, the way rules are written for Nagram Android.
+	auto sites = QStringList();
+	for (auto i = 0; i != 40; ++i) {
+		sites.push_back(u".*site%1\\.example/t/.+"_q.arg(i));
+		sites.push_back(u"((www|m)\\.)?host%1\\.example/"
+			"((group/)?topic/\\d+|app/go)"_q.arg(i));
+	}
+	sites.push_back(u".*pixiv\\.net/(?:(?:[a-z]{2}(?:-[a-z]{2})?/)?"
+		"artworks/\\d+|member_illust\\.php\\?[^#]*illust_id=\\d+)"_q);
+	const auto android = CompileInlineRules(Config(QJsonArray{
+		Rule(u"sites_bot"_q, sites),
+	}));
+	const auto artwork = u"https://www.pixiv.net/en/artworks/123456?"_q
+		+ QString(1024, u'a');
+	clock.restart();
+	const auto found = AutomaticInlineBot(true, android, artwork);
+	Require(found.error.isEmpty() && found.username == u"sites_bot"_q,
+		"a long list of site patterns must match within the limits");
+	Require(clock.elapsed() < 200,
+		"a long list of site patterns exceeded the matching time limit");
 }
 
 void TestImport() {

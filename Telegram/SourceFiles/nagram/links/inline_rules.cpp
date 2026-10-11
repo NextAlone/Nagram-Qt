@@ -12,9 +12,6 @@
 namespace Nagram::Links {
 namespace {
 
-constexpr auto kMaxInlineRules = 64;
-constexpr auto kMaxInlinePatterns = 16;
-constexpr auto kMaxInlinePattern = 512;
 constexpr auto kMaxInlineWorkMs = 20;
 
 [[nodiscard]] std::optional<QJsonObject> Parse(const QByteArray &raw) {
@@ -84,18 +81,18 @@ bool ValidInlineUsername(const QString &username) {
 
 std::optional<InlineProblem> CheckInlinePatterns(
 		const QStringList &patterns) {
-	if (patterns.isEmpty() || patterns.size() > kMaxInlinePatterns) {
-		return InlineProblem{ 0, u"1-16 patterns required"_q };
+	if (patterns.isEmpty()) {
+		return InlineProblem{ 0, u"at least one pattern required"_q };
 	}
 	for (auto i = 0; i != patterns.size(); ++i) {
 		const auto &pattern = patterns[i];
-		if (pattern.isEmpty() || pattern.size() > kMaxInlinePattern
+		if (pattern.isEmpty()
 			|| pattern.contains(QChar(u'\n'))
 			|| pattern.contains(QChar(u'\r'))
 			|| pattern.contains(QChar(0))) {
 			return InlineProblem{
 				i + 1,
-				u"1-512 characters on one line required"_q,
+				u"a non-empty single line required"_q,
 			};
 		} else if (const auto problem = Regex::Check(pattern)) {
 			return InlineProblem{
@@ -117,25 +114,18 @@ bool ValidateInlineRules(const QByteArray &raw) {
 		|| config->keys() != InlineDefaults().keys()
 		|| !config->value(u"version"_q).isDouble()
 		|| config->value(u"version"_q).toDouble() != 1.
-		|| !config->value(u"rules"_q).isArray()
-		|| config->value(u"rules"_q).toArray().size()
-			> kMaxInlineRules) {
+		|| !config->value(u"rules"_q).isArray()) {
 		return false;
 	}
 	auto ids = QSet<QString>();
-	auto usernames = QSet<QString>();
 	for (const auto &entry : config->value(
 			u"rules"_q).toArray()) {
 		const auto rule = entry.toObject();
 		const auto id = rule.value(u"id"_q).toString();
-		const auto username = rule.value(
-			u"username"_q).toString().toLower();
-		if (!entry.isObject() || !ValidRule(rule)
-			|| ids.contains(id) || usernames.contains(username)) {
+		if (!entry.isObject() || !ValidRule(rule) || ids.contains(id)) {
 			return false;
 		}
 		ids.insert(id);
-		usernames.insert(username);
 	}
 	return true;
 }
@@ -178,24 +168,9 @@ InlineMatcher CompileInlineRules(const QByteArray &raw) {
 	return result;
 }
 
-QString SingleLink(const QString &text, bool formatted) {
-	const auto link = text.trimmed();
-	if (formatted || link.size() > kMaxInlineLink
-		|| (!link.startsWith(u"http://"_q)
-			&& !link.startsWith(u"https://"_q))) {
-		return QString();
-	}
-	for (const auto &ch : link) {
-		if (ch.isSpace()) {
-			return QString();
-		}
-	}
-	return link;
-}
-
 InlineMatch MatchInlineRules(
 		const InlineMatcher &matcher,
-		const QString &link) {
+		const QString &text) {
 	auto timer = QElapsedTimer();
 	timer.start();
 	for (const auto &entry : matcher.entries) {
@@ -203,7 +178,7 @@ InlineMatch MatchInlineRules(
 			if (timer.elapsed() >= kMaxInlineWorkMs) {
 				return { .error = u"inline rule runtime limit"_q };
 			}
-			switch (Regex::Find(pattern, link)) {
+			switch (Regex::Find(pattern, text)) {
 			case Regex::Found::Yes: return { .username = entry.username };
 			case Regex::Found::Limit:
 				return { .error = u"inline rule work limit"_q };
@@ -217,13 +192,10 @@ InlineMatch MatchInlineRules(
 InlineMatch AutomaticInlineBot(
 		bool enabled,
 		const InlineMatcher &matcher,
-		const QString &text,
-		bool formatted) {
-	if (!enabled || matcher.entries.empty()) {
-		return {};
-	}
-	const auto link = SingleLink(text, formatted);
-	return link.isEmpty() ? InlineMatch() : MatchInlineRules(matcher, link);
+		const QString &text) {
+	return (!enabled || matcher.entries.empty() || text.isEmpty())
+		? InlineMatch()
+		: MatchInlineRules(matcher, text);
 }
 
 } // namespace Nagram::Links

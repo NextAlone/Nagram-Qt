@@ -12,7 +12,7 @@
 | --- | --- | --- |
 | S07、S28 | 过滤规则的全局／账号／对话／话题继承与覆盖、恢复继承 | 可实现 |
 | A158、A159 | 本地 inline bot 规则与启用状态 | 可实现 |
-| I077、A157 | 按链接自动匹配 inline bot | 可实现，触发条件比 Android 收窄 |
+| I077、A157 | 按链接自动匹配 inline bot | 可实现，触发范围与 Android 一致 |
 | S10、S24、A160 | 远程 inline bot 规则分发、本地覆盖、停用指定远程规则 | 可实现，前置条件是维护者确认规则源（第 8 节问题 1）；未确认前为受阻项 |
 | S10 | 远程链接预览修正规则 | 条件不满足：桌面没有消费者 |
 | A161 | inline 结果直接发送媒体 | 不需要实现：上游行为已等价 |
@@ -87,11 +87,11 @@
 
 **桌面做法**。上游的两套输入实现（`HistoryWidget` 与 `HistoryView::ComposeControls`）都通过 `chat_helpers/message_field.cpp` 的 `ParseInlineBotQuery` 取得 inline 查询，之后的解析用户名、查询、结果面板与发送完全复用上游流程。因此只在这一处注入“自动查询”，不复制结果面板。
 
-触发条件（全部满足才匹配，比 Android 收窄，原因见第 8 节问题 3）：
+触发条件（全部满足才匹配，与 Android 一致，见第 8 节问题 3）：
 
 1. 总开关 I06 开启，且至少有一条已启用的规则。
 2. 上游解析没有得到 `@bot` 形式的查询。
-3. 输入框去掉首尾空白后是**单个** `http://` 或 `https://` 链接：不含空白字符，长度不超过 2048，没有格式标记。
+3. 输入框的整段文字非空，且某个表达式在其中任意位置命中（等同 Android 的 `Pattern.find`）：不要求是链接，不限制长度，文字前后可以有其他内容，格式标记不影响匹配。
 4. 不在编辑消息状态（上游 `parseInlineBotQuery` 在编辑时本就返回空）。
 
 命中后 `InlineBotQuery` 的 `username` 取规则的用户名，`query` 取整段文本；bot 未缓存时沿用上游的 `contacts.resolveUsername` 请求。规则顺序：本地规则在前，远程规则在后，各自按列表顺序，取第一条命中（需求：“本地覆盖优先”）。同一用户名在本地与远程都存在时，只使用本地条目。
@@ -112,7 +112,7 @@
 
 **关闭时**：I06 默认关闭。关闭时 `FillAutomaticInlineQuery` 在读到开关后立即返回，不读取文本、不编译正则；`AutomaticInlineQuery` 恒为假，两处状态判断退化为上游表达式；`applyInlineBotQuery` 的附加分支不执行。显式输入 `@bot 查询` 的行为在开关开启时也不变，因为注入点在上游识别失败之后。
 
-**需要在说明文字中写明的事实**：开启后，输入框里只有一个链接且命中规则时，这个链接会作为查询发给规则指定的 bot，发生在用户按下发送之前。这是功能本身的含义，不是副作用，设置页说明必须写清。
+**需要在说明文字中写明的事实**：开启后，输入框里的文字命中规则时，整段文字会作为查询发给规则指定的 bot，发生在用户按下发送之前，并随输入变化重复发送。这是功能本身的含义，不是副作用，设置页说明必须写清。
 
 **正则**。规则来自 Java（Android）或 ICU（iOS）生态，桌面用 Qt 的 PCRE2。统一经限制前缀编译（把 `filters/model.cpp` 的 `RegexPrefix`／`Compile` 提到 `nagram/core/` 供过滤、inline bot 与 A112 共用，这是本包唯一的重构）。编译失败的表达式在规则编辑框里显示错误位置，该表达式不参与匹配；一个条目的全部表达式都不可用时该条目不能启用。匹配超出限制时本次视为未命中并写日志，不改用其他规则。
 
@@ -134,7 +134,7 @@
 
 - 消息文本以 `#inlinebot` 开头，其后是合法 JSON 对象，UTF-8 长度不超过 64 KB。
 - `data` 是数组，1–64 个条目；每个条目的 `username` 匹配 `[A-Za-z][A-Za-z0-9_]{3,31}`，大小写不敏感去重。
-- `rules` 是 1–16 个字符串，每个 1–512 字符，不含换行与 NUL。
+- `rules` 是至少 1 个字符串，每个非空，不含换行与 NUL；与 Android 一致，不限制表达式的个数与长度。
 - 未知顶层字段、未知条目字段：拒绝并报告字段名（设计文档第 3.3 节的严格校验）。
 - 单个表达式在 PCRE2 下编译失败**不**拒绝整份快照，只标记该表达式不兼容（规则是为 Java 正则写的，个别不兼容是预期情况）。
 
@@ -260,7 +260,7 @@ Android 上点击图片、GIF、视频类型的 inline 结果会先进 `PhotoVie
 ]}
 ```
 
-不超过 64 条；`username` 与 `patterns` 的约束同 2.3 的校验，另要求每个表达式可编译。新建与导入的规则 `enabled` 为假。
+与 Android 一致，不限制规则条数，也允许多条规则使用同一个用户名；`username` 与 `patterns` 的约束同 2.3 的校验，另要求每个表达式可编译。编辑框按行拆分表达式，去掉每行首尾空白并跳过空行；新建的规则默认勾选启用并插入列表最前，导入的规则 `enabled` 为假。运行时仍受限制前缀与 20 ms 总预算约束。
 
 `nagram.inlineBotRemoteEnabled`：
 
@@ -303,7 +303,7 @@ Android 上点击图片、GIF、视频类型的 inline 结果会先进 `PhotoVie
 | --- | --- | --- | --- | --- |
 | I04 | 全局过滤规则 | 子页（见下） | D | 对本机所有开启了消息过滤的账号生效，排在账号规则之前。 |
 | I05 | 对话和话题的过滤设置 | 子页（见下） | A | 列出当前账号中有单独设置的对话和话题。 |
-| I06 | 按链接自动查询 inline 机器人 | 开关 | D | 输入框里只有一个链接且命中已启用的规则时，这个链接会发给规则指定的机器人以显示结果；选择结果后才会发送。 |
+| I06 | 按链接自动查询 inline 机器人 | 开关 | D | 输入框里的文字命中已启用的规则时，整段文字会发给规则指定的机器人以显示结果；选择结果后才会发送。 |
 | I07 | inline 机器人规则 | 子页（见下） | D | |
 | I08 | 网页应用中改用浏览器打开的链接 | 文本（正则表达式） | D | 留空不启用。只作用于网页应用内部跳往其他地址的链接，启动地址始终在应用内打开。 |
 
@@ -361,7 +361,7 @@ inline bot：
 | 键 | 英文 |
 | --- | --- |
 | `lng_nagram_inline_auto` | Query inline bots for links automatically |
-| `lng_nagram_inline_auto_about` | When the message field contains only a link that matches an enabled rule, the link is sent to that rule's bot to show results. Nothing is sent to the chat until you choose a result. |
+| `lng_nagram_inline_auto_about` | When the text in the message field matches an enabled rule, the whole text is sent to that rule's bot to show results. Nothing is sent to the chat until you choose a result. |
 | `lng_nagram_inline_rules` | Inline bot rules |
 | `lng_nagram_inline_local` | Local rules |
 | `lng_nagram_inline_remote` | Remote rules |
@@ -394,7 +394,7 @@ inline bot：
 | `lng_nagram_inline_error_unsupported` | The rules use an unsupported version. |
 | `lng_nagram_inline_error_timeout` | The request timed out. |
 | `lng_nagram_inline_test` | Test a link |
-| `lng_nagram_inline_test_about` | Enter a link to see which rule matches. No request is sent. |
+| `lng_nagram_inline_test_about` | Enter a text to see which rule matches. No request is sent. |
 | `lng_nagram_inline_test_match` | Matches {source} rule for @{username}. |
 | `lng_nagram_inline_test_none` | No enabled rule matches. |
 | `lng_nagram_inline_test_local` | local |
@@ -433,11 +433,11 @@ webview：
 - 灾难性回溯样例（`(a+)+$` 对 30 个 `a` 加 `!`，`(.*a){20}` 对长文本）在限制前缀下返回匹配无效，调用方得到错误，耗时在预算内；四层各放一条慢规则时总耗时仍受 20 ms 预算约束。
 - Java 或 ICU 可用而 PCRE2 不接受的写法被判为不兼容并给出错误位置：字符类交集 `[a-z&&[^aeiou]]`、`\p{javaLowerCase}`、内联标志 `(?d)`。
 - 参考客户端内置的 inline 规则样例（含前瞻 `(?!\S+\.git)…$` 的那条）可编译，并对各自的示例链接命中。
-- 64 条规则、每条 16 个表达式的满配置对一个 2048 字符的链接完成一轮匹配的耗时上限。
+- 64 条规则、每条 16 个表达式的配置对一个 2048 字符的链接完成一轮匹配的耗时上限；一条规则含 81 个“每站点一行”的 Android 风格表达式时在限制内命中。
 
 inline bot 规则：
 
-- 触发条件：纯链接命中；含空格、多个链接、前后有其他文字、带格式标记、以 `@` 开头、非 `http(s)`、超过 2048 字符都不匹配；总开关关闭时不读文本。
+- 触发条件：整段文字中任意位置命中即匹配（链接前后有文字、多行、多个链接、无 `http(s)` 前缀、超长文本）；带 `^` 的表达式只在开头命中；空文本不匹配；总开关关闭时不匹配。
 - 顺序与覆盖：本地先于远程；同名时只用本地；停用的规则不参与。
 - 远程启用集合：摘要相等才算启用；表达式变化后回到停用；新增条目默认停用；应用更新不改启用集合。
 - 载荷校验：合法样例；缺少 `data`、空数组、65 个条目、用户名非法、重复用户名、表达式为空或超长、未知字段、非 JSON、超过 64 KB、带 `version` 且不为 1；单个不兼容表达式只标记不拒绝。
@@ -499,6 +499,6 @@ P3 额外要求：
 
 1. **远程规则源**。`@nagram_remote_metadata` 是否仍由项目控制并继续维护 `#inlinebot` 消息？是否愿意在载荷中加入 `"version": 1`？本设计只从客户端源码确认了来源，没有连接 Telegram 核对频道现状。答复为否或暂不确定时，步骤 3 作为受阻项搁置，A160 一并搁置。
 2. **远程规则默认停用**。桌面保存启用集合（默认停用、逐条启用、表达式变化后需重新启用），与 Android 的默认启用加停用集合相反。这是为了同时满足“新增行为默认关闭”和“禁止远程更新自动启用”。是否接受这一差异？
-3. **自动查询的触发范围**。桌面只在输入框是单个链接时触发；Android 对整段输入做 `find`，文字中夹带链接也会触发。收窄的理由是触发即把输入内容发给第三方 bot。是否接受，还是要求与 Android 一致？
+3. **自动查询的触发范围**。已决定（2026-10-11）：与 Android 一致，对整段输入做 `find`，文字中夹带链接也会触发。最初的设计只在输入框是单个链接时触发，理由是触发即把输入内容发给第三方 bot；该收窄已取消，由设置页说明文字告知。
 4. **链接预览修正**。远程预览规则（`#pagepreview`）在桌面没有消费者，I02 的模型也接不上。是把“修复链接预览”（I076、A156、D116）作为新条目补进本包（需要另加一个条目和 `WebpageResolver::request` 的挂钩），还是保持现状不做？本文按不做编写。
 5. **A112 的两条限制**。启动地址与含 `tgWebAppData` 的地址永不外部打开，以及每个面板每秒最多外部打开一次。前者使本功能不能用于“整个小程序改在浏览器里打开”。是否符合对 A112 的预期？

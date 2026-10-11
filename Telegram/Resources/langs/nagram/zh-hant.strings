@@ -748,7 +748,7 @@
 "lng_nagram_filter_too_many" = "這裡生效的規則過多（{amount} 條，上限 {limit} 條）。請停用或刪除部分規則。";
 "lng_nagram_filter_scopes_invalid" = "已儲存的對話和話題過濾設定無效，已被忽略。請匯入一份有效設定來取代。";
 "lng_nagram_inline_auto" = "依連結自動查詢 inline 機器人";
-"lng_nagram_inline_auto_about" = "輸入框裡只有一個連結且符合已啟用的規則時，這個連結會傳給規則指定的機器人以顯示結果。選擇結果之前不會向對話傳送任何內容。";
+"lng_nagram_inline_auto_about" = "輸入框裡的文字符合已啟用的規則時，整段文字會傳給規則指定的機器人以顯示結果。選擇結果之前不會向對話傳送任何內容。";
 "lng_nagram_inline_rules" = "inline 機器人規則";
 "lng_nagram_inline_rule" = "編輯 inline 機器人規則";
 "lng_nagram_inline_username" = "機器人使用者名稱";
@@ -758,10 +758,10 @@
 "lng_nagram_inline_invalid" = "inline 機器人規則無效。請檢查使用者名稱和表示式。";
 "lng_nagram_inline_pattern_error" = "第 {index} 個表示式：{error}";
 "lng_nagram_inline_test" = "測試連結";
-"lng_nagram_inline_test_about" = "輸入一個連結，查看符合哪條規則。不會送出任何請求。";
+"lng_nagram_inline_test_about" = "輸入一段文字，查看符合哪條規則。不會送出任何請求。";
 "lng_nagram_inline_test_match" = "符合 @{username} 的規則。";
 "lng_nagram_inline_test_none" = "沒有已啟用的規則符合。";
-"lng_nagram_inline_test_not_link" = "請輸入單個不含空白的 http 或 https 連結。";
+"lng_nagram_inline_test_text" = "訊息文字";
 "lng_nagram_inline_import_disabled" = "匯入的 inline 機器人規則已停用。請在 Nagram → 規則中啟用。";
 "lng_nagram_webview_external" = "網頁應用程式中改用瀏覽器開啟的連結";
 "lng_nagram_webview_external_about" = "一個正規表示式。網頁應用程式跳往符合的位址時，改由瀏覽器開啟。應用程式自身的啟動位址一律在應用程式內開啟。留空則不啟用。";
