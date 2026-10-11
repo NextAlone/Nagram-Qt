@@ -154,14 +154,6 @@ jobs:
           path: ${{ env.TBUILD }}\${{ env.REPO_NAME }}
           ref: ${{ inputs.ref }}
 
-      # Upstream keeps these Qt 6 fixes on the win7-qt6 branch of lib_ui.
-      # A patch that stops applying has reached the pinned commit: drop it.
-      - name: Patch lib_ui.
-        shell: bash
-        run: |
-          cd "$TBUILD/$REPO_NAME/Telegram/lib_ui"
-          git apply --verbose ../../tools/nagram/patches/lib_ui/*.diff
-
       - name: First set up.
         shell: bash
         run: |

@@ -6,12 +6,16 @@
   "own_include_prefixes": [
     "nagram/"
   ],
-  "submodule_overrides": [],
+  "submodule_overrides": [
+    "Telegram/lib_base",
+    "Telegram/lib_ui",
+    "cmake"
+  ],
   "budget": {
-    "upstream_files": 249,
-    "upstream_added_lines": 2449,
-    "source_files": 182,
-    "source_added_lines": 2247,
+    "upstream_files": 253,
+    "upstream_added_lines": 2615,
+    "source_files": 184,
+    "source_added_lines": 2303,
     "upstream_headers": 153
   }
 }
