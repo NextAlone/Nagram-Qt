@@ -64,8 +64,8 @@ include(cmake/target_prepare_qrc.cmake)
 include(cmake/options.cmake)
 
 # Nested: `if' expands all arguments, QT must be read only when set.
-if (WIN32 AND NOT build_winarm AND NOT build_winstore AND DEFINED ENV{QT})
-    if (NOT "$ENV{QT}" VERSION_LESS 6)
+if (WIN32 AND NOT build_winarm AND NOT build_winstore)
+    # if (NOT "$ENV{QT}" VERSION_LESS 6)
         # Windows 7 and 8 need ANGLE, Qt is already built with EGL.
         set(DESKTOP_APP_WIN7_BASELINE TRUE)
 
@@ -85,7 +85,7 @@ if (WIN32 AND NOT build_winarm AND NOT build_winstore AND DEFINED ENV{QT})
             IMPORTED_LOCATION_DEBUG ${angle_loc}/out/Debug/tg_angle.lib
             INTERFACE_INCLUDE_DIRECTORIES ${angle_loc}/include
         )
-    endif()
+    # endif()
 endif()
 
 include(cmake/external/qt/package.cmake)
