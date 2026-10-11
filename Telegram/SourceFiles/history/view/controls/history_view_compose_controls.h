@@ -343,6 +343,7 @@ public:
 	[[nodiscard]] auto fieldTabbed() const
 	-> rpl::producer<not_null<Ui::InputField::TabbedRequest*>>;
 	void insertTextToField(const QString &text);
+	void insertBotCommandToField(const QString &command);
 	[[nodiscard]] QString fieldLastText() const;
 	void undoFieldChange();
 
@@ -660,6 +661,7 @@ private:
 
 	crl::time _saveDraftStart = 0;
 	bool _saveDraftText = false;
+	bool _botCommandDrafted = false;
 	base::Timer _saveDraftTimer;
 	base::Timer _saveCloudDraftTimer;
 

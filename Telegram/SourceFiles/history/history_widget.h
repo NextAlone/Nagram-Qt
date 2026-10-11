@@ -1007,6 +1007,7 @@ private:
 
 	crl::time _saveDraftStart = 0;
 	bool _saveDraftText = false;
+	bool _botCommandDrafted = false;
 	base::Timer _saveDraftTimer;
 	base::Timer _saveCloudDraftTimer;
 	rpl::lifetime _threadFieldVisibleLifetime;

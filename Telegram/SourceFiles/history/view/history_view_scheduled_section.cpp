@@ -1610,8 +1610,8 @@ void ScheduledWidget::listSendBotCommand(
 		const QString &command,
 		const FullMsgId &context) {
 	if (Nagram::ForDevice().Get(Nagram::Compose::kBotCommandsToDraft)) {
-		_composeControls->insertTextToField(Bot::WrapCommandInChat(
-			_history->peer, command, context) + ' ');
+		_composeControls->insertBotCommandToField(Bot::WrapCommandInChat(
+			_history->peer, command, context));
 		return;
 	}
 	const auto callback = [=](Api::SendOptions options) {

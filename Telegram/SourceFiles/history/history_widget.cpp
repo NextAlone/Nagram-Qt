@@ -2048,9 +2048,18 @@ void HistoryWidget::initFieldAutocomplete() {
 		.stickerChosen = [=](ChatHelpers::FileChosen &&data) {
 			fileChosen(std::move(data));
 		},
-		.setText = [=](TextWithTags text) { if (_peer) setFieldText(text); },
+		.setText = [=](TextWithTags text) {
+			if (_botCommandDrafted) {
+				_botCommandDrafted = false;
+				return;
+			}
+			if (_peer) {
+				setFieldText(text);
+			}
+		},
 		.sendBotCommand = [=](QString command) {
 			if (_peer) {
+				_botCommandDrafted = false;
 				sendBotCommand({ _peer, command, FullMsgId(), replyTo() });
 				session().api().finishForwarding(prepareSendAction({}));
 			}
@@ -6796,6 +6805,10 @@ bool HistoryWidget::insertBotCommand(const QString &cmd) {
 		auto cur = QTextCursor(_field->textCursor());
 		cur.movePosition(QTextCursor::End);
 		_field->setTextCursor(cur);
+
+		// The autocomplete cleanup that follows command selection would wipe
+		// what was just drafted, so the next setFieldText call must be ignored.
+		_botCommandDrafted = true;
 	} else {
 		setFieldText(
 			{ toInsert, TextWithTags::Tags() },

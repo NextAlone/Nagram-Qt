@@ -5430,8 +5430,8 @@ void ChatWidget::sendBotCommand(
 			? Data::CanSend(_peer, ChatRestriction::SendOther)
 			: _bottom->canSendTexts();
 		if (canSendTexts) {
-			_composeControls->insertTextToField(Bot::WrapCommandInChat(
-				_peer, request.command, request.context) + ' ');
+			_composeControls->insertBotCommandToField(Bot::WrapCommandInChat(
+				_peer, request.command, request.context));
 			setInnerFocus();
 			return;
 		}

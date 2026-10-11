@@ -148,6 +148,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "styles/style_layers.h"
 #include "styles/style_menu_icons.h"
 
+#include <QtCore/QRegularExpression>
+
 namespace HistoryView {
 namespace {
 
@@ -3349,8 +3351,15 @@ void ComposeControls::initFieldAutocomplete() {
 		.stickerChosen = [=](ChatHelpers::FileChosen &&data) {
 			_fileChosen.fire(std::move(data));
 		},
-		.setText = [=](TextWithTags text) { setText(text); },
+		.setText = [=](TextWithTags text) {
+			if (_botCommandDrafted) {
+				_botCommandDrafted = false;
+				return;
+			}
+			setText(text);
+		},
 		.sendBotCommand = [=](QString command) {
+			_botCommandDrafted = false;
 			_sendCommandRequests.fire_copy(command);
 		},
 		.processShortcut = (_processShortcut
@@ -6583,6 +6592,29 @@ void ComposeControls::insertTextToField(const QString &text) {
 	_field->setFocus();
 	_field->textCursor().insertText(text);
 	_field->ensureCursorVisible();
+}
+
+void ComposeControls::insertBotCommandToField(const QString &command) {
+	const auto &textWithTags = _field->getTextWithTags();
+	const auto match = QRegularExpression(
+		u"^/[A-Za-z_0-9]{0,64}(@[A-Za-z_0-9]{0,32})?(\\s|$)"_q).match(
+			textWithTags.text);
+	const auto tail = match.hasMatch()
+		? _field->getTextWithTagsPart(match.capturedLength())
+		: textWithTags;
+	const auto inserted = command + ' ';
+	auto result = tail;
+	result.text = inserted + tail.text;
+	for (auto &tag : result.tags) {
+		tag.offset += inserted.size();
+	}
+	_field->setFocus();
+	setFieldText(result);
+	_field->ensureCursorVisible();
+
+	// The autocomplete cleanup that follows command selection would wipe
+	// what was just drafted, so the next setText call must be ignored.
+	_botCommandDrafted = true;
 }
 
 QString ComposeControls::fieldLastText() const {
