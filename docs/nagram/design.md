@@ -507,7 +507,7 @@ Debug 包缺少 `Contents/Frameworks/Updater`，点击“重启”会退出，�
 | 推送 | 暂不推送 |
 | A01 自选等宽字体 | 放弃；不维护 `lib_ui` fork，不注册该设置（维护者决定，2026-09-26） |
 | 版本号 | `<上游版本>.<N>`，`N` 与通道写在 `Telegram/build/nagram_version`；tag 为 `v<版本号>`，测试版加 `-beta`；通道分 `stable` 和 `beta`，按 Nagram 自己的验证程度决定（第 3.8 节；维护者确认保留通道区分，2026-10-04） |
-| Windows + Qt 6 的上游未合入修复 | 上游把这批修复放在 `public-canary` 分支，尚未进 `dev`。本仓库原样复制其中四个提交（Windows 7 与 ANGLE、媒体查看器的系统最大化与全屏偏移、`WM_ENDSESSION` 关机崩溃），`Telegram/lib_base`、`Telegram/lib_ui`、`cmake` 三个子模块因此指向各自的 `win7-qt6` 分支，并登记在 `tools/nagram/upstream.json` 的 `submodule_overrides`，预算同步调高。此前存放在 `tools/nagram/patches/lib_ui/` 的两个补丁已包含在新指针里，连同 `nagram-win.yml` 的套用步骤一并删除。上游合入 `dev` 并同步后，清空 `submodule_overrides`、调回预算（维护者决定，2026-10-11） |
+| Windows + Qt 6 的上游未合入修复 | 上游把这批修复放在 `public-canary` 分支，尚未进 `dev`。本仓库原样复制其中四个提交（Windows 7 与 ANGLE、媒体查看器的系统最大化与全屏偏移、`WM_ENDSESSION` 关机崩溃），`Telegram/lib_base`、`Telegram/lib_ui`、`cmake` 三个子模块因此指向各自的 `win7-qt6` 分支，并登记在 `tools/nagram/upstream.json` 的 `submodule_overrides`，预算同步调高。此前存放在 `tools/nagram/patches/lib_ui/` 的两个补丁已包含在新指针里，连同 `nagram-win.yml` 的套用步骤一并删除。上游合入 `dev` 并同步后，清空 `submodule_overrides`、调回预算（维护者决定，2026-10-11）。新的 `lib_ui` 给 Windows 的默认 `QSurfaceFormat` 加了 alpha，Qt 因此把 WebView 的无边框宿主窗口标成 `WS_EX_LAYERED`，窗口自己不绘制，点击全部穿透。上游还没有修，修复以补丁形式放在 `tools/nagram/patches/lib_webview/`，`nagram-win.yml` 检出后用 `git apply` 套用，本地 Windows 构建需手动执行同一条命令；补丁套不上说明上游已合入固定的提交，删除该补丁（2026-10-12） |
 
 ## 7. 待决事项
 

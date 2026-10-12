@@ -1,0 +1,26 @@
+diff --git a/webview/platform/win/webview_win.cpp b/webview/platform/win/webview_win.cpp
+index a6f69fa..1c772bd 100644
+--- a/webview/platform/win/webview_win.cpp
++++ b/webview/platform/win/webview_win.cpp
+@@ -11,6 +11,7 @@
+ #include "webview/platform/win/webview_windows_edge_chromium.h"
+ #include "webview/platform/win/webview_windows_edge_html.h"
+ 
++#include <QtGui/QSurfaceFormat>
+ #include <QtGui/QWindow>
+ 
+ namespace Webview {
+@@ -25,6 +26,13 @@ namespace {
+ base::unique_qptr<QWindow> MakeFramelessWindow() {
+ 	auto result = base::make_unique_q<QWindow>();
+ 	result->setFlag(Qt::FramelessWindowHint);
++	// The window is a pure host for a child WebView2 HWND that
++	// composites through DirectComposition, so an alpha buffer buys
++	// nothing and only makes Qt mark the HWND WS_EX_LAYERED, which
++	// hit-tests per pixel against an alpha mask nothing ever writes.
++	auto format = result->format();
++	format.setAlphaBufferSize(0);
++	result->setFormat(format);
+ 	return result;
+ }
+ 
