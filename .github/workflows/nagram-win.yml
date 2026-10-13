@@ -155,13 +155,14 @@ jobs:
           path: ${{ env.TBUILD }}\${{ env.REPO_NAME }}
           ref: ${{ inputs.ref }}
 
-      # Fixes for a submodule that upstream has not published yet.
+      # Fixes for a submodule that its pinned commit does not have.
       # A patch that stops applying has reached the pinned commit: drop it.
-      - name: Patch lib_webview.
+      - name: Patch submodules.
         shell: bash
         run: |
-          cd "$TBUILD/$REPO_NAME/Telegram/lib_webview"
-          git apply --verbose ../../tools/nagram/patches/lib_webview/*.diff
+          cd "$TBUILD/$REPO_NAME"
+          git -C Telegram/lib_ui apply --verbose ../../tools/nagram/patches/lib_ui/*.diff
+          git -C Telegram/lib_webview apply --verbose ../../tools/nagram/patches/lib_webview/*.diff
 
       # The Release build of a push to the default branch is offered to the
       # installed copies that follow these builds, so it has a build number;

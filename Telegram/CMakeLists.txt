@@ -2105,6 +2105,8 @@ PRIVATE
     test/test_wheel.h
     test/test_widgets.cpp
     test/test_widgets.h
+    test/test_window_exposure.cpp
+    test/test_window_exposure.h
     ui/boxes/edit_invite_link_session.cpp
     ui/boxes/edit_invite_link_session.h
     ui/boxes/emoji_stake_box.cpp

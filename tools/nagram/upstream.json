@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "upstream": "https://github.com/telegramdesktop/tdesktop.git#dev",
-  "base": "863cf10d9f34fb0b1b35b35da1bda75acfc58d2e",
+  "base": "6fed91ffab9861771a75f29df65031b3c80b6941",
   "source_root": "Telegram/SourceFiles/",
   "own_include_prefixes": [
     "nagram/"
