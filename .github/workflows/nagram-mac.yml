@@ -96,8 +96,8 @@ jobs:
       # A patch that stops applying has reached the pinned commit: drop it.
       - name: Patch submodules.
         run: |
-          cd $REPO_NAME
-          git -C Telegram/lib_ui apply --verbose ../../tools/nagram/patches/lib_ui/*.diff
+          cd $REPO_NAME/Telegram/lib_ui
+          git apply --verbose ../../tools/nagram/patches/lib_ui/*.diff
 
       # The Release build of a push to the default branch is offered to the
       # installed copies that follow these builds, so it has a build number;

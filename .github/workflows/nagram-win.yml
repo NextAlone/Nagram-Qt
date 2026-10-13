@@ -160,9 +160,10 @@ jobs:
       - name: Patch submodules.
         shell: bash
         run: |
-          cd "$TBUILD/$REPO_NAME"
-          git -C Telegram/lib_ui apply --verbose ../../tools/nagram/patches/lib_ui/*.diff
-          git -C Telegram/lib_webview apply --verbose ../../tools/nagram/patches/lib_webview/*.diff
+          cd "$TBUILD/$REPO_NAME/Telegram/lib_ui"
+          git apply --verbose ../../tools/nagram/patches/lib_ui/*.diff
+          cd ../lib_webview
+          git apply --verbose ../../tools/nagram/patches/lib_webview/*.diff
 
       # The Release build of a push to the default branch is offered to the
       # installed copies that follow these builds, so it has a build number;
