@@ -774,7 +774,6 @@ BottomInfo::Data BottomInfoDataFromMessage(not_null<Message*> message) {
 		result.date = base::unixtime::parse(forwarded->originalDate);
 		result.flags |= Flag::ForwardedDate;
 	}
-	Nagram::Messages::ApplyForwardedDate(result, item);
 	// We don't want to pass and update it in Data for now.
 	//if (item->unread()) {
 	//	result.flags |= Flag::Unread;

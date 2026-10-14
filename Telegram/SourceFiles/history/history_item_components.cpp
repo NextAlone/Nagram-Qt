@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/history_item_components.h"
+#include "nagram/messages/format.h"
 
 #include "api/api_text_entities.h"
 #include "base/qt/qt_key_modifiers.h"
@@ -384,6 +385,7 @@ void HistoryMessageForwarded::create(
 				tr::marked);
 		}
 	}
+	phrase.append(Nagram::Messages::ForwardedDateSuffix(originalDate));
 	text.setMarkedText(st::fwdTextStyle, phrase, kMarkupTextOptions, context);
 
 	text.setLink(1, fromChannel

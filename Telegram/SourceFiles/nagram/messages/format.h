@@ -33,9 +33,7 @@ void PaintForwards(
 	int &right,
 	int top,
 	int outerWidth);
-void ApplyForwardedDate(
-	HistoryView::BottomInfo::Data &data,
-	not_null<HistoryItem*> item);
+[[nodiscard]] QString ForwardedDateSuffix(TimeId date);
 [[nodiscard]] TextWithEntities ServiceText(
 	not_null<HistoryView::Element*> view,
 	const TextWithEntities &text);

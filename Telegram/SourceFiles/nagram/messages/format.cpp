@@ -18,6 +18,11 @@
 #include <cstdlib>
 
 namespace Nagram::Messages {
+namespace {
+
+constexpr auto kSecondsInYear = 365 * 24 * 60 * 60;
+
+} // namespace
 
 QString FormatTime(QTime time) {
 	return FormatTime(time, ForDevice().Get(kSecondsInMessages));
@@ -35,7 +40,6 @@ QString FormatSavedFrom(QDateTime dateTime) {
 	} else if (date == current.addDays(-1)) {
 		return tr::lng_mediaview_yesterday(tr::now, lt_time, time);
 	}
-	constexpr auto kSecondsInYear = 365 * 24 * 60 * 60;
 	const auto diff = std::abs(
 		base::unixtime::now() - base::unixtime::serialize(dateTime));
 	const auto dateText = (diff < kSecondsInYear)
@@ -175,19 +179,27 @@ void PaintForwards(
 	p.restore();
 }
 
-void ApplyForwardedDate(
-		HistoryView::BottomInfo::Data &data,
-		not_null<HistoryItem*> item) {
-	if (!ForDevice().Get(kShowForwardedMessageDate)
-		|| item->externalReply()) {
-		return;
+QString ForwardedDateSuffix(TimeId date) {
+	if (!ForDevice().Get(kShowForwardedMessageDate) || !date) {
+		return QString();
 	}
-	const auto forwarded = item->Get<HistoryMessageForwarded>();
-	if (!forwarded || !forwarded->originalDate) {
-		return;
-	}
-	data.date = base::unixtime::parse(forwarded->originalDate);
-	data.flags |= HistoryView::BottomInfo::Data::Flag::ForwardedDate;
+	const auto parsed = base::unixtime::parse(date);
+	const auto day = parsed.date();
+	const auto current = QDate::currentDate();
+	const auto time = FormatTime(parsed.time());
+	const auto text = (day == current)
+		? time
+		: (day == current.addDays(-1))
+		? tr::lng_nagram_forwarded_yesterday(tr::now, lt_time, time)
+		: (std::abs(base::unixtime::now() - date) < kSecondsInYear)
+		? (tr::lng_month_day(
+			tr::now,
+			lt_month,
+			Lang::MonthSmall(day.month())(tr::now),
+			lt_day,
+			QString::number(day.day())) + ' ' + time)
+		: (QLocale().toString(day, QLocale::ShortFormat) + ' ' + time);
+	return u" · "_q + text;
 }
 
 TextWithEntities ServiceText(

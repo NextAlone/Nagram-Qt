@@ -222,6 +222,7 @@
 "lng_nagram_time_and_info" = "时间与信息";
 "lng_nagram_seconds_in_messages" = "时间显示秒";
 "lng_nagram_show_forwarded_message_date" = "转发消息显示原始发送时间";
+"lng_nagram_forwarded_yesterday" = "昨天 {time}";
 "lng_nagram_show_service_time" = "服务消息显示时间";
 "lng_nagram_show_message_id" = "显示消息 ID";
 "lng_nagram_message_id_tooltip" = "在时间提示中";
