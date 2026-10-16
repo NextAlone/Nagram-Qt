@@ -69,6 +69,7 @@ buildFHSEnv {
       wayland
       webkitgtk_4_1
       xdg-utils
+      xkeyboard-config
     ];
 
   extraInstallCommands = ''
