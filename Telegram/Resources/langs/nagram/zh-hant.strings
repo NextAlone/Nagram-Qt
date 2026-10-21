@@ -219,6 +219,12 @@
 "lng_nagram_moderate_defaults" = "刪除訊息時的預設選項";
 "lng_nagram_moderate_delete_all" = "刪除全部訊息和回應";
 "lng_nagram_moderate_ban" = "封鎖或限制該使用者";
+"lng_nagram_userpic_admin_actions" = "在頭像選單中顯示管理操作";
+"lng_nagram_mention_admin_actions" = "在提及選單中顯示管理操作";
+"lng_nagram_kick_delete_messages" = "移除成員時刪除其訊息";
+"lng_nagram_admin_actions_about" = "僅在你可以封鎖成員的超級群組中生效。";
+"lng_nagram_admin_change_permissions" = "修改權限";
+"lng_nagram_admin_moderate" = "封鎖或刪除訊息";
 "lng_nagram_time_and_info" = "時間與資訊";
 "lng_nagram_seconds_in_messages" = "時間顯示秒數";
 "lng_nagram_show_forwarded_message_date" = "轉傳訊息顯示原始傳送時間";

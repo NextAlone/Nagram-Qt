@@ -85,6 +85,15 @@ inline constexpr auto kModerateDefaults = Option<int>{
 inline constexpr auto kAdminShortcuts = Option<bool>{
 	"nagram.adminShortcuts", Scope::Device, false,
 	Category::Privacy, "lng_nagram_admin_shortcuts_option" };
+inline constexpr auto kUserpicAdminActions = Option<bool>{
+	"nagram.userpicAdminActions", Scope::Device, false,
+	Category::Privacy, "lng_nagram_userpic_admin_actions" };
+inline constexpr auto kMentionAdminActions = Option<bool>{
+	"nagram.mentionAdminActions", Scope::Device, false,
+	Category::Privacy, "lng_nagram_mention_admin_actions" };
+inline constexpr auto kKickDeleteMessages = Option<bool>{
+	"nagram.kickDeleteMessages", Scope::Device, false,
+	Category::Privacy, "lng_nagram_kick_delete_messages" };
 
 inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kDemoMode));
@@ -98,6 +107,9 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kNameOrder));
 	Expects(registry.Add(kPersianCalendar));
 	Expects(registry.Add(kModerateDefaults));
+	Expects(registry.Add(kUserpicAdminActions));
+	Expects(registry.Add(kMentionAdminActions));
+	Expects(registry.Add(kKickDeleteMessages));
 	Expects(registry.Add(kDoNotSharePhone));
 	Expects(registry.Add(kForceCopy));
 	Expects(registry.Add(kIgnoreContentRestrictions));

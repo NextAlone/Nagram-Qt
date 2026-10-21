@@ -223,6 +223,12 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_moderate_defaults" = "Delete dialog defaults";
 "lng_nagram_moderate_delete_all" = "Delete all messages and reactions";
 "lng_nagram_moderate_ban" = "Ban or restrict the user";
+"lng_nagram_userpic_admin_actions" = "Admin actions in userpic menu";
+"lng_nagram_mention_admin_actions" = "Admin actions in mention menu";
+"lng_nagram_kick_delete_messages" = "Delete messages when removing members";
+"lng_nagram_admin_actions_about" = "Only in supergroups where you can ban members.";
+"lng_nagram_admin_change_permissions" = "Change permissions";
+"lng_nagram_admin_moderate" = "Ban or delete messages";
 "lng_nagram_time_and_info" = "Time and info";
 "lng_nagram_seconds_in_messages" = "Show seconds in message times";
 "lng_nagram_show_forwarded_message_date" = "Show original time on forwarded messages";

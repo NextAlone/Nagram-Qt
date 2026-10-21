@@ -9,6 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/menu/actions.h"
 #include "nagram/menu/selection.h"
 #include "nagram/messages/reactions.h"
+#include "nagram/privacy/admin_shortcuts.h"
 #include "nagram/privacy/protection.h"
 
 #include "api/api_attached_stickers.h"
@@ -2033,6 +2034,11 @@ base::unique_qptr<Ui::PopupMenu> FillContextMenu(
 				});
 		});
 	}
+	Nagram::Privacy::AddMentionAdminActions(
+		result.get(),
+		link,
+		item ? item->history()->peer.get() : nullptr,
+		list->controller());
 	Nagram::Menu::Apply(result.get(),
 		(request.pointState != PointState::Outside
 			&& request.selectedItems.empty()) ? item : nullptr,

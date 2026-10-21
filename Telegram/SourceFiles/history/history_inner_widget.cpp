@@ -11,6 +11,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/messages/reactions.h"
 #include "nagram/menu/actions.h"
 #include "nagram/menu/selection.h"
+#include "nagram/privacy/admin_shortcuts.h"
 #include "nagram/privacy/protection.h"
 
 #include "api/api_polls.h"
@@ -3943,6 +3944,7 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 			nagramSelected.push_back(selected->fullId());
 		}
 	}
+	Nagram::Privacy::AddMentionAdminActions(_menu.get(), link, _peer, controller);
 	Nagram::Menu::Apply(_menu.get(),
 		(nagramOnMessage && !selectedState.count) ? leaderOrSelf : nullptr,
 		controller,

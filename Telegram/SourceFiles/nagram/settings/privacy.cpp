@@ -292,6 +292,19 @@ const auto kMeta = BuildHelper({
 		.onClick = [=] { controller->show(Box(ModerateDefaultsBox)); },
 		.keywords = { u"delete"_q, u"ban"_q, u"report"_q },
 	});
+	AddToggle(builder, Privacy::kUserpicAdminActions,
+		tr::lng_nagram_userpic_admin_actions(),
+		u"nagram/privacy/userpic-admin-actions"_q,
+		{ u"admin"_q, u"ban"_q, u"permissions"_q, u"userpic"_q });
+	AddToggle(builder, Privacy::kMentionAdminActions,
+		tr::lng_nagram_mention_admin_actions(),
+		u"nagram/privacy/mention-admin-actions"_q,
+		{ u"admin"_q, u"ban"_q, u"permissions"_q, u"mention"_q });
+	AddToggle(builder, Privacy::kKickDeleteMessages,
+		tr::lng_nagram_kick_delete_messages(),
+		u"nagram/privacy/kick-delete-messages"_q,
+		{ u"admin"_q, u"remove"_q, u"delete"_q, u"members"_q });
+	builder.addDividerText(tr::lng_nagram_admin_actions_about());
 });
 
 const SectionBuildMethod PrivacySection::kBuild = kMeta.build;

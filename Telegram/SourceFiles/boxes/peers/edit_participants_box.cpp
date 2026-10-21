@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "boxes/peers/edit_participants_box.h"
+#include "nagram/privacy/admin_shortcuts.h"
 
 #include "api/api_chat_participants.h"
 #include "boxes/peers/edit_participant_box.h"
@@ -2308,7 +2309,7 @@ void ParticipantsBoxController::kickParticipant(not_null<PeerData*> participant)
 			lt_user,
 			user ? user->firstName : participant->name());
 	showBox(
-		Ui::MakeConfirmBox({
+		Nagram::Privacy::KickConfirmBox(_peer, participant, {
 			.text = text,
 			.confirmed = [=](Fn<void()> close) { kick(); close(); },
 			.confirmText = tr::lng_box_remove(),

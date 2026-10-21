@@ -4615,6 +4615,11 @@ void AddSenderUserpicModerateAction(
 			.isAttention = true,
 		});
 	}
+	Nagram::Privacy::AddUserpicAdminActions(
+		controller,
+		moderateItem,
+		canDeleteAndBan,
+		addAction);
 }
 
 void AddSendMoneyAction(

@@ -276,6 +276,9 @@ E21 截图在 `history_view_element.h/.cpp`、`history_view_message.cpp`、`hist
 | F17、F18 | `data/data_auto_download.cpp` | 两处自动下载判断增加扩展名排除 | 过滤 |
 | G10、G11 | `lang/lang_keys.cpp` | `langFullName` 的姓名顺序；五个日期格式函数开头的波斯历分支 | 替换 |
 | G12 | `boxes/moderate_messages_box.cpp` | 入口处合并默认勾选 | 读取 |
+| G19 | `window/window_peer_menu.cpp` | `AddSenderUserpicModerateAction` 末尾调用 `Nagram::Privacy::AddUserpicAdminActions`，目标用户取上游用于“删除并封禁”的同一条消息的发送者，并传入上游是否已显示该项 | 读取 |
+| G20 | `history/history_inner_widget.cpp`、`history/view/history_view_context_menu.cpp` | 两条消息菜单填充路径在 `Nagram::Menu::Apply` 之前各一行 `AddMentionAdminActions`，按右键处的提及链接加入管理项 | 读取 |
+| G21 | `boxes/peers/edit_participants_box.cpp`（`ParticipantsBoxController::kickParticipant`）、`boxes/peers/edit_participant_box.cpp`（`EditRestrictedBox::prepare` 的“移出群组”） | 确认框由 `Ui::MakeConfirmBox` 改为 `Nagram::Privacy::KickConfirmBox`；开关关闭或条件不满足时原样返回 `MakeConfirmBox` 的结果 | 替换 |
 | J05 | `mtproto/mtp_instance.h/.cpp`、`main/main_session.cpp` | 新增 `SetRpcErrorObserver`，在未被默认处理的 RPC 错误记录日志后通知；会话创建时安装 Nagram 观察者 | 读取 |
 
 ### 2.12 网络（P3-06）

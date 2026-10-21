@@ -12,10 +12,10 @@
     "cmake"
   ],
   "budget": {
-    "upstream_files": 255,
-    "upstream_added_lines": 2623,
-    "source_files": 186,
-    "source_added_lines": 2311,
-    "upstream_headers": 156
+    "upstream_files": 257,
+    "upstream_added_lines": 2640,
+    "source_files": 188,
+    "source_added_lines": 2328,
+    "upstream_headers": 160
   }
 }

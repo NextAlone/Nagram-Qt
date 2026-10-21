@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "boxes/peers/edit_participant_box.h"
+#include "nagram/privacy/admin_shortcuts.h"
 
 #include "boxes/peers/edit_tag_control.h"
 #include "boxes/peers/edit_participants_box.h"
@@ -1115,7 +1116,7 @@ void EditRestrictedBox::prepare() {
 					close();
 				};
 				uiShow()->show(
-					Ui::MakeConfirmBox({
+					Nagram::Privacy::KickConfirmBox(peer(), user(), {
 						.text = tr::lng_profile_sure_kick(
 							tr::now,
 							lt_user,
