@@ -11,6 +11,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/interface/text.h"
 #include "nagram/core/options.h"
 #include "nagram/privacy/options.h"
+#include "nagram/privacy/protection.h"
 
 #include "data/data_abstract_structure.h"
 #include "data/data_channel.h"
@@ -42,6 +43,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "base/platform/base_platform_url_scheme.h"
 #include "base/platform/base_platform_last_input.h"
 #include "base/platform/base_platform_info.h"
+#include "base/platform/base_platform_process.h"
 #include "platform/platform_specific.h"
 #include "platform/platform_integration.h"
 #include "history/history.h"
@@ -94,11 +96,13 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "export/export_manager.h"
 #include "wallet/wallet_panel.h"
 #include "webrtc/webrtc_environment.h"
+#include "webview/webview_interface.h"
 #include "window/window_saved_windows.h"
 #include "window/window_separate_id.h"
 #include "window/window_session_controller.h"
 #include "window/window_controller.h"
 #include "boxes/abstract_box.h"
+#include "boxes/keys_legend.h"
 #include "base/qthelp_regex.h"
 #include "base/qthelp_url.h"
 #include "boxes/premium_limits_box.h"
@@ -192,8 +196,8 @@ Application::Application()
 	_private->proxyRotation = std::make_unique<ProxyRotationManager>();
 
 	_platformIntegration->init();
-	_screenshotProtection->addContentReason(
-		Nagram::ForDevice().Value(Nagram::Privacy::kDemoMode), _lifetime);
+	Nagram::Privacy::ProtectWindowsInDemoMode(
+		_screenshotProtection.get(), _lifetime);
 	Nagram::ForDevice().Value(Nagram::Privacy::kDemoMode)
 		| rpl::on_next([=](bool) {
 			updateWindowTitles();
@@ -368,6 +372,7 @@ void Application::run() {
 	Media::Player::start(_audio.get());
 	Media::Encode::ClearStaleTempFiles();
 	Storage::ClearStaleArchiveFiles();
+	Webview::ClearStaleTemporaryStorage();
 
 	if (MediaControlsManager::Supported()) {
 		_mediaControlsManager = std::make_unique<MediaControlsManager>();
@@ -747,6 +752,8 @@ bool Application::eventFilter(QObject *object, QEvent *e) {
 			return true;
 		} else if (Shortcuts::HandlePossibleChatSwitch(event)) {
 			return true;
+		} else if (HandleKeysLegendHotkey(this, object, event)) {
+			return true;
 		}
 	} break;
 	case QEvent::MouseButtonPress:
@@ -799,8 +806,13 @@ bool Application::eventFilter(QObject *object, QEvent *e) {
 						}),
 						StartUrlRequiresActivate);
 					cRefStartUrls() << base::take(_urlsToOpen);
-					checkStartUrls();
-					if (_lastActivePrimaryWindow && activateRequired) {
+					const auto activated = checkStartUrlsActivating();
+					if (!activateRequired) {
+						return;
+					} else if (activated) {
+						base::Platform::ActivateThisProcessWindow(
+							activated->winId());
+					} else if (_lastActivePrimaryWindow) {
 						_lastActivePrimaryWindow->activate();
 					}
 				});
@@ -1264,7 +1276,9 @@ void Application::checkStartUrls() {
 				return false;
 			} else if (_lastActivePrimaryWindow) {
 				const auto local = TryConvertUrlToLocal(url.toString());
-				return !openLocalUrl(local, {});
+				return IsGetPremiumLocalUrl(local)
+					? !openInternalUrl(local, {})
+					: !openLocalUrl(local, {});
 			}
 			return true;
 		}) | ranges::to<QList<QUrl>>;
@@ -1288,6 +1302,22 @@ void Application::checkStartUrls() {
 			_lastActivePrimaryWindow->widget()->handleStartFiles(
 				std::move(paths));
 		}
+	}
+}
+
+QPointer<QWidget> Application::checkStartUrlsActivating() {
+	if (_startUrlActivated) {
+		checkStartUrls();
+		return nullptr;
+	}
+	_startUrlActivated.emplace();
+	checkStartUrls();
+	return *base::take(_startUrlActivated);
+}
+
+void Application::registerWindowActivation(not_null<QWidget*> window) {
+	if (_startUrlActivated) {
+		*_startUrlActivated = window.get();
 	}
 }
 

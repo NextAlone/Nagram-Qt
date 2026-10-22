@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "core/sandbox.h"
 
 #include "base/platform/base_platform_info.h"
+#include "base/platform/base_platform_process.h"
 #include "platform/platform_specific.h"
 #include "mainwidget.h"
 #include "mainwindow.h"
@@ -40,8 +41,10 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include <QtCore/QLockFile>
 #include <QtGui/QSessionManager>
 #include <QtGui/QScreen>
-#include <QtGui/qpa/qplatformscreen.h>
+
+#ifndef DESKTOP_APP_DISABLE_PRIVATE_QT_API
 #include <private/qapplication_p.h>
+#endif // !DESKTOP_APP_DISABLE_PRIVATE_QT_API
 
 namespace Core {
 namespace {
@@ -263,14 +266,12 @@ void Sandbox::QuitWhenStarted() {
 	if (!QApplication::instance() || !Instance()._started) {
 		QuitOnStartRequested = true;
 	} else {
-		// Use exit(0) instead of quit() to avoid recursive
-		// [NSApp terminate:] on macOS. Since Qt 6.0, quit() routes
-		// through QCocoaIntegration::quit() -> [NSApp terminate:],
-		// which when called from within applicationShouldTerminate:
-		// causes a nested terminate that leads to exit() being called
-		// directly, bypassing normal cleanup. exit(0) properly exits
-		// event loops without going through the platform plugin.
-		QCoreApplication::exit(0);
+		// WHY: quit() on macOS since Qt 6.0 routes through [NSApp terminate:],
+		// and since Qt 6.7 even exit() emits aboutToQuit synchronously, which
+		// destroys windows mid-dispatch. So exit(0), deferred one loop tick.
+		InvokeQueued(&Instance(), [] {
+			QCoreApplication::exit(0);
+		});
 	}
 }
 
@@ -332,8 +333,7 @@ void Sandbox::setupScreenScale() {
 
 	const auto screen = Sandbox::primaryScreen();
 	const auto dpi = screen->logicalDotsPerInch();
-	const auto basePair = screen->handle()->logicalBaseDpi();
-	const auto base = (basePair.first + basePair.second) * 0.5;
+	const auto base = style::BaseDpi();
 	const auto screenScaleExact = dpi / base;
 	const auto screenScale = int(base::SafeRound(screenScaleExact * 20)) * 5;
 	LOG(("Primary screen DPI: %1, Base: %2.").arg(dpi).arg(base));
@@ -352,14 +352,6 @@ void Sandbox::setupScreenScale() {
 }
 
 Sandbox::~Sandbox() {
-	// When WM_ENDSESSION deferred closeApplication() to a main-loop
-	// tick that never came, the Application is still alive here and
-	// would be destroyed by member teardown at base nesting level,
-	// where Ui::PostponeCall bookkeeping is not allowed. Destroy it
-	// inside enter-from-event-loop instead, like a normal quit does.
-	customEnterFromEventLoop([&] {
-		closeApplication();
-	});
 #ifdef Q_OS_MAC
 	Platform::DestroyGlobalMenu();
 #endif // Q_OS_MAC
@@ -558,6 +550,11 @@ void Sandbox::readClients() {
 		return (i != _localClients.end()) ? &*i : nullptr;
 	};
 	QList<QUrl> startUrls;
+	struct Reply {
+		QLocalSocket *socket = nullptr;
+		bool activationRequired = false;
+	};
+	auto replies = std::vector<Reply>();
 	for (const auto socket : sockets) {
 		const auto client = findClient(socket);
 		if (!client) {
@@ -637,20 +634,38 @@ void Sandbox::readClients() {
 				}
 				startUrls.append(url);
 				if (!activationRequired) {
-					activationRequired = StartUrlRequiresActivate(url.toString());
+					// WHY: without Application the passcode state is unknown.
+					activationRequired = !Core::IsAppLaunched()
+						|| StartUrlRequiresActivate(url.toString());
 				}
 			}
-			const auto processId = QApplication::applicationPid();
-			const auto windowId = activationRequired
-				? execExternal("show")
-				: 0;
-			const auto response = u"RES:%1_%2;"_q.arg(processId).arg(windowId).toLatin1();
-			socket->write(response.data(), response.size());
+			replies.push_back({ socket, activationRequired });
 		}
 	}
 	cRefStartUrls() << base::take(startUrls);
-	if (_application) {
-		_application->checkStartUrls();
+	const auto activated = _application
+		? _application->checkStartUrlsActivating()
+		: QPointer<QWidget>();
+	auto windowId = std::optional<uint64>();
+	const auto activate = [&] {
+		if (!windowId) {
+			if (const auto window = activated.data()) {
+				windowId = Platform::ActivationWindowId(window);
+				base::Platform::ActivateThisProcessWindow(window->winId());
+			} else {
+				windowId = execExternal("show");
+			}
+		}
+		return *windowId;
+	};
+	const auto processId = QApplication::applicationPid();
+	for (const auto &reply : replies) {
+		if (!findClient(reply.socket)) {
+			continue;
+		}
+		const auto id = reply.activationRequired ? activate() : 0;
+		const auto response = u"RES:%1_%2;"_q.arg(processId).arg(id).toLatin1();
+		reply.socket->write(response.data(), response.size());
 	}
 }
 
@@ -759,6 +774,7 @@ bool Sandbox::notify(QObject *receiver, QEvent *e) {
 		if (!weak) {
 			return true;
 		}
+#ifndef DESKTOP_APP_DISABLE_PRIVATE_QT_API
 	} else if (e->type() == QEvent::Wheel
 		&& e->spontaneous()
 		&& (static_cast<QWheelEvent*>(e)->phase() == Qt::NoScrollPhase)) {
@@ -766,6 +782,7 @@ bool Sandbox::notify(QObject *receiver, QEvent *e) {
 		// grabbed, and Qt then routes plain mouse wheel events to that
 		// stale widget instead of the one under the cursor.
 		QApplicationPrivate::wheel_widget = nullptr;
+#endif // !DESKTOP_APP_DISABLE_PRIVATE_QT_API
 	}
 	if (e->type() == QEvent::Paint
 		&& Ui::HasWindowPalettes()

@@ -22,7 +22,9 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 namespace Ui {
 
-VideoUserpicPlayer::VideoUserpicPlayer() = default;
+VideoUserpicPlayer::VideoUserpicPlayer(Fn<void()> repaint)
+: _repaint(std::move(repaint)) {
+}
 
 VideoUserpicPlayer::~VideoUserpicPlayer() = default;
 
@@ -158,7 +160,10 @@ void VideoUserpicPlayer::handleUpdate(
 	v::match(update.data, [&](Information &update) {
 		streamingReady(std::move(update));
 	}, [](PreloadedVideo) {
-	}, [](UpdateVideo) {
+	}, [&](UpdateVideo) {
+		if (_repaint) {
+			_repaint();
+		}
 	}, [](PreloadedAudio) {
 	}, [](UpdateAudio) {
 	}, [](WaitingForData) {
@@ -171,10 +176,16 @@ void VideoUserpicPlayer::handleUpdate(
 void VideoUserpicPlayer::handleError(::Media::Streaming::Error &&error) {
 	_streamedPhoto->setVideoPlaybackFailed();
 	clear();
+	if (_repaint) {
+		_repaint();
+	}
 }
 
 void VideoUserpicPlayer::streamingReady(
 		::Media::Streaming::Information &&info) {
+	if (_repaint) {
+		_repaint();
+	}
 }
 
 } // namespace Ui

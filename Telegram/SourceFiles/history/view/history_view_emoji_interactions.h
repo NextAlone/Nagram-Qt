@@ -127,7 +127,6 @@ private:
 	void checkPendingEffects();
 
 	void refreshLayerShift();
-	void refreshLayerGeometryAndUpdate(QRect rect);
 
 	const not_null<QWidget*> _parent;
 	const not_null<QWidget*> _layerParent;

@@ -5,6 +5,9 @@
 
 class HistoryItem;
 class PeerData;
+namespace Core {
+class ScreenshotProtection;
+} // namespace Core
 namespace Main {
 class Session;
 } // namespace Main
@@ -23,6 +26,11 @@ namespace Nagram::Privacy {
 	bool ageVerifyNeeded);
 
 [[nodiscard]] bool DoNotSharePhoneByDefault();
+
+// Demo mode hides every window of the application from screen capture.
+void ProtectWindowsInDemoMode(
+	gsl::not_null<Core::ScreenshotProtection*> protection,
+	rpl::lifetime &lifetime);
 
 [[nodiscard]] bool ForceCopy();
 [[nodiscard]] rpl::producer<bool> ForceCopyChanges();

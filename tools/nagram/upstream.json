@@ -1,21 +1,17 @@
 {
   "schema_version": 1,
   "upstream": "https://github.com/telegramdesktop/tdesktop.git#dev",
-  "base": "6fed91ffab9861771a75f29df65031b3c80b6941",
+  "base": "5c674f1f6a0f6ace55b67f8bc295138680fe588b",
   "source_root": "Telegram/SourceFiles/",
   "own_include_prefixes": [
     "nagram/"
   ],
-  "submodule_overrides": [
-    "Telegram/lib_base",
-    "Telegram/lib_ui",
-    "cmake"
-  ],
+  "submodule_overrides": [],
   "budget": {
-    "upstream_files": 257,
-    "upstream_added_lines": 2640,
-    "source_files": 188,
-    "source_added_lines": 2328,
-    "upstream_headers": 160
+    "upstream_files": 253,
+    "upstream_added_lines": 2483,
+    "source_files": 186,
+    "source_added_lines": 2281,
+    "upstream_headers": 161
   }
 }

@@ -156,6 +156,15 @@ endif()
 
 include(${CMAKE_CURRENT_LIST_DIR}/nagram_version.cmake)
 
+# The wheel grab reset in core/sandbox.cpp uses QApplicationPrivate, and
+# upstream no longer adds the private headers of QtWidgets.
+if (NOT DESKTOP_APP_DISABLE_PRIVATE_QT_API)
+    if (QT_VERSION VERSION_GREATER_EQUAL 6.10)
+        find_package(Qt${QT_VERSION_MAJOR} COMPONENTS WidgetsPrivate REQUIRED)
+    endif()
+    target_link_libraries(Telegram PRIVATE Qt::WidgetsPrivate)
+endif()
+
 if (NOT DESKTOP_APP_DISABLE_AUTOUPDATE)
     # The packer signs only v2 packages and needs no upstream private keys.
     # Its target is created after this file is included.
