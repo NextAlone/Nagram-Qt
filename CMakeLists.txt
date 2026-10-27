@@ -63,7 +63,7 @@ include(cmake/target_prepare_qrc.cmake)
 
 include(cmake/options.cmake)
 
-include(Telegram/cmake/nagram_webp_windows.cmake)
+include(Telegram/cmake/nagram_windows_libraries.cmake)
 include(cmake/external/qt/package.cmake)
 
 set(desktop_app_skip_libs
