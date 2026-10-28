@@ -307,6 +307,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_menu_forward_without_quote" = "Forward without attribution";
 "lng_nagram_menu_confirm_repeat" = "Confirm before repeating";
 "lng_nagram_menu_repeat_confirm_text" = "Repeat this message in the current chat?";
+"lng_nagram_menu_repeat_selected_confirm_text" = "Repeat the selected messages in the current chat?";
 "lng_nagram_menu_copy_confirm" = "Send a copy without attribution to {recipient}?";
 "lng_nagram_menu_batch" = "Merge and batch actions";
 "lng_nagram_menu_select_sender" = "Select this sender's messages";

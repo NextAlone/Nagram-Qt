@@ -73,6 +73,8 @@ void Apply(
 		if (item) {
 			InsertRepeatActions(menu, item, controller);
 			InsertQuickRatingActions(menu, item, controller);
+		} else {
+			InsertSelectedRepeatActions(menu, controller, selected);
 		}
 		if (item || !selected.empty()) {
 			InsertBatchActions(menu, item, controller,

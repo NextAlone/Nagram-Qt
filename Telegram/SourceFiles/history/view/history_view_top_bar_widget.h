@@ -20,6 +20,11 @@ namespace style {
 struct UserpicButton;
 } // namespace style
 
+// MARK: NAGRAM
+namespace Nagram::Menu {
+class SelectionBar;
+} // namespace Nagram::Menu
+
 namespace Main {
 class Session;
 } // namespace Main
@@ -104,6 +109,10 @@ public:
 	void searchClear();
 	void searchSetText(const QString &query, int cursorPosition = -1);
 
+	// MARK: NAGRAM
+	[[nodiscard]] not_null<Nagram::Menu::SelectionBar*> nagramSelection() const {
+		return _nagramSelection.get();
+	}
 	[[nodiscard]] rpl::producer<> forwardSelectionRequest() const {
 		return _forwardSelection.events();
 	}
@@ -234,6 +243,8 @@ private:
 
 	object_ptr<Ui::RoundButton> _clear;
 	object_ptr<Ui::RoundButton> _forward, _sendNow, _delete;
+	// MARK: NAGRAM
+	std::unique_ptr<Nagram::Menu::SelectionBar> _nagramSelection;
 	object_ptr<Ui::InputField> _searchField = { nullptr };
 	object_ptr<Ui::FadeWrapScaled<Ui::IconButton>> _chooseFromUser
 		= { nullptr };

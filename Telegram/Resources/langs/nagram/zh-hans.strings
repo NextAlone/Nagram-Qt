@@ -303,6 +303,7 @@
 "lng_nagram_menu_forward_without_quote" = "无引用转发";
 "lng_nagram_menu_confirm_repeat" = "复读前确认";
 "lng_nagram_menu_repeat_confirm_text" = "在当前聊天中复读这条消息吗？";
+"lng_nagram_menu_repeat_selected_confirm_text" = "在当前聊天中复读所选消息吗？";
 "lng_nagram_menu_copy_confirm" = "向 {recipient} 发送不带原发送者的副本吗？";
 "lng_nagram_menu_batch" = "合并与批量操作";
 "lng_nagram_menu_select_sender" = "选择此人的消息";

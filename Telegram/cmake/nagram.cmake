@@ -66,6 +66,7 @@ set(nagram_sources
     nagram/menu/repeat.cpp
     nagram/menu/reading.cpp
     nagram/menu/selection.cpp
+    nagram/menu/selection_bar.cpp
 	nagram/media/sticker_catalog.cpp
     nagram/media/audio.cpp
     nagram/media/cover.cpp

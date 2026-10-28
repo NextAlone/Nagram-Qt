@@ -133,6 +133,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/compose/format_toolbar.h"
 #include "nagram/compose/placeholder.h"
 #include "nagram/links/inline_bot.h"
+#include "nagram/menu/selection_bar.h"
 #include "nagram/chats/reading_position.h"
 #include "history/view/history_view_chat_section.h"
 #include "history/view/history_view_cursor_state.h"
@@ -1144,6 +1145,9 @@ HistoryWidget::HistoryWidget(
 	) | rpl::on_next([=] {
 		forwardSelected();
 	}, _topBar->lifetime());
+	_topBar->nagramSelection()->setSource( // MARK: NAGRAM
+		[=] { return _list.data(); },
+		crl::guard(this, [=] { clearSelected(); }));
 	_topBar->deleteSelectionRequest(
 	) | rpl::on_next([=] {
 		confirmDeleteSelected();

@@ -181,7 +181,9 @@ void SendRepeat(
 
 void ShowForwardCopy(
 		not_null<Window::SessionController*> controller,
-		FullMsgId itemId) {
+		Fn<bool(
+			not_null<Window::SessionController*>,
+			not_null<Data::Thread*>)> sendCopies) {
 	const auto weak = base::make_weak(controller);
 	const auto chooser = std::make_shared<base::weak_qptr<Ui::BoxContent>>();
 	const auto send = [=](base::weak_ptr<Data::Thread> thread) {
@@ -190,9 +192,7 @@ void ShowForwardCopy(
 		if (!strong || !target) {
 			return;
 		}
-		const auto item = strong->session().data().message(itemId);
-		if (!CopyOnly(item)
-			|| !SendCopies(item, RepeatAction(target, MsgId()))) {
+		if (!sendCopies(strong, target)) {
 			strong->showToast(tr::lng_forward_cant(tr::now));
 			return;
 		}
@@ -230,7 +230,13 @@ void ShowForwardWithoutQuote(
 		FullMsgId itemId) {
 	const auto item = controller->session().data().message(itemId);
 	if (CopyOnly(item)) {
-		ShowForwardCopy(controller, itemId);
+		ShowForwardCopy(controller, [=](
+				not_null<Window::SessionController*> strong,
+				not_null<Data::Thread*> target) {
+			const auto item = strong->session().data().message(itemId);
+			return CopyOnly(item)
+				&& SendCopies(item, RepeatAction(target, MsgId()));
+		});
 		return;
 	} else if (!CanForward(item)) {
 		return;
@@ -263,6 +269,48 @@ int InsertPosition(not_null<Ui::PopupMenu*> menu) {
 	return EndPosition(menu);
 }
 
+void RunRepeat(
+		not_null<Window::SessionController*> controller,
+		const QString &confirmation,
+		Fn<void(not_null<Window::SessionController*>)> send) {
+	if (!ForDevice().Get(kConfirmRepeat)) {
+		send(controller);
+		return;
+	}
+	const auto weak = base::make_weak(controller);
+	controller->show(Ui::MakeConfirmBox({
+		.text = confirmation,
+		.confirmed = [=](Fn<void()> &&close) {
+			close();
+			if (const auto strong = weak.get()) {
+				send(strong);
+			}
+		},
+	}));
+}
+
+bool IsForward(ActionId id) {
+	return (id == ActionId::Forward) || (id == ActionId::ForwardWithoutQuote);
+}
+
+void InsertAction(
+		not_null<Ui::PopupMenu*> menu,
+		int position,
+		ActionId id,
+		const QString &text,
+		Fn<void()> callback) {
+	const auto action = Ui::Menu::CreateAction(
+		menu,
+		text,
+		std::move(callback));
+	const auto icon = IsForward(id)
+		? &st::menuIconForward
+		: &st::menuIconRepeat;
+	auto widget = base::make_unique_q<Ui::Menu::Action>(
+		menu->menu(), menu->menu()->st(), action, icon, icon);
+	Tag(menu->insertAction(position, std::move(widget)), id);
+}
+
 void Insert(
 		not_null<Ui::PopupMenu*> menu,
 		int position,
@@ -270,34 +318,189 @@ void Insert(
 		FullMsgId itemId,
 		ActionId id,
 		const QString &text) {
-	const auto forward = (id == ActionId::Forward)
-		|| (id == ActionId::ForwardWithoutQuote);
-	const auto callback = crl::guard(controller, [=] {
-		if (forward) {
+	InsertAction(menu, position, id, text, crl::guard(controller, [=] {
+		if (IsForward(id)) {
 			ShowForwardWithoutQuote(controller, itemId);
-		} else if (ForDevice().Get(kConfirmRepeat)) {
-			const auto weak = base::make_weak(controller);
-			controller->show(Ui::MakeConfirmBox({
-				.text = tr::lng_nagram_menu_repeat_confirm_text(),
-				.confirmed = [=](Fn<void()> &&close) {
-					close();
-					if (const auto strong = weak.get()) {
-						SendRepeat(strong, itemId, id);
-					}
-				},
-			}));
 		} else {
-			SendRepeat(controller, itemId, id);
+			RunRepeat(
+				controller,
+				tr::lng_nagram_menu_repeat_confirm_text(tr::now),
+				[=](not_null<Window::SessionController*> strong) {
+					SendRepeat(strong, itemId, id);
+				});
 		}
+	}));
+}
+
+enum class SelectedKind {
+	None,
+	Forward,
+	Copy,
+};
+
+// WHY: an action keeps the ids of the selection it was offered for, so a
+// message deleted meanwhile cancels it instead of leaving out a part.
+HistoryItemsList ResolveSelected(
+		not_null<Window::SessionController*> controller,
+		const MessageIdsList &ids) {
+	auto result = controller->session().data().idsToItems(ids);
+	if (result.size() != ids.size()) {
+		result.clear();
+	}
+	return result;
+}
+
+SelectedKind KindOf(const HistoryItemsList &items) {
+	if (items.empty()) {
+		return SelectedKind::None;
+	} else if (ranges::all_of(items, [](not_null<HistoryItem*> item) {
+		return CanForward(item);
+	})) {
+		return SelectedKind::Forward;
+	} else if (ranges::all_of(items, [](not_null<HistoryItem*> item) {
+		return CopyOnly(item);
+	})) {
+		return SelectedKind::Copy;
+	}
+	return SelectedKind::None;
+}
+
+bool AllCopyable(const HistoryItemsList &items) {
+	return ranges::all_of(items, [](not_null<HistoryItem*> item) {
+		return HasCopy(item);
 	});
-	const auto action = Ui::Menu::CreateAction(menu, text, callback);
-	const auto icon = forward ? &st::menuIconForward : &st::menuIconRepeat;
-	auto widget = base::make_unique_q<Ui::Menu::Action>(
-		menu->menu(), menu->menu()->st(), action, icon, icon);
-	Tag(menu->insertAction(position, std::move(widget)), id);
+}
+
+// A selection may include the old group a supergroup was migrated from,
+// which takes no new messages.
+Data::Thread *SelectedTarget(const HistoryItemsList &items) {
+	if (items.empty()) {
+		return nullptr;
+	}
+	const auto result = RepeatTarget(items.front());
+	for (const auto &item : items) {
+		if (RepeatTarget(item) != result) {
+			return nullptr;
+		}
+	}
+	return result;
+}
+
+bool SelectedRepeatCopies(
+		not_null<Window::SessionController*> controller,
+		SelectedKind kind,
+		not_null<Data::Thread*> target,
+		ActionId id) {
+	return (kind == SelectedKind::Copy)
+		|| (id == ActionId::RepeatAsCopy)
+		|| ForDevice().Get(kRepeatWithoutQuote)
+		|| OpenedThreadRootId(controller, target);
+}
+
+bool SelectedRepeatAvailable(
+		not_null<Window::SessionController*> controller,
+		const HistoryItemsList &items,
+		ActionId id) {
+	const auto kind = KindOf(items);
+	const auto target = (kind != SelectedKind::None)
+		? SelectedTarget(items)
+		: nullptr;
+	return target
+		&& Data::CanSendAnything(target)
+		&& (!SelectedRepeatCopies(controller, kind, target, id)
+			|| AllCopyable(items));
+}
+
+bool SendSelectedRepeat(
+		not_null<Window::SessionController*> controller,
+		const MessageIdsList &ids,
+		ActionId id) {
+	auto items = ResolveSelected(controller, ids);
+	if (!SelectedRepeatAvailable(controller, items, id)) {
+		controller->showToast(tr::lng_forward_cant(tr::now));
+		return false;
+	}
+	const auto target = not_null(SelectedTarget(items));
+	const auto rootId = OpenedThreadRootId(controller, target);
+	const auto action = RepeatAction(target, rootId);
+	if (SelectedRepeatCopies(controller, KindOf(items), target, id)) {
+		// Sends of one history go out in order, one after another.
+		for (const auto &item : items) {
+			SendCopy(item, action);
+		}
+	} else {
+		controller->session().api().forwardMessages(
+			Data::ResolvedForwardDraft{
+				.items = std::move(items),
+				.options = Data::ForwardOptions::PreserveInfo,
+			},
+			action);
+	}
+	ShowLatest(controller, target, rootId);
+	return true;
+}
+
+void ShowSelectedForwardWithoutQuote(
+		not_null<Window::SessionController*> controller,
+		const MessageIdsList &ids,
+		Fn<void()> done = nullptr) {
+	const auto items = ResolveSelected(controller, ids);
+	const auto kind = KindOf(items);
+	if (kind == SelectedKind::Forward) {
+		Window::ShowForwardMessagesBox(controller, Data::ForwardDraft{
+			.ids = ids,
+			.options = Data::ForwardOptions::NoSenderNames,
+		}, std::move(done));
+	} else if (kind == SelectedKind::Copy && AllCopyable(items)) {
+		ShowForwardCopy(controller, [=](
+				not_null<Window::SessionController*> strong,
+				not_null<Data::Thread*> target) {
+			const auto items = ResolveSelected(strong, ids);
+			if (KindOf(items) != SelectedKind::Copy || !AllCopyable(items)) {
+				return false;
+			}
+			const auto action = RepeatAction(target, MsgId());
+			for (const auto &item : items) {
+				SendCopy(item, action);
+			}
+			if (done) {
+				done();
+			}
+			return true;
+		});
+	} else {
+		controller->showToast(tr::lng_forward_cant(tr::now));
+	}
 }
 
 } // namespace
+
+bool SelectedRepeatOffered(not_null<Data::Thread*> thread) {
+	return Data::CanSendAnything(thread)
+		&& (!thread->peer()->isBroadcast()
+			|| !ForDevice().Get(kNoRepeatInChannels));
+}
+
+void RunSelectedAction(
+		not_null<Window::SessionController*> controller,
+		MessageIdsList selected,
+		ActionId id,
+		Fn<void()> done) {
+	if (selected.empty()) {
+		return;
+	} else if (IsForward(id)) {
+		ShowSelectedForwardWithoutQuote(controller, selected, done);
+		return;
+	}
+	RunRepeat(
+		controller,
+		tr::lng_nagram_menu_repeat_selected_confirm_text(tr::now),
+		[=](not_null<Window::SessionController*> strong) {
+			if (SendSelectedRepeat(strong, selected, id) && done) {
+				done();
+			}
+		});
+}
 
 void InsertRepeatActions(
 		Ui::PopupMenu *menu,
@@ -335,6 +538,92 @@ void InsertRepeatActions(
 	}
 	Insert(menu, position, controller, itemId, ActionId::ForwardWithoutQuote,
 		forward);
+}
+
+void InsertSelectedRepeatActions(
+		Ui::PopupMenu *menu,
+		Window::SessionController *controller,
+		MessageIdsList selected) {
+	if (!menu || !controller || selected.empty()) {
+		return;
+	}
+	const auto items = ResolveSelected(controller, selected);
+	const auto kind = KindOf(items);
+	if (kind == SelectedKind::None) {
+		return;
+	}
+	const auto offerRepeat = !items.front()->history()->peer->isBroadcast()
+		|| !ForDevice().Get(kNoRepeatInChannels);
+	const auto repeat = offerRepeat
+		&& SelectedRepeatAvailable(controller, items, ActionId::Repeat);
+	const auto copy = offerRepeat
+		&& SelectedRepeatAvailable(controller, items, ActionId::RepeatAsCopy);
+	const auto forward = (kind == SelectedKind::Forward) || AllCopyable(items);
+	const auto repeatCallback = [=](ActionId id) {
+		return crl::guard(controller, [=] {
+			RunRepeat(
+				controller,
+				tr::lng_nagram_menu_repeat_selected_confirm_text(tr::now),
+				[=](not_null<Window::SessionController*> strong) {
+					SendSelectedRepeat(strong, selected, id);
+				});
+		});
+	};
+	const auto forwardCallback = crl::guard(controller, [=] {
+		ShowSelectedForwardWithoutQuote(controller, selected);
+	});
+	const auto forwardText = tr::lng_nagram_menu_forward_without_quote(
+		tr::now);
+	const auto copyText = tr::lng_nagram_menu_repeat_as_copy(tr::now);
+	auto position = InsertPosition(menu);
+	if (kind == SelectedKind::Copy) {
+		// Upstream offers no forward here, so these take its slots.
+		if (forward) {
+			const auto forwardId = Shown(ActionId::Forward)
+				? ActionId::Forward
+				: ActionId::ForwardWithoutQuote;
+			InsertAction(
+				menu,
+				position++,
+				forwardId,
+				forwardText,
+				forwardCallback);
+		}
+		if (copy) {
+			const auto repeatId = Shown(ActionId::Repeat)
+				? ActionId::Repeat
+				: ActionId::RepeatAsCopy;
+			InsertAction(
+				menu,
+				position,
+				repeatId,
+				copyText,
+				repeatCallback(ActionId::RepeatAsCopy));
+		}
+		return;
+	}
+	if (repeat) {
+		InsertAction(
+			menu,
+			position++,
+			ActionId::Repeat,
+			tr::lng_nagram_menu_repeat(tr::now),
+			repeatCallback(ActionId::Repeat));
+	}
+	if (copy) {
+		InsertAction(
+			menu,
+			position++,
+			ActionId::RepeatAsCopy,
+			copyText,
+			repeatCallback(ActionId::RepeatAsCopy));
+	}
+	InsertAction(
+		menu,
+		position,
+		ActionId::ForwardWithoutQuote,
+		forwardText,
+		forwardCallback);
 }
 
 } // namespace Nagram::Menu

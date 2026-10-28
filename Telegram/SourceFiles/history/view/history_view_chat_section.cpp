@@ -38,6 +38,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/history_view_pull_to_next_channel.h"
 #include "nagram/compose/confirm.h"
 #include "nagram/compose/options.h"
+#include "nagram/menu/selection_bar.h"
 #include "history/history_item_reply_markup.h"
 #include "history/history_view_pull_to_next_channel.h"
 #include "iv/iv_rich_message_serializer.h"
@@ -503,6 +504,9 @@ ChatWidget::ChatWidget(
 	) | rpl::on_next([=] {
 		confirmForwardSelected();
 	}, _topBar->lifetime());
+	_topBar->nagramSelection()->setSource( // MARK: NAGRAM
+		_inner,
+		crl::guard(this, [=] { clearSelected(); }));
 	_topBar->clearSelectionRequest(
 	) | rpl::on_next([=] {
 		clearSelected();

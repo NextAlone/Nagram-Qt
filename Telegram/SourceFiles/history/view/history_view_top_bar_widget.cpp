@@ -9,6 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/chats/tools.h"
 #include "nagram/interface/roundness.h"
 #include "nagram/messages/content.h"
+#include "nagram/menu/selection_bar.h"
 
 #include "history/history.h"
 #include "history/view/history_view_send_action.h"
@@ -136,6 +137,10 @@ TopBarWidget::TopBarWidget(
 , _onlineUpdater([=] { updateOnlineDisplay(); }) {
 	setAttribute(Qt::WA_OpaquePaintEvent);
 	Nagram::Messages::AttachActivityRefresh(this);
+	// MARK: NAGRAM
+	_nagramSelection = std::make_unique<Nagram::Menu::SelectionBar>(
+		this,
+		controller);
 
 	_clear->setTextTransform(Ui::RoundButtonTextTransform::ToUpper);
 	_forward->setTextTransform(Ui::RoundButtonTextTransform::ToUpper);
@@ -1160,6 +1165,7 @@ void TopBarWidget::updateControlsGeometry() {
 	auto buttonsWidth = (_forward->isHidden() ? 0 : _forward->contentWidth())
 		+ (_sendNow->isHidden() ? 0 : _sendNow->contentWidth())
 		+ (_delete->isHidden() ? 0 : _delete->contentWidth())
+		+ _nagramSelection->contentWidth() // MARK: NAGRAM
 		+ _clear->width();
 	buttonsWidth += buttonsLeft + st::topBarActionSkip * 3;
 
@@ -1170,6 +1176,11 @@ void TopBarWidget::updateControlsGeometry() {
 	_forward->setFullWidth(buttonFullWidth);
 	_sendNow->setFullWidth(buttonFullWidth);
 	_delete->setFullWidth(buttonFullWidth);
+	_nagramSelection->fit( // MARK: NAGRAM
+		buttonFullWidth,
+		width() - buttonsLeft - _clear->width() - st::topBarActionSkip * 2,
+		{ _forward.data(), _sendNow.data(), _delete.data() },
+		st::topBarActionSkip);
 
 	selectedButtonsTop += (height() - _forward->height()) / 2;
 
@@ -1177,6 +1188,10 @@ void TopBarWidget::updateControlsGeometry() {
 	if (!_forward->isHidden()) {
 		buttonsLeft += _forward->width() + st::topBarActionSkip;
 	}
+	buttonsLeft += _nagramSelection->moveToLeft( // MARK: NAGRAM
+		buttonsLeft,
+		selectedButtonsTop,
+		st::topBarActionSkip);
 
 	_sendNow->moveToLeft(buttonsLeft, selectedButtonsTop);
 	if (!_sendNow->isHidden()) {
@@ -1190,11 +1205,11 @@ void TopBarWidget::updateControlsGeometry() {
 		const auto small = buttonSt.radius
 			? buttonSt.radius
 			: st::buttonRadius;
-		const auto buttons = std::array{
+		const auto buttons = _nagramSelection->ordered({ // MARK: NAGRAM
 			_forward.data(),
 			_sendNow.data(),
 			_delete.data(),
-		};
+		});
 		auto first = (Ui::RoundButton*)(nullptr);
 		auto last = (Ui::RoundButton*)(nullptr);
 		for (const auto button : buttons) {
@@ -1351,6 +1366,10 @@ void TopBarWidget::updateControlsVisibility() {
 	_delete->setVisible(_canDelete && visible);
 	_forward->setVisible(_canForward && visible);
 	_sendNow->setVisible(_canSendNow && visible);
+	_nagramSelection->update( // MARK: NAGRAM
+		visible,
+		_canForward,
+		_activeChat.key.thread());
 
 
 	const auto isOneColumn = _controller->adaptive().isOneColumn();
@@ -1532,6 +1551,7 @@ void TopBarWidget::showSelected(SelectedState state) {
 		_forward->setNumbersText(_selectedCount);
 		_sendNow->setNumbersText(_selectedCount);
 		_delete->setNumbersText(_selectedCount);
+		_nagramSelection->setCount(_selectedCount, !wasSelectedState); // MARK: NAGRAM
 		if (!wasSelectedState) {
 			_forward->finishNumbersAnimation();
 			_sendNow->finishNumbersAnimation();
