@@ -569,4 +569,8 @@ QString ScreenDisplayLabel(const QScreen *screen) {
 	return screen->name();
 }
 
+QRect ScreenAvailableGeometry(const QScreen *screen) {
+	return screen ? screen->availableGeometry() : QRect();
+}
+
 } // namespace Platform

@@ -2084,12 +2084,16 @@ auto Element::contextDependentServiceText() -> TextWithLinks {
 
 void Element::validateText() {
 	const auto clearRichPage = [&] {
-		if (Has<HistoryMessageRichPage>()) {
+		if (const auto rich = richpage()) {
+			const auto heavy = rich->article.hasHeavyPart();
 			ClickHandler::clearActive(this);
 			RemoveComponents(0
 				| HistoryMessageRichPage::Bit()
 				| InstantViewMediaRuntime::Bit());
 			invalidateTextSizeCache();
+			if (heavy) {
+				checkHeavyPart();
+			}
 		}
 	};
 	const auto ensureRichPage = [&](
@@ -2150,6 +2154,7 @@ void Element::validateText() {
 		if (runtime->page == page && runtime->mediaRuntime) {
 			return;
 		}
+		const auto heavy = runtime->article.hasHeavyPart();
 		const auto &layoutSt = st::messageMarkdown;
 		const auto session = &history()->session();
 		const auto richLimits = Iv::ResolveRichMessageLimits(session);
@@ -2167,6 +2172,7 @@ void Element::validateText() {
 			.tableRenderLimits = Iv::Markdown::PrepareTableRenderLimitsForRichMessage(
 				richLimits),
 			.unsupportedBlockNotices = true,
+			.disableButtons = _textItem->hideLinks(),
 		});
 		if (!prepared.supported()) {
 			clearRichPage();
@@ -2174,6 +2180,10 @@ void Element::validateText() {
 				_media = std::make_unique<UnsupportedNotice>(this);
 			}
 			return;
+		}
+		if (prepared.buttonsDisabled) {
+			data()->setHasHiddenLinks(true);
+			_textItem->setHasHiddenLinks(true);
 		}
 		ClickHandler::clearActive(this);
 		runtime->article.setContent(std::move(prepared.content));
@@ -2188,6 +2198,8 @@ void Element::validateText() {
 		runtime->handlerMediaActivation = {};
 		runtime->handlerPlaceholderId = {};
 		runtime->handlerPlaceholderPoint = QPoint();
+		runtime->pressedPlaceholderId = {};
+		runtime->pressedPlaceholderHandler = nullptr;
 		runtime->handlerButtonRow = {};
 		runtime->handlerButtonRowHandler = nullptr;
 		runtime->pressedButtonRow = {};
@@ -2196,6 +2208,9 @@ void Element::validateText() {
 		runtime->handlerInlineButtonHandler = nullptr;
 		runtime->pressedInlineButtonHandler = nullptr;
 		invalidateTextSizeCache();
+		if (heavy) {
+			checkHeavyPart();
+		}
 	};
 	const auto item = data();
 	const auto media = item->media();
@@ -2363,10 +2378,10 @@ void Element::validateInlineKeyboard(HistoryMessageReplyMarkup *markup) {
 		return;
 	}
 	const auto item = data();
-	//if (item->hideLinks()) {
-	//	item->setHasHiddenLinks(true);
-	//	return;
-	//}
+	if (item->hideInlineKeyboard()) {
+		item->setHasHiddenLinks(true);
+		return;
+	}
 	markup->inlineKeyboard = std::make_unique<ReplyKeyboard>(
 		item,
 		std::make_unique<KeyboardStyle>(
@@ -3607,9 +3622,6 @@ auto Element::takeReactionAnimations()
 		return _reactions->takeAnimations();
 	}
 	return {};
-}
-
-void Element::animateUnreadEffect() {
 }
 
 auto Element::takeEffectAnimation()
