@@ -5421,7 +5421,7 @@ void Message::drawInfo(
 		int bottom,
 		int width,
 		InfoDisplayType type) const {
-	if (hidesBottomInfo()) {
+	if (hidesBottomInfo() || !infoWidth()) {
 		return;
 	}
 	p.setFont(st::msgDateFont);
