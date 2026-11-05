@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "mainwidget.h"
+#include "nagram/chats/reading_position.h"
 #include "nagram/links/behavior.h"
 
 #include "api/api_updates.h"
@@ -1501,6 +1502,7 @@ void MainWidget::showHistory(
 
 	if (peerId && OptionUseNewChatView.value()) {
 		const auto history = session().data().history(peerId);
+		showAtMsgId = Nagram::Chats::RestoreReadingPosition(history, showAtMsgId);
 		if (showAtMsgId == ShowAndStartBotMsgId) {
 			if (const auto user = history->peer->asUser()) {
 				if (const auto &info = user->botInfo) {

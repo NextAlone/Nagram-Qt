@@ -51,11 +51,15 @@ void Save(History *history) {
 	}
 	const auto session = &history->session();
 	const auto peerId = history->peer->id;
-	const auto view = history->scrollTopItem;
-	if (!view) {
+	// The new chat view keeps its scroll state in listScrollTopItemId.
+	const auto msgId = history->scrollTopItem
+		? history->scrollTopItem->data()->id
+		: (history->listScrollTopItemId.peer == peerId)
+		? history->listScrollTopItemId.msg
+		: MsgId();
+	if (!msgId) {
 		return;
 	}
-	const auto msgId = view ? view->data()->id : MsgId();
 	auto positions = Read(session);
 	positions.erase(ranges::remove(
 		positions,
@@ -98,6 +102,7 @@ MsgId RestoreReadingPosition(not_null<History*> history, MsgId showAtMsgId) {
 	if (showAtMsgId != ShowAtUnreadMsgId
 		|| !ForDevice().Get(kSaveReadingPosition)
 		|| history->scrollTopItem
+		|| history->listScrollTopItemId
 		|| history->unreadCount() > 0) {
 		return showAtMsgId;
 	}
