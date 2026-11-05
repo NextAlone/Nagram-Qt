@@ -253,8 +253,11 @@ public:
 
 	template <typename Type>
 	[[nodiscard]] bool Set(const Option<Type> &option, const Type &value) {
+		// Writing the fallback clears the key, so it needs no validation.
 		if (option.scope != _scope
-			|| (option.validate && !option.validate(value))) {
+			|| (option.validate
+				&& value != option.fallback
+				&& !option.validate(value))) {
 			return false;
 		}
 		if constexpr (std::is_same_v<Type, QString>) {

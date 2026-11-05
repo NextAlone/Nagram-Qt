@@ -80,6 +80,10 @@ void CheckAccountList(
 		"local list write");
 	Require(!account.Set(list, QByteArray("{}")),
 		"invalid local list accepted on write");
+	Require(account.Set(list, QByteArray())
+		&& account.Get(list).isEmpty()
+		&& !accountPrefs.values.contains(std::string(list.key)),
+		"emptying the local list must clear it");
 	for (const auto broken : {
 			"not json",
 			"[]",
