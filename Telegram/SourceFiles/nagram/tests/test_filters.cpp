@@ -15,9 +15,12 @@ void Require(bool value, const char *message) {
 	}
 }
 
-QJsonObject Rule(const QString &pattern, const QString &action) {
+QJsonObject Rule(
+		const QString &pattern,
+		const QString &action,
+		const QString &id = u"00000000-0000-0000-0000-000000000001"_q) {
 	return {
-		{ u"id"_q, u"00000000-0000-0000-0000-000000000001"_q },
+		{ u"id"_q, id },
 		{ u"title"_q, u"test"_q },
 		{ u"pattern"_q, pattern },
 		{ u"replacement"_q, u"bar"_q },
@@ -28,11 +31,15 @@ QJsonObject Rule(const QString &pattern, const QString &action) {
 	};
 }
 
-QByteArray Config(const QJsonObject &rule) {
+QByteArray Config(const QJsonArray &rules) {
 	auto config = Nagram::Filters::Defaults();
 	config.insert(u"enabled"_q, true);
-	config.insert(u"rules"_q, QJsonArray{ rule });
+	config.insert(u"rules"_q, rules);
 	return QJsonDocument(config).toJson(QJsonDocument::Compact);
+}
+
+QByteArray Config(const QJsonObject &rule) {
+	return Config(QJsonArray{ rule });
 }
 
 } // namespace
@@ -63,5 +70,15 @@ void TestFilters() {
 		"adversarial regex exceeded bounded test duration");
 	Require(!adversarial.hidden && !adversarial.error.isEmpty(),
 		"regex work limit did not report an actionable failure");
+	const auto mixed = Apply(Config(QJsonArray{
+			Rule(u"foo"_q, u"replace"_q),
+			Rule(u"(a+)+$"_q, u"hide"_q,
+				u"00000000-0000-0000-0000-000000000002"_q),
+		}),
+		{ u"foo "_q + QString(16000, u'a') + u"X"_q }, {}, {}, false, false);
+	Require(!mixed.hidden
+		&& mixed.text.text.startsWith(u"bar "_q)
+		&& mixed.error.contains(u"regex work limit"_q),
+		"a rule over its regex budget discarded the other rules");
 	std::cout << "PASS: Nagram filter budgets and projection" << std::endl;
 }

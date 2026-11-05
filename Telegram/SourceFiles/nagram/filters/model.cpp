@@ -557,6 +557,7 @@ Result Apply(
 	}
 	auto timer = QElapsedTimer();
 	timer.start();
+	auto skipped = QString();
 	if (config.value(u"stripZalgo"_q).toBool()
 		&& !ApplyEdits(result.text, ZalgoEdits(result.text.text))) {
 		result.error = u"filter Zalgo edit failed"_q;
@@ -573,6 +574,7 @@ Result Apply(
 			? searchable : result.text.text;
 		auto edits = std::vector<Edit>();
 		auto matched = false;
+		auto limited = false;
 		for (auto offset = 0; offset <= text.size();) {
 			if (timer.elapsed() >= kMaxWorkMs) {
 				result.error = u"filter runtime limit"_q;
@@ -580,7 +582,7 @@ Result Apply(
 			}
 			const auto match = expression.match(text, offset);
 			if (!match.isValid()) {
-				result.error = u"filter regex work limit"_q;
+				limited = true;
 				break;
 			}
 			if (!match.hasMatch()) {
@@ -607,6 +609,11 @@ Result Apply(
 		}
 		if (!result.error.isEmpty()) {
 			break;
+		} else if (limited) {
+			// A rule over its regex budget is skipped, the others still apply.
+			skipped = u"filter regex work limit in rule \"%1\""_q.arg(
+				rule.value(u"title"_q).toString());
+			continue;
 		}
 		if (action == u"hide"_q) {
 			if (matched != rule.value(u"reversed"_q).toBool()) {
@@ -622,6 +629,7 @@ Result Apply(
 		return { .text = source, .error = result.error,
 			.matches = result.matches };
 	}
+	result.error = skipped;
 	return result;
 }
 
