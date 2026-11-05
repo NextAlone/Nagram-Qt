@@ -1957,7 +1957,7 @@ void FillContextMenuItems(
 			const auto translate = mediaHasTextForCopy
 				? (HistoryView::TransribedText(item)
 					.append('\n')
-					.append(item->originalText()))
+					.append(Nagram::Menu::GroupOriginalText(item)))
 				: item->originalText();
 			if ((!item->translation() || !item->history()->translatedTo())
 				&& !translate.text.isEmpty()

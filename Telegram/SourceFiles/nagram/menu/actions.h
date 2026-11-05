@@ -6,6 +6,7 @@
 
 class QAction;
 class HistoryItem;
+struct TextWithEntities;
 namespace Window {
 class SessionController;
 } // namespace Window
@@ -20,6 +21,8 @@ namespace Nagram::Menu {
 
 [[nodiscard]] const style::PopupMenu &MessageMenuStyle();
 void Tag(QAction *action, ActionId id);
+// The caption of an album sits on one of its items, often not the first.
+[[nodiscard]] TextWithEntities GroupOriginalText(not_null<HistoryItem*> item);
 [[nodiscard]] int EndPosition(not_null<Ui::PopupMenu*> menu);
 [[nodiscard]] bool Shown(ActionId id);
 void Apply(

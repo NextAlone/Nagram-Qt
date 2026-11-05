@@ -12,6 +12,10 @@
 #include "nagram/services/transcription.h"
 #include "nagram/snapshot/snapshot.h"
 
+#include "data/data_groups.h"
+#include "data/data_session.h"
+#include "history/history.h"
+#include "history/history_item.h"
 #include "ui/widgets/menu/menu.h"
 #include "ui/widgets/menu/menu_item_base.h"
 #include "ui/widgets/popup_menu.h"
@@ -37,6 +41,17 @@ const style::PopupMenu &MessageMenuStyle() {
 void Tag(QAction *action, ActionId id) {
 	Expects(action != nullptr);
 	action->setProperty(kActionIdProperty, static_cast<int>(id));
+}
+
+TextWithEntities GroupOriginalText(not_null<HistoryItem*> item) {
+	if (const auto group = item->history()->owner().groups().find(item)) {
+		for (const auto &part : group->items) {
+			if (!part->originalText().empty()) {
+				return part->originalText();
+			}
+		}
+	}
+	return item->originalText();
 }
 
 int EndPosition(not_null<Ui::PopupMenu*> menu) {
