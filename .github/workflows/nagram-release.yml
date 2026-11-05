@@ -97,9 +97,46 @@ jobs:
       ref: ${{ inputs.tag || github.ref_name }}
     secrets: inherit
 
+  source:
+    name: Source
+    needs: version
+    if: ${{ !cancelled() && inputs.only != 'packages' }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - name: Clone.
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+          submodules: recursive
+
+      - name: Pack full source.
+        run: |
+          VERSION="${TAG#v}"
+          SRC="Nagram-${VERSION}-full"
+          cp -a "$GITHUB_WORKSPACE" "/tmp/$SRC"
+          find "/tmp/$SRC" -name .git -prune -exec rm -rf {} +
+          tar --zstd -cf "Nagram-full.tar.zst" -C /tmp "$SRC"
+          sha256sum "Nagram-full.tar.zst" > "Nagram-full.tar.zst.sha256"
+
+      - name: Upload tarball.
+        uses: actions/upload-artifact@v7
+        with:
+          path: Nagram-full.tar.zst
+          archive: false
+
+      - name: Upload checksum.
+        uses: actions/upload-artifact@v7
+        with:
+          path: Nagram-full.tar.zst.sha256
+          archive: false
+
   publish:
     name: Publish
-    needs: [version, macos, windows, linux]
+    needs: [version, macos, windows, linux, source]
     # A platform that fails must not block the packages that were built.
     if: ${{ !cancelled() && needs.version.result == 'success' && inputs.only != 'packages' }}
     runs-on: ubuntu-24.04
@@ -123,6 +160,13 @@ jobs:
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           pattern: release-*
+          path: packages
+          merge-multiple: true
+
+      - name: Download source.
+        uses: actions/download-artifact@v7
+        with:
+          pattern: Nagram-full.tar.zst*
           path: packages
           merge-multiple: true
 
