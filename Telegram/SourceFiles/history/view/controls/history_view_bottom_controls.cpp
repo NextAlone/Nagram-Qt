@@ -27,6 +27,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "lang/lang_keys.h"
 #include "main/main_session.h"
 #include "nagram/compose/buttons.h"
+#include "nagram/compose/channel.h"
 #include "ui/painter.h"
 #include "ui/ui_utility.h"
 #include "ui/widgets/buttons.h"
@@ -52,8 +53,8 @@ BottomControls::BottomControls(
 	setupOpenChatButton();
 	setupAboutHiddenAuthor();
 	setupPeerUpdates();
-	Nagram::ForDevice().Value(Nagram::Compose::kHideChannelMuteButton
-	) | rpl::skip(1) | rpl::on_next([=](bool) {
+	Nagram::Compose::ButtonsChanged() | rpl::on_next([=] {
+		refreshMuteUnmuteText();
 		updateControlsVisibility();
 	}, lifetime());
 }
@@ -473,7 +474,7 @@ void BottomControls::refreshMuteUnmuteText() {
 	if (!_muteUnmute) {
 		return;
 	}
-	_muteUnmute->setText((_history->muted()
+	_muteUnmute->setText(Nagram::Compose::ChannelBottomText(_peer, _history->muted()
 		? tr::lng_channel_unmute(tr::now)
 		: tr::lng_channel_mute(tr::now)).toUpper());
 }
@@ -572,7 +573,7 @@ bool BottomControls::isMuteUnmute() const {
 	if (_mode != BottomControlsMode::History) {
 		return false;
 	}
-	return !Nagram::Compose::Hidden(Nagram::Compose::kHideChannelMuteButton)
+	return Nagram::Compose::ChannelBottomVisible(_peer)
 		&& ((_peer->isBroadcast() && !_peer->asChannel()->canPostMessages())
 		|| (_peer->isGigagroup() && !Data::CanSendAnything(_peer))
 		|| _peer->isRepliesChat()

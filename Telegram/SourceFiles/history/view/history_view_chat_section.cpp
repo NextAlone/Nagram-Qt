@@ -36,6 +36,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/history_item_components.h"
 #include "history/history_item_helpers.h" // GetErrorForSending.
 #include "history/history_view_pull_to_next_channel.h"
+#include "nagram/compose/channel.h"
 #include "nagram/compose/confirm.h"
 #include "nagram/compose/options.h"
 #include "nagram/menu/selection_bar.h"
@@ -864,7 +865,9 @@ ChatWidget::ChatWidget(
 			joinGroupAction();
 			break;
 		case BottomControlsAction::MuteUnmute:
-			toggleMuteUnmute();
+			if (!Nagram::Compose::OpenDiscussion(controller, _peer)) {
+				toggleMuteUnmute();
+			}
 			break;
 		case BottomControlsAction::Report:
 			reportSelectedMessages();
