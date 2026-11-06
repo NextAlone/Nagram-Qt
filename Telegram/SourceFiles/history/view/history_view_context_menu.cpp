@@ -1812,6 +1812,22 @@ void FillContextMenuItems(
 	const auto hasWhoReactedItem = item
 		&& Api::WhoReactedExists(item, Api::WhoReactedList::All);
 
+	const auto whoReactedAtTop = Nagram::Messages::WhoReactedAtTop();
+	const auto addWhoReactedActions = [=] {
+		if (hasWhoReactedItem) {
+			AddWhoReactedAction(result, list, item, list->controller());
+		}
+		else if (item) {
+			MaybeAddWhenEditedForwardedAction(
+				result,
+				item,
+				list->controller());
+		}
+		};
+	if (!skipWhoReacted && whoReactedAtTop) {
+		addWhoReactedActions();
+	}
+
 	AddReplyToMessageAction(result, request, list);
 	if (item) {
 		const auto media = item->media();
@@ -1846,21 +1862,6 @@ void FillContextMenuItems(
 		}
 	}
 	AddTodoListAction(result, request, list);
-
-	const auto whoReactedAtTop = Nagram::Messages::WhoReactedAtTop();
-	const auto addWhoReactedActions = [=] {
-		if (hasWhoReactedItem) {
-			AddWhoReactedAction(result, list, item, list->controller());
-		} else if (item) {
-			MaybeAddWhenEditedForwardedAction(
-				result,
-				item,
-				list->controller());
-		}
-	};
-	if (!skipWhoReacted && whoReactedAtTop) {
-		addWhoReactedActions();
-	}
 
 	if (request.overSelection
 		&& !list->hasCopyRestrictionForSelected()
