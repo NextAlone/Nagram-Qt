@@ -1816,14 +1816,13 @@ void FillContextMenuItems(
 	const auto addWhoReactedActions = [=] {
 		if (hasWhoReactedItem) {
 			AddWhoReactedAction(result, list, item, list->controller());
-		}
-		else if (item) {
+		} else if (item) {
 			MaybeAddWhenEditedForwardedAction(
 				result,
 				item,
 				list->controller());
 		}
-		};
+	};
 	if (!skipWhoReacted && whoReactedAtTop) {
 		addWhoReactedActions();
 	}
