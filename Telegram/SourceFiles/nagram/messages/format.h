@@ -15,6 +15,7 @@ namespace Nagram::Messages {
 [[nodiscard]] QString FormatSavedFrom(QDateTime dateTime);
 [[nodiscard]] QString FormatEditedDate(QDateTime sent, QDateTime edited);
 [[nodiscard]] QString EditedMark();
+[[nodiscard]] TextWithEntities WithEditedIcon(const QString &text);
 [[nodiscard]] QString FormatCounter(int count);
 void ApplyInfoOptions(
 	HistoryView::BottomInfo::Data &data,

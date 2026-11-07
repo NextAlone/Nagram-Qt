@@ -103,7 +103,7 @@ B29（清理聊天）没有上游改动：清理框只调用 `ApiWrap::toggleHis
 | C27 | `history/history_inner_widget.cpp`、`history/view/history_view_list_widget.cpp` | 绘制发送者头像后叠加在线点；订阅在线状态变化重绘 | 读取 |
 | C05–C07 | `history/view/history_view_bottom_info.cpp` | 计数格式化、浏览数与签名的布局 | 替换 |
 | C32 | `history/view/history_view_bottom_info.cpp`、`history/view/history_view_bottom_info.h` | `BottomInfo` 增加一个 `Ui::Text::String` 成员；`layoutViewsText`、`countOptimalSize`、`paint`、`textState` 各加一处 `Nagram::Messages` 调用，在浏览数与时间之间绘制转发数。图标是镜像的回复箭头，颜色随气泡样式 | 读取 |
-| C08、C09 | `history/view/history_view_bottom_info.cpp` | “已编辑”标记的显示与文字 | 替换 |
+| C08、C09 | `history/view/history_view_bottom_info.cpp` | “已编辑”标记的显示与文字。选用图标时日期文字里先放 U+270E 占位，`layoutDateText` 把 `marked.append(full)` 改为 `marked.append(Nagram::Messages::WithEditedIcon(full))`，换成 `nagramEditedIconEmoji` 图标：Windows 没有可靠的字体能画这个字符 | 替换 |
 | C10–C13 | `history/view/history_view_element.cpp`、`history/view/history_view_message.cpp` | 反应区域不创建并回收空间；按对话类型判断 | 读取 |
 | C14 | `history/view/reactions/history_view_reactions_selector.cpp` | 右键菜单不附加反应面板 | 读取 |
 | C15 | `history/history_inner_widget.cpp`、`history/view/history_view_list_widget.cpp` | 有选中消息时不附加反应面板 | 读取 |

@@ -551,7 +551,7 @@ void BottomInfo::layoutDateText() {
 			.textColor = false,
 		})).append("  ");
 	}
-	marked.append(full);
+	marked.append(Nagram::Messages::WithEditedIcon(full));
 	_authorEditedDate.setMarkedText(
 		st::msgDateTextStyle,
 		marked,

@@ -9,9 +9,11 @@
 #include "ui/painter.h"
 #include "ui/text/format_values.h"
 #include "ui/text/text_options.h"
+#include "ui/text/text_utilities.h"
 #include "lang/lang_keys.h"
 #include "base/unixtime.h"
 #include "styles/style_chat.h"
+#include "styles/style_nagram_interface.h"
 
 #include <QtCore/QLocale>
 
@@ -56,13 +58,30 @@ QString FormatSavedFrom(QDateTime dateTime) {
 
 namespace {
 
+// WHY: Windows draws this glyph from an unreadable fallback font.
+constexpr auto kEditedIconPlaceholder = QChar(0x270E);
+
 QString ActiveEditedMark() {
 	return ForDevice().Get(kEditedIcon)
-		? QString(QChar(0x270E))
+		? QString(kEditedIconPlaceholder)
 		: ForDevice().Get(kEditedMark);
 }
 
 } // namespace
+
+TextWithEntities WithEditedIcon(const QString &text) {
+	// The date comes after the author, whose name may hold the character.
+	const auto position = ForDevice().Get(kEditedIcon)
+		? text.lastIndexOf(kEditedIconPlaceholder)
+		: -1;
+	if (position < 0) {
+		return { text };
+	}
+	auto result = TextWithEntities{ text.left(position) };
+	result.append(Ui::Text::IconEmoji(&st::nagramEditedIconEmoji));
+	result.append(text.mid(position + 1));
+	return result;
+}
 
 QString FormatEditedDate(QDateTime sent, QDateTime edited) {
 	const auto today = QDateTime::currentDateTime().date();
