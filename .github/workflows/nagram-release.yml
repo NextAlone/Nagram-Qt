@@ -284,8 +284,9 @@ jobs:
   aur:
     name: AUR
     needs: [version, publish]
-    # Only stable releases go to the package managers.
-    if: ${{ !cancelled() && needs.version.result == 'success' && (needs.publish.result == 'success' || inputs.only == 'packages') && !contains(inputs.tag || github.ref_name, '-') }}
+    # nagram-desktop-beta-bin follows every release, nagram-desktop-bin only
+    # the stable ones; the other package managers get stable releases only.
+    if: ${{ !cancelled() && needs.version.result == 'success' && (needs.publish.result == 'success' || inputs.only == 'packages') }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -304,16 +305,15 @@ jobs:
             Telegram/build
             tools/nagram
 
-      - name: Publish nagram-desktop-bin.
+      - name: Publish nagram-desktop-bin and nagram-desktop-beta-bin.
         run: |
           if [ -z "$AUR_SSH_KEY" ]; then
-            echo "::notice::AUR_SSH_KEY is not set, the AUR package is not updated."
+            echo "::notice::AUR_SSH_KEY is not set, the AUR packages are not updated."
             exit 0
           fi
           VERSION="${TAG#v}"
           ARCHIVE="Nagram-$VERSION-linux-x86_64.tar.xz"
           gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "$ARCHIVE" --dir release
-          python3 tools/nagram/aur_package.py --archive "release/$ARCHIVE" --out package
 
           install -d -m 700 ~/.ssh
           printf '%s\n' "$AUR_SSH_KEY" > ~/.ssh/aur
@@ -322,20 +322,31 @@ jobs:
           echo "aur.archlinux.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEuBKrPzbawxA/k2g6NcyV5jmqwJ2s+zpgZGZ7tpLIcN" > ~/.ssh/known_hosts
           export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/aur -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
 
-          # A package that does not exist yet clones as an empty repository
-          # and is created by the first push.
-          git clone ssh://aur@aur.archlinux.org/nagram-desktop-bin.git aur
-          cp package/PKGBUILD package/.SRCINFO aur/
-          cd aur
-          if [ -z "$(git status --porcelain)" ]; then
-            echo "The AUR package already describes $VERSION."
-            exit 0
-          fi
-          git add PKGBUILD .SRCINFO
-          git -c user.name="github-actions[bot]" \
-            -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-            commit -m "Update to $VERSION"
-          git push origin HEAD:master
+          publish() {
+            name="$1"
+            shift
+            python3 tools/nagram/aur_package.py --archive "release/$ARCHIVE" --out "package/$name" "$@"
+            # A package that does not exist yet clones as an empty repository
+            # and is created by the first push.
+            git clone "ssh://aur@aur.archlinux.org/$name.git" "aur/$name"
+            cp "package/$name/PKGBUILD" "package/$name/.SRCINFO" "aur/$name/"
+            if [ -z "$(git -C "aur/$name" status --porcelain)" ]; then
+              echo "$name already describes $VERSION."
+              return
+            fi
+            git -C "aur/$name" add PKGBUILD .SRCINFO
+            git -C "aur/$name" \
+              -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "Update to $VERSION"
+            git -C "aur/$name" push origin HEAD:master
+          }
+
+          case "$TAG" in
+            (*-*) ;;
+            (*) publish nagram-desktop-bin ;;
+          esac
+          publish nagram-desktop-beta-bin --beta
 
   nix:
     name: Nix

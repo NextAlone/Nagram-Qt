@@ -60,9 +60,11 @@ class AurPackageTest(unittest.TestCase):
             f"NagramRevision 3\nNagramChannel {channel}\n"
         )
 
-    def run_main(self, archive=None):
+    def run_main(self, archive=None, beta=False):
         out, err = io.StringIO(), io.StringIO()
         arguments = ["--archive", str(archive or self.archive), "--out", str(self.out)]
+        if beta:
+            arguments.append("--beta")
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
             code = aur.main([*arguments, "--root", str(self.root)])
         return code, err.getvalue()
@@ -97,8 +99,39 @@ class AurPackageTest(unittest.TestCase):
         self.release("beta")
         code, error = self.run_main()
         self.assertEqual(code, 1)
-        self.assertIn("only stable releases", error)
+        self.assertIn("only stable releases go to nagram-desktop-bin", error)
         self.assertFalse(self.out.exists())
+
+    def test_writes_the_beta_package_of_a_beta_release(self):
+        self.release("beta")
+        archive = self.dir / "Nagram-7.2.10.3-beta-linux-x86_64.tar.xz"
+        archive.write_bytes(b"archive")
+        code, error = self.run_main(archive, beta=True)
+        self.assertEqual((code, error), (0, ""))
+        pkgbuild = (self.out / "PKGBUILD").read_text()
+        self.assertIn(
+            "\npkgname=nagram-desktop-beta-bin\npkgver=7.2.10.3beta\npkgrel=1\n", pkgbuild
+        )
+        self.assertIn(
+            '\nsource=("Nagram-${pkgver/beta/-beta}-linux-$CARCH.tar.xz::$url/releases/download/'
+            'v${pkgver/beta/-beta}/Nagram-${pkgver/beta/-beta}-linux-$CARCH.tar.xz")\n',
+            pkgbuild,
+        )
+        self.assertIn("\nprovides=(nagram-desktop)\nconflicts=(nagram-desktop)\n", pkgbuild)
+        srcinfo = (self.out / ".SRCINFO").read_text()
+        beta = "Nagram-7.2.10.3-beta-linux-x86_64.tar.xz"
+        self.assertTrue(srcinfo.startswith("pkgbase = nagram-desktop-beta-bin\n"), srcinfo)
+        self.assertIn("\tpkgver = 7.2.10.3beta\n", srcinfo)
+        self.assertIn(f"\tsource = {beta}::{RELEASES}/v7.2.10.3-beta/{beta}\n", srcinfo)
+        self.assertTrue(srcinfo.endswith("\npkgname = nagram-desktop-beta-bin\n"), srcinfo)
+
+    def test_the_beta_package_also_follows_stable_releases(self):
+        code, error = self.run_main(beta=True)
+        self.assertEqual((code, error), (0, ""))
+        pkgbuild = (self.out / "PKGBUILD").read_text()
+        self.assertIn("\npkgname=nagram-desktop-beta-bin\npkgver=7.2.10.3\n", pkgbuild)
+        srcinfo = (self.out / ".SRCINFO").read_text()
+        self.assertIn(f"\tsource = {ARCHIVE}::{RELEASES}/v7.2.10.3/{ARCHIVE}\n", srcinfo)
 
     def test_refuses_another_archive(self):
         for name in ("Nagram-7.2.10.2-linux-x86_64.tar.xz", "Nagram-7.2.10.3-macos.zip"):
