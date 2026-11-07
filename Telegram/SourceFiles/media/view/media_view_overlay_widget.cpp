@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "media/view/media_view_overlay_widget.h"
 #include "nagram/media/options.h"
+#include "nagram/media/viewer_window.h"
 #include "nagram/privacy/protection.h"
 
 #include "apiwrap.h"
@@ -660,7 +661,7 @@ OverlayWidget::PipWrap::PipWrap(
 }
 
 OverlayWidget::OverlayWidget()
-: _wrap(std::make_unique<Ui::GL::Window>(Ui::GL::Window::Translucent::Yes))
+: _wrap(Nagram::Media::CreateViewerWindow())
 , _window(_wrap->window())
 , _helper(Platform::CreateOverlayWidgetHelper(_window.get(), [=](bool maximized) {
 	toggleFullScreen(maximized);
@@ -1084,7 +1085,7 @@ void OverlayWidget::setupWindow() {
 	});
 
 	_window->setAttribute(Qt::WA_NoSystemBackground, true);
-	_window->setAttribute(Qt::WA_TranslucentBackground, true);
+	Nagram::Media::SetupViewerBackground(_window);
 
 	// System maximize means full screen here, system restore leaves it.
 	_window->systemCommandRequests(

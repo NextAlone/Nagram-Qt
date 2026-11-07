@@ -74,6 +74,7 @@ set(nagram_sources
     nagram/media/sticker_export_model.cpp
     nagram/media/url_template.cpp
     nagram/media/extras.cpp
+    nagram/media/viewer_window.cpp
     nagram/media/local_faved.cpp
     nagram/media/local_faved_model.cpp
     nagram/messages/format.cpp

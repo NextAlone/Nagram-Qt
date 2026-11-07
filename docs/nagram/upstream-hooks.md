@@ -163,6 +163,7 @@ B29（清理聊天）没有上游改动：清理框只调用 `ApiWrap::toggleHis
 | F08 | `history/view/history_view_about_view.cpp` | 新私聊不显示问候贴纸 | 读取 |
 | F09 | `history/view/media/history_view_gif.cpp` | 视频与圆形视频不自动播放 | 读取 |
 | F10 | `media/view/media_view_overlay_widget.cpp` | GIF 使用视频播放控制 | 读取 |
+| F28 | `media/view/media_view_overlay_widget.cpp` | Windows 上查看器窗口改为不透明：构造时用 `Nagram::Media::CreateViewerWindow()`，`setupWindow` 用 `SetupViewerBackground` 代替设置 `WA_TranslucentBackground`。半透明窗口在 Windows 上透出 DWM 的玻璃底，打开图片、视频时背景闪烁；做法参考 People-11/AyuGramDesktop `c7ba1d6`，其他平台不变 | 替换 |
 | F11 | `storage/localimageloader.cpp` | 以文件发送的 MP4 附加视频属性与预览 | 读取 |
 | F12、F13 | 无上游改动（使用 `Data::Stickers` 已有接口） | — | — |
 
