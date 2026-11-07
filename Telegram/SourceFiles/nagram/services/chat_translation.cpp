@@ -198,7 +198,7 @@ void ChatTranslateProvider::requestBatch(
 	}, [=] {
 		finished();
 		doneAll();
-	});
+	}, std::min(kChatBatchParts, TranslationBatchParts(*_service)));
 }
 
 void ChatTranslateProvider::send(

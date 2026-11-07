@@ -1,6 +1,7 @@
 #include "nagram/services/chat_translation_model.h"
 
 #include "base/algorithm.h"
+#include "base/assertion.h"
 
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
@@ -30,7 +31,11 @@ ChatTranslationMode ChooseChatTranslationMode(
 		: ChatTranslationMode::External;
 }
 
-ChatBatchPlan SplitChatBatch(const std::vector<ChatMessageTexts> &messages) {
+ChatBatchPlan SplitChatBatch(
+		const std::vector<ChatMessageTexts> &messages,
+		int parts) {
+	Expects(parts > 0);
+
 	auto result = ChatBatchPlan();
 	auto bytes = 0;
 	for (auto i = 0; i != int(messages.size()); ++i) {
@@ -48,7 +53,7 @@ ChatBatchPlan SplitChatBatch(const std::vector<ChatMessageTexts> &messages) {
 		}
 		for (auto part = 0; part != int(sizes.size()); ++part) {
 			if (result.requests.empty()
-				|| result.requests.back().texts.size() == kChatBatchParts
+				|| result.requests.back().texts.size() == parts
 				|| bytes + sizes[part] > kChatBatchBytes) {
 				result.requests.emplace_back();
 				bytes = 0;
@@ -69,11 +74,12 @@ ChatTranslationQueue::ChatTranslationQueue(Send send, Delay delay)
 void ChatTranslationQueue::start(
 		std::vector<ChatMessageTexts> messages,
 		DoneOne doneOne,
-		Fn<void()> doneAll) {
+		Fn<void()> doneAll,
+		int parts) {
 	fail();
 	++_generation;
 	_active = true;
-	_plan = paused() ? ChatBatchPlan() : SplitChatBatch(messages);
+	_plan = paused() ? ChatBatchPlan() : SplitChatBatch(messages, parts);
 	_translated.assign(messages.size(), QStringList());
 	_pending.assign(messages.size(), 0);
 	_doneOne = std::move(doneOne);

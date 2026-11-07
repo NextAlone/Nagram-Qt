@@ -432,7 +432,8 @@ void ServiceBox(
 	const auto openai = LlmProtocol(original.protocol);
 	const auto translation = original.kind == ServiceKind::Translation;
 	const auto model = openai ? add(tr::lng_nagram_service_model(), original.model) : nullptr;
-	const auto option = (original.protocol == u"deepl"_q)
+	const auto option = (original.protocol == u"deepl"_q
+			|| original.protocol == u"deeplx"_q)
 		? add(tr::lng_nagram_service_formality(), original.model)
 		: (original.protocol == u"microsoft"_q)
 		? add(tr::lng_nagram_service_region(), original.model)

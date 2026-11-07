@@ -35,6 +35,8 @@ constexpr ServicePreset kPresets[] = {
 		u"https://api.anthropic.com/v1/", u"messages" },
 	{ "deepl", u"DeepL", Kind::Translation, u"deepl",
 		u"https://api.deepl.com/v2/", u"translate" },
+	{ "deeplx", u"DeepLX", Kind::Translation, u"deeplx",
+		u"http://127.0.0.1:1188/", u"translate" },
 	{ "google", u"Google Cloud Translation", Kind::Translation, u"google",
 		u"https://translation.googleapis.com/", u"language/translate/v2" },
 	{ "microsoft", u"Microsoft Translator", Kind::Translation, u"microsoft",

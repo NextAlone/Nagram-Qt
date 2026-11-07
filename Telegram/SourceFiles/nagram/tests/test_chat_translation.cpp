@@ -132,6 +132,11 @@ void TestSplit() {
 	for (auto i = 0; i != int(messages.size()); ++i) {
 		Require(seen[i] == *messages[i], "part order per message");
 	}
+	const auto single = SplitChatBatch(messages, 1);
+	Require(int(single.requests.size()) == parts, "one request per part");
+	for (const auto &request : single.requests) {
+		Require(request.texts.size() == 1, "one part per request");
+	}
 
 	const auto chunk = QString(4000, QChar(0x4E2D));
 	auto large = std::vector<ChatMessageTexts>();

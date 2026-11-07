@@ -97,7 +97,9 @@ private:
 			}
 			return;
 		}
-		const auto amount = std::min(50, int(_plan.texts.size()) - offset);
+		const auto amount = std::min(
+			TranslationBatchParts(*_service),
+			int(_plan.texts.size()) - offset);
 		auto texts = QStringList();
 		for (auto i = 0; i != amount; ++i) {
 			texts.push_back(_plan.texts[offset + i]);

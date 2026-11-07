@@ -211,7 +211,11 @@ void TestPresets() {
 			u"00000000-0000-0000-0000-000000000001"_q,
 			u"00000000-0000-0000-0000-000000000002"_q);
 		Require(service.model.isEmpty(), "preset recommends a model");
-		Require(service.baseUrl.scheme() == u"https"_q
+		// Only the self-hosted DeepLX preset points at this machine.
+		const auto local = (service.protocol == u"deeplx"_q)
+			&& (service.baseUrl.scheme() == u"http"_q)
+			&& (service.baseUrl.host() == u"127.0.0.1"_q);
+		Require((service.baseUrl.scheme() == u"https"_q || local)
 			&& service.baseUrl.path().endsWith('/'), "preset address");
 		Require(!service.name.isEmpty(), "preset name");
 		if (LlmProtocol(service.protocol)) {
@@ -221,7 +225,7 @@ void TestPresets() {
 			"preset does not make a valid service");
 		anthropic += (service.protocol == u"anthropic"_q) ? 1 : 0;
 	}
-	Require(ids.size() == 17 && anthropic == 1, "preset list");
+	Require(ids.size() == 18 && anthropic == 1, "preset list");
 	std::cout << "PASS: Nagram service presets" << std::endl;
 }
 
@@ -541,6 +545,37 @@ void TestServices() {
 	Require(deeplCall.body.object().value(u"formality"_q) == u"more"_q
 		&& deeplCall.body.object().value(u"target_lang"_q) == u"ZH"_q,
 		"DeepL request body");
+
+	auto deeplx = service;
+	deeplx.protocol = u"deeplx"_q;
+	deeplx.model = QString();
+	Require(ParseService(SerializeService(deeplx)).has_value(),
+		"DeepLX service rejected");
+	Require(TranslationBatchParts(deeplx) == 1
+		&& TranslationBatchParts(deepl) == kTranslationBatchParts,
+		"DeepLX batch size");
+	deeplx.model = u"less"_q;
+	const auto deeplxCall = BuildTranslationCall(deeplx, { u"Hi"_q }, u"zh"_q);
+	Require(deeplxCall.body.object().value(u"text"_q) == u"Hi"_q
+		&& deeplxCall.body.object().value(u"target_lang"_q) == u"ZH"_q
+		&& deeplxCall.body.object().value(u"formality"_q) == u"less"_q
+		&& !deeplxCall.body.object().contains(u"source_lang"_q),
+		"DeepLX request body");
+	const auto deeplxResult = ParseTranslationResult(
+		deeplx,
+		R"({"code":200,"data":"你好","alternatives":[]})",
+		1);
+	Require(deeplxResult && deeplxResult->front() == u"你好"_q,
+		"DeepLX response");
+	Require(!ParseTranslationResult(
+			deeplx,
+			R"({"code":429,"data":"x"})",
+			1)
+		&& !ParseTranslationResult(deeplx, R"({"code":200})", 1)
+		&& !ParseTranslationResult(deeplx, R"({"data":"a"})", 2),
+		"DeepLX error response accepted");
+	Require(AuthHeaders(deeplx, "k").front().second == "Bearer k",
+		"DeepLX header");
 
 	auto microsoft = service;
 	microsoft.protocol = u"microsoft"_q;

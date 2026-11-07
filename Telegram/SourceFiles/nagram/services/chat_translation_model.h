@@ -41,7 +41,8 @@ struct ChatBatchPlan {
 };
 
 [[nodiscard]] ChatBatchPlan SplitChatBatch(
-	const std::vector<ChatMessageTexts> &messages);
+	const std::vector<ChatMessageTexts> &messages,
+	int parts = kChatBatchParts);
 
 struct ChatSendResult {
 	std::optional<QStringList> texts;
@@ -59,7 +60,8 @@ public:
 	void start(
 		std::vector<ChatMessageTexts> messages,
 		DoneOne doneOne,
-		Fn<void()> doneAll);
+		Fn<void()> doneAll,
+		int parts = kChatBatchParts);
 	void cancel();
 	void fail();
 	void resume();

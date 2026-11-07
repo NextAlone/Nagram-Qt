@@ -79,7 +79,11 @@ struct TranslationCall {
 	QUrlQuery query;
 };
 
+inline constexpr auto kTranslationBatchParts = 50;
+
 [[nodiscard]] bool TranslationProtocol(const QString &protocol);
+// How many texts one BuildTranslationCall may carry for this service.
+[[nodiscard]] int TranslationBatchParts(const ServiceDefinition &service);
 [[nodiscard]] bool LlmProtocol(const QString &protocol);
 [[nodiscard]] QJsonObject BuildLlmBody(
 	const ServiceDefinition &service,

@@ -28,7 +28,7 @@ bool ValidText(const QJsonValue &value, int maximum, bool multiline = false) {
 }
 
 bool ValidOption(const QString &protocol, const QString &value) {
-	if (protocol == u"deepl"_q) {
+	if (protocol == u"deepl"_q || protocol == u"deeplx"_q) {
 		return value.isEmpty()
 			|| value == u"more"_q
 			|| value == u"less"_q
@@ -272,9 +272,15 @@ bool LlmProtocol(const QString &protocol) {
 
 bool TranslationProtocol(const QString &protocol) {
 	return (protocol == u"deepl"_q)
+		|| (protocol == u"deeplx"_q)
 		|| (protocol == u"google"_q)
 		|| (protocol == u"microsoft"_q)
 		|| (protocol == u"yandex"_q);
+}
+
+int TranslationBatchParts(const ServiceDefinition &service) {
+	// DeepLX joins a list of texts into one and answers with one text.
+	return (service.protocol == u"deeplx"_q) ? 1 : kTranslationBatchParts;
 }
 
 QJsonObject BuildLlmBody(
@@ -370,6 +376,18 @@ TranslationCall BuildTranslationCall(
 			body.insert(u"formality"_q, service.model);
 		}
 		result.body = QJsonDocument(body);
+	} else if (service.protocol == u"deeplx"_q) {
+		// DeepLX takes one text per request (see TranslationBatchParts).
+		Expects(texts.size() == 1);
+
+		auto body = QJsonObject{
+			{ u"text"_q, texts.front() },
+			{ u"target_lang"_q, to.toUpper() },
+		};
+		if (!service.model.isEmpty()) {
+			body.insert(u"formality"_q, service.model);
+		}
+		result.body = QJsonDocument(body);
 	} else if (service.protocol == u"google"_q) {
 		result.body = QJsonDocument(QJsonObject{
 			{ u"q"_q, list },
@@ -428,7 +446,14 @@ std::optional<QStringList> ParseTranslationResult(
 	const auto document = QJsonDocument::fromJson(body);
 	const auto root = document.object();
 	auto values = QJsonArray();
-	if (service.protocol == u"deepl"_q || service.protocol == u"yandex"_q) {
+	if (service.protocol == u"deeplx"_q) {
+		const auto code = root.value(u"code"_q);
+		if (!code.isUndefined() && code.toInt() != 200) {
+			return std::nullopt;
+		}
+		values.push_back(root.value(u"data"_q));
+	} else if (service.protocol == u"deepl"_q
+			|| service.protocol == u"yandex"_q) {
 		for (const auto &value : root.value(u"translations"_q).toArray()) {
 			values.push_back(value.toObject().value(u"text"_q));
 		}

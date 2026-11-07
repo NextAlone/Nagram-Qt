@@ -21,7 +21,7 @@
 | 能力 | 现有实现 |
 | --- | --- |
 | 服务实例配置 | `nagram/services/model.h` 的 `ServiceDefinition`；本机键 `nagram.services`（`kServicesConfig`），结构为 `{"version":1,"translation","transcription","instances"}`，由 `ValidServices` / `ParseService` 严格校验（HTTPS 或回环 HTTP、相对 endpoint、无查询与片段、温度范围） |
-| 协议 | 翻译：`openai`、`deepl`、`google`、`microsoft`、`yandex`（`TranslationProtocol`、`BuildTranslationCall`、`ParseTranslationResult`、`AuthHeaders`）；转写：只有 `openai` |
+| 协议 | 翻译：`openai`、`deepl`、`deeplx`、`google`、`microsoft`、`yandex`（`TranslationProtocol`、`BuildTranslationCall`、`ParseTranslationResult`、`AuthHeaders`、`TranslationBatchParts`）；转写：只有 `openai` |
 | 凭据 | `nagram/services/credentials.cpp` 的 `ReadCredential` / `WriteCredential` / `DeleteCredential`（macOS Keychain、Windows Credential Manager，Linux 返回 `Unavailable`）；`CredentialAccount` 把查找键绑定到地址、协议、用途 |
 | 请求 | `nagram/services/request.cpp` 的 `ServiceRequest`：`json` / `models` / `audio`，`cancel()`，120 秒超时，手动重定向策略（3xx 报 `Redirect`），请求体 128 KiB、音频 24 MiB、响应 2 MiB 上限 |
 | 手动翻译 | `boxes/translate_box.cpp` 的 `TranslateBox` 通过 `Nagram::CreateInteractiveTranslateProvider` 取服务；`ExternalTranslateProvider`（`nagram/services/translation.cpp`）用 `PlanTranslation` / `ApplyTranslation` 保护实体、代码、链接和提及 |
@@ -261,6 +261,7 @@ enum class Mode { Inherit, On, Off };
 | SiliconFlow | `openai` | `https://api.siliconflow.cn/v1/` | `chat/completions` | Android `providerUrls` |
 | Anthropic | `anthropic` | `https://api.anthropic.com/v1/` | `messages` | iOS `NagramTranslationLLMAPIFormat`（`defaultBaseURL`、`/v1/messages`、`/v1/models`）；Android `doAnthropicTranslate`（`$baseUrl/messages`） |
 | DeepL、Google Cloud Translation、Microsoft Translator、Yandex Translate | 各自协议 | 仓库已有（S62、S108） | 仓库已有 | 原 `ServicesBox` 的模板，原样移入预设表 |
+| DeepLX | `deeplx` | `http://127.0.0.1:1188/` | `translate` | 许愿 #WD0008（2026-11-07）。请求体与 Nagram Android 的 `DeepLXTranslator.kt` 一致：`{text, target_lang, formality?}`，响应取 `data`，`code` 存在且不是 200 时按错误处理；不发 `source_lang`，由 DeepLX 自动识别。DeepLX 的 `/translate` 和 `/v2/translate` 都会把文本数组合并成一段再返回一段（[`service.go`](https://github.com/OwO-Network/DeepLX/blob/main/service/service.go)），所以 `TranslationBatchParts` 对它返回 1，每次请求只发一段。默认地址是 DeepLX 的本机默认端口，这是唯一的 HTTP 预设：`ParseService` 只对本机地址放行 HTTP。开启密钥时以 `Authorization: Bearer` 发送 DeepLX 的访问令牌 |
 | OpenAI（转写） | `openai` | `https://api.openai.com/v1/` | `audio/transcriptions` | 仓库已有（S64）；iOS `NagramSTTConfiguration.swift` 的 `defaultBaseURL`、`defaultEndpoint` |
 | 自定义 | `openai` | 空，由用户填写 | `chat/completions` | 不是预设表的条目，“自定义 OpenAI 兼容翻译”单独一行 |
 
@@ -455,7 +456,7 @@ H06–H09 归入小分组“自动翻译”，H10 与 H03 扩展归入已有的�
 | 覆盖映射 | 往返；空映射序列化为空字节；非法 peer ID、非规范键、未知值、未知字段、版本不符、超过条数与字节上限均拒绝；设为继承后键被移除 |
 | 账号隔离 | 两个 `MemoryPrefs` 上的账号作用域 `Options` 写入同一 peer ID 互不可见（沿用 `test_options.cpp` 的做法） |
 | 服务配置 v2 | v1 → v2 迁移幂等；v1 导出文件可导入；`summary` 指向不存在、非 LLM、转写实例时拒绝；`useContext`、`summaryPrompt` 出现在非 LLM 实例时拒绝；`anthropic` 用于转写时拒绝；新增字段不改变 `CredentialAccount` |
-| 预设表 | 每个预设填入占位模型后通过 `ParseService`；URL 均为 HTTPS；预设 ID 不重复 |
+| 预设表 | 每个预设填入占位模型后通过 `ParseService`；URL 均为 HTTPS（DeepLX 例外，为本机 HTTP）；预设 ID 不重复 |
 | Anthropic | 请求体字段与 `max_tokens`；鉴权头；`stop_reason` 非 `end_turn` 拒绝；温度大于 1 拒绝 |
 | 响应容错 | 代码围栏、`<think>` 前缀、缺失 `finish_reason` 可解析；`length`、长度不符、空字符串、非数组拒绝 |
 | 上下文选择 | 条数、单条与合计截断；不切断代理对；过滤服务消息、空文本、不同话题、目标之后的消息；禁止复制时为空；提示词中上下文段与待翻译数组分离 |
