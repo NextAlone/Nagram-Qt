@@ -2070,8 +2070,11 @@ void InitFieldAutocomplete(
 		const auto byTab = (data.method == Method::ByTab);
 		const auto shortcut = data.user->isSelf();
 
+		const auto toDraft = !shortcut
+			&& Nagram::ForDevice().Get(Nagram::Compose::kBotCommandsToDraft);
+
 		// Send bot command at once, if it was not inserted by pressing Tab.
-		if (byTab && data.command.size() > 1) {
+		if ((byTab || toDraft) && data.command.size() > 1) {
 			field->insertTag(data.command);
 		} else if (!shortcut) {
 			sendCommand(data.command);

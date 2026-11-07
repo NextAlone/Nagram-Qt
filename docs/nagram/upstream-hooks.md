@@ -127,7 +127,7 @@ B29（清理聊天）没有上游改动：清理框只调用 `ApiWrap::toggleHis
 | D28 | `history/history_widget.cpp` | 静音按钮的显隐、文字与点击处理；讨论组关联变化时刷新文字 | 替换 |
 | D12 | `chat_helpers/tabbed_panel.cpp` | 悬停不触发打开，点击保留 | 读取 |
 | D13 | `history/history_widget.cpp`、`history/view/controls/history_view_compose_controls.cpp` | 附件按钮不注册悬停菜单 | 读取 |
-| D14 | `history/history_widget.cpp`、`history/view/history_view_chat_section.cpp`、`history/view/history_view_scheduled_section.cpp` | 命令链接点击改为插入输入框光标处 | 拦截 |
+| D14 | `history/history_widget.cpp`、`history/view/history_view_chat_section.cpp`、`history/view/history_view_scheduled_section.cpp`、`chat_helpers/field_autocomplete.cpp`（`InitFieldAutocomplete` 的 `botCommandChosen`） | 命令链接点击改为插入输入框光标处；输入 `/` 后从候选列表选命令时按 Tab 的路径插入，不走 `sendBotCommand`：后者之后上游会用光标后的文本重设输入框，插入的命令会被清掉 | 拦截 |
 | D15 | `history/history_widget.cpp`、`history/view/controls/history_view_compose_controls.cpp` | 输入框占位文字 | 替换 |
 | D32 | `chat_helpers/field_autocomplete.cpp`（`FieldAutocomplete::recount`） | 候选列表的高度上限由 4.5 行改为按开关取 8.5 或 4.5 行；贴纸候选（`_srows` 非空）不变 | 读取 |
 | D16 | `chat_helpers/message_field.cpp` | 不做 Markdown 自动转换 | 读取 |
