@@ -191,7 +191,7 @@ P3-07 外部媒体后端：
 | G02 | `core/application.cpp`（窗口保护原因）、`dialogs/ui/dialogs_layout.cpp`、`dialogs/dialogs_inner_widget.cpp`、`window/notifications_manager.cpp`、`window/main_window.cpp`（标题） | 加入窗口捕获保护原因；遮盖列表身份、预览、标题与通知内容 | 读取 |
 | G03 | `api/api_who_reacted.cpp` | 不显示已读时间提示 | 读取 |
 | G04 | `history/view/history_view_contact_status.cpp` | 不显示分享手机号提示 | 读取 |
-| G05、G06 | `info/profile/info_profile_actions.cpp` | 资料页增加 ID 与数据中心行，取值逻辑在 `nagram/privacy/profile.cpp` | 读取 |
+| G05、G06 | `info/profile/info_profile_actions.cpp` | 资料页增加 ID 与数据中心行，取值逻辑在 `nagram/privacy/profile.cpp`；ID 显示为链接，`Nagram::Privacy::SetupProfileIdCopy` 覆盖该行的链接点击，单击复制 ID 并提示 | 读取 |
 | G07 | `info/profile/tabs/adapters/info_profile_tab_peer_lists.cpp`、`info/profile/info_profile_shared_media_classic.cpp`、`info/profile/info_profile_top_bar.cpp` | 不显示礼物标签、礼物区、礼物按钮与置顶礼物 | 读取 |
 | G08 | `window/window_peer_menu.cpp` | 不显示创建待办入口 | 过滤 |
 | G09 | `window/window_peer_menu.cpp` | 聊天与资料菜单在“管理”后加入子菜单，调用上游权限、邀请链接、成员列表与最近操作入口 | 读取 |

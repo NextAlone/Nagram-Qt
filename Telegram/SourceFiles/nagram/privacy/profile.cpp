@@ -8,6 +8,9 @@
 #include "lang/lang_keys.h"
 #include "main/main_session.h"
 #include "ui/image/image_location.h"
+#include "ui/layers/show.h"
+#include "ui/text/text_utilities.h"
+#include "ui/widgets/labels.h"
 
 #include <QtCore/QDateTime>
 #include <QtCore/QTimeZone>
@@ -40,23 +43,44 @@ namespace {
 	Unexpected("Bound in EstimatedRegistration.");
 }
 
+[[nodiscard]] QString ProfileIdText(not_null<PeerData*> peer, int format) {
+	if (!format) {
+		return QString();
+	}
+	const auto raw = peer->id.value & PeerId::kChatTypeMask;
+	auto result = QString::number(raw);
+	if (format == 1) {
+		if (peer->isChat()) {
+			result.prepend('-');
+		} else if (peer->isChannel()) {
+			result.prepend(u"-100"_q);
+		}
+	}
+	return result;
+}
+
 } // namespace
 
 rpl::producer<TextWithEntities> ProfileIdValue(not_null<PeerData*> peer) {
 	return ForDevice().Value(kProfileIdFormat) | rpl::map([=](int format) {
-		if (!format) {
-			return TextWithEntities();
+		const auto text = ProfileIdText(peer, format);
+		return text.isEmpty() ? TextWithEntities() : tr::link(text);
+	});
+}
+
+void SetupProfileIdCopy(
+		not_null<Ui::FlatLabel*> label,
+		not_null<PeerData*> peer,
+		std::shared_ptr<Ui::Show> show) {
+	label->overrideLinkClickHandler([=] {
+		const auto text = ProfileIdText(
+			peer,
+			ForDevice().Get(kProfileIdFormat));
+		if (text.isEmpty()) {
+			return;
 		}
-		const auto raw = peer->id.value & PeerId::kChatTypeMask;
-		auto result = QString::number(raw);
-		if (format == 1) {
-			if (peer->isChat()) {
-				result.prepend('-');
-			} else if (peer->isChannel()) {
-				result.prepend(u"-100"_q);
-			}
-		}
-		return TextWithEntities{ result };
+		TextUtilities::SetClipboardText({ text });
+		show->showToast(tr::lng_text_copied(tr::now));
 	});
 }
 

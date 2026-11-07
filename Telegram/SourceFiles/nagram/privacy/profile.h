@@ -6,10 +6,20 @@
 
 class PeerData;
 
+namespace Ui {
+class FlatLabel;
+class Show;
+} // namespace Ui
+
 namespace Nagram::Privacy {
 
+// The ID is a link: a click on it copies the ID (see SetupProfileIdCopy).
 [[nodiscard]] rpl::producer<TextWithEntities> ProfileIdValue(
 	not_null<PeerData*> peer);
+void SetupProfileIdCopy(
+	not_null<Ui::FlatLabel*> label,
+	not_null<PeerData*> peer,
+	std::shared_ptr<Ui::Show> show);
 [[nodiscard]] rpl::producer<TextWithEntities> ProfileDcValue(
 	not_null<PeerData*> peer);
 [[nodiscard]] rpl::producer<QString> ProfileRegistrationLabel(

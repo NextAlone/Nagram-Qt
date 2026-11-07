@@ -1901,8 +1901,11 @@ Section DetailsFiller::makeInfo() {
 		}
 	}
 	if (!_topic) {
-		addInfoOneLine(tr::lng_nagram_profile_id(),
-			Nagram::Privacy::ProfileIdValue(_peer), QString());
+		Nagram::Privacy::SetupProfileIdCopy(
+			addInfoOneLine(tr::lng_nagram_profile_id(),
+				Nagram::Privacy::ProfileIdValue(_peer), QString()).text,
+			_peer,
+			_controller->uiShow());
 		addInfoOneLine(tr::lng_nagram_profile_dc(),
 			Nagram::Privacy::ProfileDcValue(_peer), QString());
 		addInfoOneLine(Nagram::Privacy::ProfileRegistrationLabel(_peer),
