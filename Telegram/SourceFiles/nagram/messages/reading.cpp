@@ -1,6 +1,11 @@
 #include "nagram/messages/reading.h"
 
 #include "nagram/compose/text.h"
+#include "nagram/core/options.h"
+#include "nagram/filters/view.h"
+#include "nagram/messages/options.h"
+#include "history/history_item.h"
+#include "history/view/history_view_element.h"
 #include "ui/text/text_utilities.h"
 
 #ifdef Q_OS_MAC
@@ -101,7 +106,8 @@ std::optional<QString> ConvertCharacter(char32_t value, bool traditional) {
 
 std::optional<TextWithEntities> ConvertChinese(
 		const TextWithEntities &source,
-		bool traditional) {
+		bool traditional,
+		std::vector<int> *mapped) {
 	if (!ChineseConversionAvailable()) {
 		LOG(("Nagram Chinese conversion: unsupported platform."));
 		return std::nullopt;
@@ -189,6 +195,9 @@ std::optional<TextWithEntities> ConvertChinese(
 		result.entities.push_back(EntityInText(
 			entity.type(), start, end - start, entity.data()));
 	}
+	if (mapped) {
+		*mapped = std::move(offsets);
+	}
 	return result;
 }
 
@@ -208,6 +217,92 @@ std::optional<TextWithEntities> ProjectReading(
 		result = Compose::AddChineseLatinSpacing(result);
 	}
 	return result;
+}
+
+std::optional<Compose::TextOffsets> ReadingOffsets(
+		const TextWithEntities &source,
+		bool spacing,
+		int chinese) {
+	auto shown = source;
+	auto result = Compose::IdentityOffsets(int(source.text.size()));
+	if (chinese && !source.text.isEmpty()) {
+		auto offsets = std::vector<int>();
+		const auto converted = ConvertChinese(source, chinese == 2, &offsets);
+		if (!converted) {
+			return std::nullopt;
+		}
+		shown = *converted;
+		result = { .start = offsets, .end = offsets };
+	}
+	if (spacing) {
+		if (const auto spaced = Compose::ChineseLatinSpacing(shown)) {
+			result = Compose::ChainOffsets(
+				result,
+				Compose::OffsetsOf(*spaced));
+		}
+	}
+	return result;
+}
+
+namespace {
+
+std::optional<Compose::TextOffsets> ShownOffsets(
+		not_null<HistoryItem*> item,
+		const Ui::Text::String &text) {
+	const auto spacing = ForDevice().Get(kReadingSpacing);
+	const auto chinese = ForDevice().Get(kReadingChinese);
+	const auto view = item->mainView();
+	// Captions and other texts of the item are shown unprojected.
+	if (!view || !ReadingCache::Shows(view, text)) {
+		return std::nullopt;
+	} else if (item->nagramOriginalShown() || (!spacing && !chinese)) {
+		return std::nullopt;
+	}
+	const auto source = item->translatedTextWithLocalEntities();
+	// A text the filters changed has no offsets to map, as before.
+	const auto filtered = Filters::DisplayText(Filters::Project(item, source));
+	if (filtered.text != source.text) {
+		return std::nullopt;
+	}
+	return ReadingOffsets(filtered, spacing, chinese);
+}
+
+} // namespace
+
+TextSelection ReadingSourceSelection(
+		not_null<HistoryItem*> item,
+		const Ui::Text::String &text,
+		TextSelection shown) {
+	const auto offsets = ShownOffsets(item, text);
+	if (!offsets) {
+		return shown;
+	}
+	const auto [from, till] = Compose::SourceRange(
+		*offsets,
+		shown.from,
+		shown.to);
+	return { uint16(from), uint16(till) };
+}
+
+TextSelection ReadingShownSelection(
+		not_null<HistoryItem*> item,
+		const Ui::Text::String &text,
+		TextSelection source) {
+	const auto offsets = ShownOffsets(item, text);
+	if (!offsets) {
+		return source;
+	}
+	const auto [from, till] = Compose::ShownRange(
+		*offsets,
+		source.from,
+		source.to);
+	return { uint16(from), uint16(till) };
+}
+
+bool ReadingCache::Shows(
+		not_null<const HistoryView::Element*> view,
+		const Ui::Text::String &text) {
+	return (&view->text() == &text);
 }
 
 const TextWithEntities &ReadingCache::Get(

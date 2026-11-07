@@ -441,6 +441,7 @@ class Element
 	, public RuntimeComposer<Element>
 	, public ClickHandlerHost
 	, public base::has_weak_ptr {
+	friend class Nagram::Messages::ReadingCache;
 public:
 	enum class Flag : uint16 {
 		ServiceMessage           = 0x0001,

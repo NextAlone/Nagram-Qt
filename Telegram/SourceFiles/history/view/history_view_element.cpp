@@ -3407,6 +3407,7 @@ SelectedQuote Element::FindSelectedQuote(
 				int(modified.to) - int(modification.added)));
 		}
 	}
+	modified = Nagram::Messages::ReadingSourceSelection(item, text, modified);
 	auto result = item->originalText();
 	if (modified.empty() || modified.to > result.text.size()) {
 		return {};
@@ -3525,6 +3526,7 @@ TextSelection Element::FindSelectionFromQuote(
 	if (result.empty()) {
 		return {};
 	}
+	result = Nagram::Messages::ReadingShownSelection(quote.item, text, result);
 	return ApplyModificationsFrom(result, text);
 }
 

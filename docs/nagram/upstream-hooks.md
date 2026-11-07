@@ -117,7 +117,7 @@ B29（清理聊天）没有上游改动：清理框只调用 `ApiWrap::toggleHis
 | C22 | `info/profile/info_profile_badge.cpp`、`dialogs/dialogs_inner_widget_accessibility.cpp`、`dialogs/dialogs_inner_widget.cpp`、`main/main_session.cpp` | 不绘制会员星标与表情状态，认证和警告标识保留；列表订阅开关变化后重绘 | 读取 |
 | C23 | `dialogs/dialogs_search_tags.cpp`、`history/view/reactions/history_view_reactions_selector.cpp` | 不显示未选中的收藏标签与标签选择器 | 过滤 |
 | C24 | `history/view/history_view_send_action.cpp`、`history/view/history_view_top_bar_widget.cpp`、`dialogs/dialogs_inner_widget.cpp` | 私聊中不显示对方的输入、录制等状态 | 读取 |
-| C25、C26 | `history/history_item.cpp`、`history/view/history_view_element.cpp` | 显示文本经过投影（间距、简繁），原文不变；投影结果按消息缓存 | 替换 |
+| C25、C26 | `history/history_item.cpp`、`history/view/history_view_element.cpp` | 显示文本经过投影（间距、简繁），原文不变；投影结果按消息缓存。引用按显示文本选取，`FindSelectedQuote` 撤销上游的修改后用 `ReadingSourceSelection` 换回原文的位置，`FindSelectionFromQuote` 用 `ReadingShownSelection` 换成显示文本的位置再高亮，各一行；只换算消息视图自己的正文（`Element` 为此把 `ReadingCache` 声明为友元，多一行），说明文字等没有投影的文本和过滤改过文字的消息不换算 | 替换 |
 
 ### 2.4 输入与发送
 

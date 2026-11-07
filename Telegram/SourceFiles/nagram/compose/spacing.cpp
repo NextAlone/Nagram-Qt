@@ -2,6 +2,8 @@
 
 #include <gsl/assert>
 
+#include <algorithm>
+
 namespace Nagram::Compose {
 namespace {
 
@@ -57,6 +59,64 @@ SpacingResult InsertChineseLatinSpacing(
 	}
 	result.before[length] = result.after[length] = result.text.size();
 	return result;
+}
+
+TextOffsets IdentityOffsets(int length) {
+	auto result = TextOffsets{
+		.start = std::vector<int>(length + 1),
+		.end = std::vector<int>(length + 1),
+	};
+	for (auto i = 0; i <= length; ++i) {
+		result.start[i] = result.end[i] = i;
+	}
+	return result;
+}
+
+TextOffsets OffsetsOf(const SpacingResult &spacing) {
+	return { .start = spacing.after, .end = spacing.before };
+}
+
+TextOffsets ChainOffsets(
+		const TextOffsets &first,
+		const TextOffsets &second) {
+	Expects(first.start.size() == first.end.size());
+
+	auto result = TextOffsets{
+		.start = std::vector<int>(first.start.size()),
+		.end = std::vector<int>(first.end.size()),
+	};
+	for (auto i = 0; i != int(first.start.size()); ++i) {
+		result.start[i] = second.start[first.start[i]];
+		result.end[i] = second.end[first.end[i]];
+	}
+	return result;
+}
+
+std::pair<int, int> SourceRange(
+		const TextOffsets &offsets,
+		int from,
+		int till) {
+	const auto length = int(offsets.start.size()) - 1;
+	auto first = 0;
+	while (first < length && offsets.end[first + 1] <= from) {
+		++first;
+	}
+	auto last = length;
+	while (last > first && offsets.start[last - 1] >= till) {
+		--last;
+	}
+	return { first, last };
+}
+
+std::pair<int, int> ShownRange(
+		const TextOffsets &offsets,
+		int from,
+		int till) {
+	const auto length = int(offsets.start.size()) - 1;
+	from = std::clamp(from, 0, length);
+	till = std::clamp(till, from, length);
+	const auto start = offsets.start[from];
+	return { start, std::max(start, offsets.end[till]) };
 }
 
 } // namespace Nagram::Compose

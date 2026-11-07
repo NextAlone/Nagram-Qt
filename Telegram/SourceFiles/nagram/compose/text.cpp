@@ -45,14 +45,15 @@ bool Protected(EntityType type) {
 
 } // namespace
 
-TextWithEntities AddChineseLatinSpacing(const TextWithEntities &text) {
+std::optional<SpacingResult> ChineseLatinSpacing(
+		const TextWithEntities &text) {
 	const auto length = int(text.text.size());
 	if (length < 2) {
-		return text;
+		return std::nullopt;
 	}
 	for (const auto &entity : text.entities) {
 		if (!entity.validForText(length)) {
-			return text;
+			return std::nullopt;
 		}
 	}
 	auto boundaries = std::vector<int>(length + 1);
@@ -95,15 +96,23 @@ TextWithEntities AddChineseLatinSpacing(const TextWithEntities &text) {
 		--boundaries[length];
 	}
 
-	const auto spaced = InsertChineseLatinSpacing(text.text, boundaries);
+	auto spaced = InsertChineseLatinSpacing(text.text, boundaries);
 	if (spaced.text == text.text) {
+		return std::nullopt;
+	}
+	return spaced;
+}
+
+TextWithEntities AddChineseLatinSpacing(const TextWithEntities &text) {
+	const auto spaced = ChineseLatinSpacing(text);
+	if (!spaced) {
 		return text;
 	}
 	auto result = TextWithEntities();
-	result.text = spaced.text;
+	result.text = spaced->text;
 	for (const auto &entity : text.entities) {
-		const auto start = spaced.after[entity.offset()];
-		const auto end = spaced.before[entity.offset() + entity.length()];
+		const auto start = spaced->after[entity.offset()];
+		const auto end = spaced->before[entity.offset() + entity.length()];
 		result.entities.push_back(EntityInText(
 			entity.type(), start, end - start, entity.data()));
 	}

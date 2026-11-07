@@ -1,8 +1,11 @@
 #pragma once
 
+#include "nagram/compose/spacing.h"
 #include "ui/text/text_entity.h"
 
 #include <QtCore/QStringList>
+
+#include <optional>
 
 namespace Ui {
 class InputField;
@@ -10,6 +13,8 @@ class InputField;
 
 namespace Nagram::Compose {
 
+[[nodiscard]] std::optional<SpacingResult> ChineseLatinSpacing(
+	const TextWithEntities &text);
 [[nodiscard]] TextWithEntities AddChineseLatinSpacing(
 	const TextWithEntities &text);
 [[nodiscard]] TextWithEntities PrepareText(
