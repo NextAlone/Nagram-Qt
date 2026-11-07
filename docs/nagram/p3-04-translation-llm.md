@@ -171,6 +171,17 @@ enum class Mode { Inherit, On, Off };
 - `nagram.services` 无法读取而 H09 开启时，整批按配置错误失败，不改用 Telegram。
 - `CancelChatTranslation` 用 `dynamic_cast` 识别 Nagram 的 provider，加在 `cancelSentRequest()` 的 `if (_requestInProcess)` 内。
 
+### 2.2.1 Instant View 页面翻译（许愿 #WD0001，2026-11-07）
+
+Nagram Android 在 Instant View 和 Telegraph 页面的右上角菜单里有翻译。桌面端 7.4.1 起 Instant View 由 `Iv::Markdown::Controller` 原生排版，数据是 `Iv::RichPage`，每段文字是带实体的 `TextWithEntities`，所以按段翻译后重新排版，不碰 HTML。
+
+- 入口：窗口右上角菜单在“分享”之后加“翻译”；显示译文时换成“显示原文”。翻译进行中该项置灰。用户点击才发送，和翻译框一样不另设开关。
+- 服务：`Nagram::CreatePageTranslateProvider(session)`，即 H09 的转发 provider，但不看 H09 开关，始终按 H01 所选服务：跟随 Telegram 或 Telegram 时走上游批量翻译，系统翻译或外部实例走对应 provider，外部实例沿用 2.2 的队列、重试和熔断。目标语言为 `Ui::ChooseTranslateTo(LanguageId())`，即上游设置里的“翻译成”。
+- 范围：段落、标题、引用、列表项、表格单元格、按钮文字与媒体说明；代码块和公式不翻译，相关文章的标题与摘要不翻译。只有空白的段不发送。
+- 批次：按上游 `TranslateTracker` 的上限，每次请求最多 20 段、24 KiB（`SplitPageBatches`，有单元测试），逐批顺序发送。
+- 结果：在页面副本上替换已成功的段，失败的段保留原文；全部失败时在窗口内提示 `lng_translate_box_error`，不切换。译文只存在内存里，随窗口存在，切换到其他页面或页面内容更新时丢弃；在同一页面内跳转锚点时保留。
+- 刷新：用译文页面重新调用 `TryPrepareNativeInstantView`，经 `Controller::update` 保留滚动位置。挂钩见 `upstream-hooks.md` 的 H12。
+
 ### 2.3 LLM 上下文（I054、A186）
 
 **范围**：只用于整条消息的手动翻译（消息菜单“翻译”→ `Ui::TranslateBox`），且所选实例是 LLM 协议（`openai`、`anthropic`）并开启了实例级 `useContext`。选中文字翻译（`msgId` 为空）、草稿翻译、整页翻译都不带上下文：整页翻译的批次本身已含相邻消息，再附上下文会重复发送正文。

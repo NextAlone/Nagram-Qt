@@ -1,5 +1,6 @@
 #include "nagram/services/chat_translation_model.h"
 #include "nagram/services/model.h"
+#include "nagram/services/page_translation_model.h"
 #include "nagram/core/options.h"
 #include "base/algorithm.h"
 
@@ -297,6 +298,22 @@ void TestThrottle() {
 		"error hidden after the interval");
 }
 
+void TestPageBatches() {
+	using Ranges = std::vector<std::pair<int, int>>;
+	Require(SplitPageBatches({}).empty(), "no page batches without texts");
+	Require(SplitPageBatches({ 1, 1, 1, 1, 1 }, 2, 100)
+		== Ranges{ { 0, 2 }, { 2, 4 }, { 4, 5 } },
+		"page batches split by count");
+	Require(SplitPageBatches({ 4, 4, 4, 9, 2 }, 20, 10)
+		== Ranges{ { 0, 2 }, { 2, 3 }, { 3, 4 }, { 4, 5 } },
+		"page batches split by length");
+	Require(SplitPageBatches({ 30, 1 }, 20, 10)
+		== Ranges{ { 0, 1 }, { 1, 2 } },
+		"a long page text goes alone");
+	Require(SplitPageBatches(std::vector<int>(41, 1)).size() == 3,
+		"page batches use the upstream count limit");
+}
+
 } // namespace
 
 void TestChatTranslation() {
@@ -304,5 +321,6 @@ void TestChatTranslation() {
 	TestSplit();
 	TestQueue();
 	TestThrottle();
+	TestPageBatches();
 	std::cout << "PASS: Nagram whole-chat translation batches" << std::endl;
 }

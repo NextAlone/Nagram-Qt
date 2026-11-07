@@ -137,6 +137,8 @@ set(nagram_sources
     nagram/services/context.cpp
     nagram/services/context_model.cpp
     nagram/services/model.cpp
+    nagram/services/page_translation.cpp
+    nagram/services/page_translation_model.cpp
     nagram/services/presets.cpp
     nagram/services/store.cpp
     nagram/services/summary.cpp
@@ -308,6 +310,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/services/chat_translation_model.cpp
         nagram/services/context_model.cpp
         nagram/services/model.cpp
+        nagram/services/page_translation_model.cpp
         nagram/services/presets.cpp
         nagram/services/summary_model.cpp
         nagram/services/send_translation_model.cpp

@@ -28,7 +28,7 @@ void Notify(const QString &key, const QString &text) {
 
 class ChatTranslateProvider final : public Ui::TranslateProvider {
 public:
-	explicit ChatTranslateProvider(not_null<History*> history);
+	ChatTranslateProvider(not_null<Main::Session*> session, History *history);
 
 	bool supportsMessageId() const override;
 	void request(
@@ -53,6 +53,7 @@ private:
 	void configChanged();
 	void finished();
 
+	const bool _followChatOption = false;
 	const std::unique_ptr<Ui::TranslateProvider> _upstream;
 	std::unique_ptr<Ui::TranslateProvider> _system;
 	ServiceRequest _request;
@@ -67,8 +68,11 @@ private:
 
 };
 
-ChatTranslateProvider::ChatTranslateProvider(not_null<History*> history)
-: _upstream(Ui::CreateTranslateProvider(&history->session()))
+ChatTranslateProvider::ChatTranslateProvider(
+	not_null<Main::Session*> session,
+	History *history)
+: _followChatOption(history != nullptr)
+, _upstream(Ui::CreateTranslateProvider(session))
 , _retry([=] {
 	if (const auto callback = base::take(_retryCallback)) {
 		callback();
@@ -87,20 +91,22 @@ ChatTranslateProvider::ChatTranslateProvider(not_null<History*> history)
 	) | rpl::on_next([=] {
 		configChanged();
 	}, _lifetime);
-	history->session().changes().historyUpdates(
-		history,
-		Data::HistoryUpdate::Flag::TranslatedTo
-	) | rpl::on_next([=] {
-		_queue.resume();
-	}, _lifetime);
+	if (history) {
+		session->changes().historyUpdates(
+			history,
+			Data::HistoryUpdate::Flag::TranslatedTo
+		) | rpl::on_next([=] {
+			_queue.resume();
+		}, _lifetime);
+	}
 }
 
 ChatTranslationMode ChatTranslateProvider::mode() const {
-	const auto settings = ForDevice().Get(kChatTranslationUseService)
-		? Services()
-		: std::nullopt;
+	const auto enabled = !_followChatOption
+		|| ForDevice().Get(kChatTranslationUseService);
+	const auto settings = enabled ? Services() : std::nullopt;
 	return ChooseChatTranslationMode(
-		ForDevice().Get(kChatTranslationUseService),
+		enabled,
 		settings.has_value(),
 		settings ? settings->value(u"translation"_q).toString() : QString());
 }
@@ -265,7 +271,12 @@ void ChatTranslateProvider::cancel() {
 
 std::unique_ptr<Ui::TranslateProvider> CreateChatTranslateProvider(
 		not_null<History*> history) {
-	return std::make_unique<ChatTranslateProvider>(history);
+	return std::make_unique<ChatTranslateProvider>(&history->session(), history);
+}
+
+std::unique_ptr<Ui::TranslateProvider> CreatePageTranslateProvider(
+		not_null<Main::Session*> session) {
+	return std::make_unique<ChatTranslateProvider>(session, nullptr);
 }
 
 bool ChatTranslationServiceActive() {

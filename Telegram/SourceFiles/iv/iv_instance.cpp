@@ -33,6 +33,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "main/session/session_show.h"
 #include "main/main_session.h"
 #include "media/view/media_view_open_common.h"
+#include "nagram/services/page_translation.h"
 #include "storage/storage_account.h"
 #include "ui/toast/toast.h"
 #include "ui/basic_click_handlers.h"
@@ -365,6 +366,7 @@ private:
 		const Markdown::MediaActivation &activation,
 		Qt::MouseButton button,
 		const QVariant &clickHandlerContext) const;
+	void showTranslation(std::shared_ptr<const RichPage> richPage);
 
 	const not_null<Delegate*> _delegate;
 	const not_null<Main::Session*> _session;
@@ -374,6 +376,9 @@ private:
 	std::unique_ptr<Markdown::Controller> _markdownController;
 	std::shared_ptr<Markdown::MediaRuntime> _markdownMediaRuntime;
 	QString _markdownRuntimeUrl;
+	std::unique_ptr<Nagram::PageTranslation> _translation;
+	QString _title;
+	WebPageData *_page = nullptr;
 
 	rpl::event_stream<Controller::Event> _events;
 
@@ -424,7 +429,10 @@ Shown::Shown(
 : _delegate(delegate)
 , _session(session)
 , _openChannel(std::move(openChannel))
-, _joinChannel(std::move(joinChannel)) {
+, _joinChannel(std::move(joinChannel))
+, _translation(std::make_unique<Nagram::PageTranslation>(
+	session,
+	[=](std::shared_ptr<const RichPage> page) { showTranslation(page); })) {
 	prepare(data, hash);
 }
 
@@ -438,9 +446,12 @@ void Shown::prepare(not_null<Data*> data, const QString &hash) {
 		_markdownRuntimeUrl = QString();
 	}
 	_id = id;
+	_title = data->name();
+	_page = page;
+	_translation->setOriginal(richPage);
 
 	auto prepared = Markdown::TryPrepareNativeInstantView({
-		.richPage = richPage,
+		.richPage = _translation->shown(),
 		.mediaRuntime = createMediaRuntime(page),
 	});
 	showMarkdownWindowed(
@@ -478,6 +489,11 @@ Markdown::OpenOptions Shown::markdownOpenOptions(
 			FastShareLink(Main::MakeSessionShow(show, _session), url);
 		};
 	}
+	options.fillMenu = [=](
+			not_null<Ui::PopupMenu*> menu,
+			std::shared_ptr<Ui::Show> show) {
+		_translation->fillMenu(menu, std::move(show));
+	};
 	return options;
 }
 
@@ -607,9 +623,12 @@ void Shown::update(not_null<Data*> data) {
 		_markdownRuntimeUrl = QString();
 	}
 	_id = id;
+	_title = data->name();
+	_page = page;
+	_translation->setOriginal(richPage);
 
 	auto prepared = Markdown::TryPrepareNativeInstantView({
-		.richPage = richPage,
+		.richPage = _translation->shown(),
 		.mediaRuntime = createMediaRuntime(page),
 	});
 	showMarkdownWindowed(
@@ -617,6 +636,22 @@ void Shown::update(not_null<Data*> data) {
 		data->name(),
 		QString(),
 		page,
+		true);
+}
+
+void Shown::showTranslation(std::shared_ptr<const RichPage> richPage) {
+	if (!_page) {
+		return;
+	}
+	auto prepared = Markdown::TryPrepareNativeInstantView({
+		.richPage = std::move(richPage),
+		.mediaRuntime = createMediaRuntime(_page),
+	});
+	showMarkdownWindowed(
+		std::move(prepared.content),
+		_title,
+		QString(),
+		_page,
 		true);
 }
 

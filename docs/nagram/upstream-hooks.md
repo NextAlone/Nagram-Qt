@@ -219,6 +219,7 @@ P3-07 外部媒体后端：
 | H09（P3-04） | `history/view/history_view_translate_tracker.cpp` | 构造函数的 `_provider` 由 `Ui::CreateTranslateProvider(session)` 换成 `Nagram::CreateChatTranslateProvider(_history)`（H09 关闭时原样转发给前者）；`cancelSentRequest()` 加一行 `Nagram::CancelChatTranslation(_provider.get())` 中止进行中的外部请求 | 替换 |
 | H04 | `boxes/compose_ai_box.cpp`、`ui/controls/compose_ai_button_factory.cpp` | 草稿 AI 入口改由系统模型处理 | 拦截 |
 | 草稿翻译 | `chat_helpers/message_field.cpp` | 输入框菜单加入“翻译草稿” | 读取 |
+| H12（许愿 #WD0001） | `iv/markdown/iv_markdown_common.h`、`iv/markdown/iv_markdown_controller.cpp`、`iv/iv_instance.cpp` | `OpenOptions` 增加 `fillMenu`，`Controller::showMenu` 在分享之后调用它；`Shown` 持有 `Nagram::PageTranslation`，`prepare` 和 `update` 先 `setOriginal` 再用 `shown()` 的页面排版，`markdownOpenOptions` 设置 `fillMenu`，新增 `showTranslation` 用译文页面刷新窗口并保留滚动位置 | 读取 |
 
 ### 2.9 规则
 

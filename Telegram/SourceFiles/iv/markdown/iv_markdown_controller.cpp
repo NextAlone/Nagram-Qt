@@ -965,7 +965,11 @@ void Controller::showMenu() {
 			&st::menuIconShare);
 	}
 
-	if (hasOpenSource || canShare()) {
+	if (_options.fillMenu) {
+		_options.fillMenu(_menu.get(), _show);
+	}
+
+	if (hasOpenSource || canShare() || !_menu->actions().empty()) {
 		_menu->addSeparator();
 	}
 	_menu->addAction(CreateZoomMenuAction(_menu->menu(), _delegate));

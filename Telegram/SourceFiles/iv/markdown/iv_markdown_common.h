@@ -25,6 +25,7 @@ class QFileInfo;
 
 namespace Ui {
 class DynamicImage;
+class PopupMenu;
 class Show;
 } // namespace Ui
 
@@ -268,6 +269,9 @@ struct OpenOptions {
 	std::shared_ptr<QVariant> clickHandlerContextRef;
 	std::function<void()> openSource;
 	std::function<void(std::shared_ptr<Ui::Show>)> share;
+	std::function<void(
+		not_null<Ui::PopupMenu*>,
+		std::shared_ptr<Ui::Show>)> fillMenu;
 	Webview::StorageId ivWebviewStorageId;
 	std::function<bool(
 		const MediaActivation &,
