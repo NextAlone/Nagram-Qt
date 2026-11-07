@@ -62,6 +62,7 @@
 | B03 | `dialogs/ui/dialogs_layout.cpp`、`dialogs/dialogs_inner_widget_accessibility.cpp` | 收藏夹与归档行不绘制预览文字，读屏文本同步脱敏 | 读取 |
 | B04 | `dialogs/dialogs_widget.cpp` | 即时隐藏动态条并收起已展开区域，保留内部对象（用户在 S30 确认沿用旧版行为） | 读取 |
 | B05 | `window/window_session_controller.cpp`（初始文件夹） | 账号启动时选择文件夹；记录上次打开的文件夹 | 替换 |
+| B05 | `dialogs/dialogs_widget.cpp`（`Widget::switchToChatsFilter`） | 切换文件夹的滑动动画另要求列表可见且滚动区域非空。切换账号时新账号的启动文件夹在列表还没有尺寸时就生效，截出空图会触发 `SlideAnimation::setSnapshots` 的断言而闪退 | 读取 |
 | B06 | `data/data_chat_filters.cpp`、`ui/widgets/chat_filters_tabs_strip.cpp`、`window/window_filters_menu.cpp` | 至少有一个可用的其他文件夹时，从显示列表去掉“全部会话”；保存排序时保持其原位置。文件夹变为“全部会话”时跳到第一个显示的文件夹，判断统一走 `Nagram::Chats::RedirectFromAllChats`：正在打开或已打开归档时不跳转 | 过滤 |
 | B28 | `window/window_filters_menu.cpp`、`ui/widgets/chat_filters_tabs_strip.cpp` | 与 B27 共用 `FolderTabs` / `FolderTabIcons` / `FolderTabChosen` / `FolderTabMenu` 和竖栏的 `SetupFolderListButtons`。标签条：`WatchArchiveTab` 在归档打开或关闭时回调上游代码切换选中的标签，并设置归档标签的未读数。竖栏：`prepareButton` 和新增的 `openedFolder` 订阅用 `FolderButtonActive` 让“全部会话”在归档打开期间不高亮 | 读取 |
 | B27 | `window/window_filters_menu.cpp`、`ui/widgets/chat_filters_tabs_strip.cpp` | 竖栏：`setupList` 在文件夹列表之后调用 `Nagram::Chats::SetupSavedFolderButton`，按钮由 Nagram 自己创建和重建。标签条：`rebuild` 用 `FolderTabs` 在末尾追加一个标签并把它设为不可拖动，图标经 `FolderTabIcons` 换成书签；激活该标签时恢复原选中项并调用 `OpenSavedFromFolderList`；`ShowMenu` 对它显示 `SavedFolderMenu`；键盘切换不经过它；选项变化时重建 | 读取 |

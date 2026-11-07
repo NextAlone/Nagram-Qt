@@ -2627,6 +2627,8 @@ void Widget::switchToChatsFilter(FilterId id) {
 	const auto was = _inner->filterId();
 	const auto animated = (was != id)
 		&& !isHidden()
+		&& isVisible()
+		&& !_scroll->size().isEmpty()
 		&& !_showAnimation
 		&& (_chatsFilterSwipeSwitch
 			|| (_chatFilters && !_chatFilters->isHidden()));
