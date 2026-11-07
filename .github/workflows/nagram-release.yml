@@ -178,12 +178,23 @@ jobs:
             --feed feed/nagram-updates.json --tag "$TAG" "${packages[@]}"
           gh release upload updates feed/nagram-updates.json --clobber --repo "$GITHUB_REPOSITORY"
 
+      - name: Tell whether the release is announced.
+        if: github.event_name == 'push' && (needs.macos.result != 'success' || needs.windows.result != 'success' || needs.linux.result != 'success')
+        env:
+          MACOS: ${{ needs.macos.result }}
+          WINDOWS: ${{ needs.windows.result }}
+          LINUX: ${{ needs.linux.result }}
+        run: |
+          echo "::warning::macOS $MACOS, Windows $WINDOWS, Linux $LINUX: the channels get no post. Build the missing platform with a manual run for $TAG and turn on 'channel' to announce the release."
+
   channel:
     name: Channel
-    needs: [version, publish]
+    needs: [version, macos, windows, linux, publish]
     # A tag is announced once, when it is pushed; a manual run posts only
     # when asked to, so that rebuilding a release does not repeat the post.
-    if: ${{ !cancelled() && needs.version.result == 'success' && (needs.publish.result == 'success' || inputs.only == 'packages') && (github.event_name == 'push' || inputs.channel) }}
+    # A push that leaves out a platform posts nothing: the release then
+    # lacks its packages, and the run that builds them is asked to post.
+    if: ${{ !cancelled() && needs.version.result == 'success' && (needs.publish.result == 'success' || inputs.only == 'packages') && (inputs.channel || (github.event_name == 'push' && needs.macos.result == 'success' && needs.windows.result == 'success' && needs.linux.result == 'success')) }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read
