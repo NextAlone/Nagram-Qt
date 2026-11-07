@@ -32,18 +32,23 @@ inline constexpr auto kAppIconIds = std::array{
 }
 
 inline constexpr auto kRestart = static_cast<unsigned>(Flag::RequiresRestart);
+// Percent of the Telegram radius; the fallback is never stored, so older saved values keep their meaning.
+inline constexpr auto kRoundnessUnchanged = -1;
+[[nodiscard]] inline constexpr bool ValidRoundness(const int &value) {
+	return (value == kRoundnessUnchanged) || (value >= 0 && value <= 100);
+}
 inline constexpr auto kBubbleRoundness = Option<int>{
-	"nagram.bubbleRoundness", Scope::Device, 0,
+	"nagram.bubbleRoundness", Scope::Device, kRoundnessUnchanged,
 	Category::Interface, "lng_nagram_bubble_roundness", kRestart,
-	[](const int &value) { return !value || (value >= 10 && value <= 100); } };
+	ValidRoundness };
 inline constexpr auto kAvatarRoundness = Option<int>{
-	"nagram.avatarRoundness", Scope::Device, 0,
+	"nagram.avatarRoundness", Scope::Device, kRoundnessUnchanged,
 	Category::Interface, "lng_nagram_avatar_roundness", kRestart,
-	[](const int &value) { return !value || (value >= 10 && value <= 100); } };
+	ValidRoundness };
 inline constexpr auto kSearchRoundness = Option<int>{
-	"nagram.searchRoundness", Scope::Device, 0,
+	"nagram.searchRoundness", Scope::Device, kRoundnessUnchanged,
 	Category::Interface, "lng_nagram_search_roundness", kRestart,
-	[](const int &value) { return !value || (value >= 10 && value <= 100); } };
+	ValidRoundness };
 inline constexpr auto kUniformAvatarShapes = Option<bool>{
 	"nagram.uniformAvatarShapes", Scope::Device, false,
 	Category::Interface, "lng_nagram_uniform_avatar_shapes", kRestart };

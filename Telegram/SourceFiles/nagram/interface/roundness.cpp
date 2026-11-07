@@ -12,9 +12,9 @@
 namespace Nagram::Interface {
 namespace {
 
-int BubbleRoundness = 0;
-int AvatarRoundness = 0;
-int SearchRoundness = 0;
+int BubbleRoundness = kRoundnessUnchanged;
+int AvatarRoundness = kRoundnessUnchanged;
+int SearchRoundness = kRoundnessUnchanged;
 bool UniformAvatarShapes = false;
 
 } // namespace
@@ -26,18 +26,19 @@ void StartRoundness() {
 	UniformAvatarShapes = ForDevice().Get(kUniformAvatarShapes);
 }
 
-int BubblePercent() {
-	return BubbleRoundness;
+bool CustomBubbleRadius() {
+	return BubbleRoundness != kRoundnessUnchanged;
 }
 
+// Corner masks need at least one pixel, which still looks square at 0%.
 int AdjustBubbleRadius(int radius) {
-	return BubbleRoundness
+	return CustomBubbleRadius()
 		? std::max(1, radius * BubbleRoundness / 100)
 		: radius;
 }
 
 const style::InputField &SearchFieldStyle() {
-	if (!SearchRoundness) {
+	if (SearchRoundness == kRoundnessUnchanged) {
 		return st::dialogsFilter;
 	}
 	static const auto result = [] {
@@ -51,7 +52,7 @@ const style::InputField &SearchFieldStyle() {
 }
 
 std::optional<int> AvatarRadius(int size, Ui::PeerUserpicShape shape) {
-	if (!AvatarRoundness
+	if (AvatarRoundness == kRoundnessUnchanged
 		|| (!UniformAvatarShapes
 			&& (shape == Ui::PeerUserpicShape::Forum
 				|| shape == Ui::PeerUserpicShape::Monoforum))) {

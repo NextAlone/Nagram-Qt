@@ -259,19 +259,23 @@ void TestOptions() {
 		Flag::RequiresRestart), "interface text restart flag");
 	Require(interface.HasFlag(Interface::kBubbleRoundness.key,
 		Flag::RequiresRestart), "roundness restart flag");
-	Require(Interface::kAvatarRoundness.validate(0)
-		&& Interface::kAvatarRoundness.validate(10)
+	Require(Interface::kAvatarRoundness.validate(Interface::kRoundnessUnchanged)
+		&& Interface::kAvatarRoundness.validate(0)
+		&& Interface::kAvatarRoundness.validate(5)
 		&& Interface::kAvatarRoundness.validate(100)
-		&& !Interface::kAvatarRoundness.validate(9)
-		&& !Interface::kAvatarRoundness.validate(101),
+		&& !Interface::kAvatarRoundness.validate(-2)
+		&& !Interface::kAvatarRoundness.validate(101)
+		&& Interface::kAvatarRoundness.fallback == Interface::kRoundnessUnchanged,
 		"avatar roundness bounds");
 	Require(interface.HasFlag(Interface::kSearchRoundness.key,
 		Flag::RequiresRestart)
+		&& Interface::kSearchRoundness.validate(Interface::kRoundnessUnchanged)
 		&& Interface::kSearchRoundness.validate(0)
-		&& Interface::kSearchRoundness.validate(10)
+		&& Interface::kSearchRoundness.validate(5)
 		&& Interface::kSearchRoundness.validate(100)
-		&& !Interface::kSearchRoundness.validate(9)
-		&& !Interface::kSearchRoundness.validate(101),
+		&& !Interface::kSearchRoundness.validate(-2)
+		&& !Interface::kSearchRoundness.validate(101)
+		&& Interface::kSearchRoundness.fallback == Interface::kRoundnessUnchanged,
 		"search roundness bounds");
 	Require(Interface::kTextMessageWidth.validate(0)
 		&& Interface::kTextMessageWidth.validate(50)

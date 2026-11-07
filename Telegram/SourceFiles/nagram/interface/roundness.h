@@ -14,7 +14,7 @@ namespace Media::Streaming { class Instance; }
 namespace Nagram::Interface {
 
 void StartRoundness();
-[[nodiscard]] int BubblePercent();
+[[nodiscard]] bool CustomBubbleRadius();
 [[nodiscard]] int AdjustBubbleRadius(int radius);
 [[nodiscard]] const style::InputField &SearchFieldStyle();
 [[nodiscard]] std::optional<int> AvatarRadius(

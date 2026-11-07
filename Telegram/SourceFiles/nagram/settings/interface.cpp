@@ -49,11 +49,11 @@ public:
 	static const SectionBuildMethod kBuild;
 };
 
-constexpr auto kMinRoundness = 10;
+constexpr auto kMinRoundness = 0;
 constexpr auto kMaxRoundness = 100;
 
 QString RoundnessLabel(int value) {
-	return (value
+	return ((value != Interface::kRoundnessUnchanged)
 		? QString::number(value) + u"%"_q
 		: tr::lng_nagram_preview_follow(tr::now))
 		+ u" · "_q + tr::lng_nagram_restart_required(tr::now);
@@ -69,7 +69,7 @@ void RoundnessBox(
 	const auto follow = box->addRow(object_ptr<Ui::Checkbox>(
 		box,
 		tr::lng_nagram_preview_follow(tr::now),
-		!current,
+		(current == Interface::kRoundnessUnchanged),
 		st::defaultBoxCheckbox));
 	auto row = MakeSliderWithLabel(
 		box,
@@ -84,7 +84,7 @@ void RoundnessBox(
 	slider->setAccessibleName(title);
 
 	const auto value = box->lifetime().make_state<int>(
-		current ? current : kMaxRoundness);
+		(current == Interface::kRoundnessUnchanged) ? kMaxRoundness : current);
 	const auto show = [=](int percent) {
 		*value = percent;
 		label->setText(QString::number(percent) + u"%"_q);
@@ -101,7 +101,9 @@ void RoundnessBox(
 	}, slider->lifetime());
 
 	box->addButton(tr::lng_settings_save(), [=] {
-		const auto chosen = follow->checked() ? 0 : *value;
+		const auto chosen = follow->checked()
+			? Interface::kRoundnessUnchanged
+			: *value;
 		if (chosen != current) {
 			Expects(ForDevice().Set(option, chosen));
 			ShowRestartPrompt(controller);
@@ -313,7 +315,9 @@ const auto kMeta = BuildHelper({
 		.toggled = ForDevice().Value(Interface::kUniformAvatarShapes),
 		.keywords = { u"forum"_q, u"channel"_q, u"avatar"_q },
 		.shown = ForDevice().Value(Interface::kAvatarRoundness)
-			| rpl::map([](int value) { return value != 0; }),
+			| rpl::map([](int value) {
+				return value != Interface::kRoundnessUnchanged;
+			}),
 	});
 	if (button) {
 		button->toggledChanges(

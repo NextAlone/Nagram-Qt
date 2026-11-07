@@ -34,7 +34,7 @@ int BubbleRadiusSmall() {
 }
 
 int BubbleRadiusLarge() {
-	if (Nagram::Interface::BubblePercent()) {
+	if (Nagram::Interface::CustomBubbleRadius()) {
 		return Nagram::Interface::AdjustBubbleRadius(st::bubbleRadiusLarge);
 	}
 	static const auto result = [] {
@@ -62,7 +62,7 @@ int MsgFileThumbRadiusSmall() {
 }
 
 int MsgFileThumbRadiusLarge() {
-	if (Nagram::Interface::BubblePercent()) {
+	if (Nagram::Interface::CustomBubbleRadius()) {
 		return Nagram::Interface::AdjustBubbleRadius(st::msgFileThumbRadiusLarge);
 	}
 	static const auto result = [] {
