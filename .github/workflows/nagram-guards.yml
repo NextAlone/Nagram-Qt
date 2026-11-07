@@ -46,6 +46,7 @@ jobs:
           python3 tools/nagram/test_pack_update.py
           python3 tools/nagram/test_linux_tree.py
           python3 tools/nagram/test_aur_package.py
+          python3 tools/nagram/test_rpm_package.py
           python3 tools/nagram/test_nix_release.py
           python3 tools/nagram/test_homebrew_cask.py
           python3 tools/nagram/test_gcc_check.py

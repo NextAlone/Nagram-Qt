@@ -291,6 +291,7 @@ jobs:
         if: env.UPLOAD_ARTIFACT == 'true'
         env:
           NAGRAM_UPDATE_KEY: ${{ secrets.NAGRAM_UPDATE_KEY }}
+          RELEASE: ${{ inputs.config == 'Release' }}
         run: |
           cd out/$CONFIG
           mkdir artifact
@@ -303,6 +304,12 @@ jobs:
               --binary stripped/Nagram --updater stripped/Updater
             tar --owner=0 --group=0 --numeric-owner \
               -cJf artifact/Nagram-linux-x86_64.tar.xz -C package Nagram
+            # Only a release has an RPM: a build of the default branch has
+            # the version of the latest release, rpm would not see it as newer.
+            if [ "$RELEASE" = "true" ]; then
+              ../../tools/nagram/retry.sh 3 30 sudo apt-get install -y -o Acquire::Retries=3 rpm
+              python3 ../../tools/nagram/rpm_package.py --app package/Nagram --out artifact
+            fi
             if [ -n "$NAGRAM_UPDATE_KEY" ]; then
               python3 ../../tools/nagram/pack_update.py --packer Packer --out artifact \
                 --app stripped/Nagram --updater stripped/Updater \

@@ -273,6 +273,7 @@ jobs:
             *-macos.dmg | macOS · Apple 芯片与 Intel
             *-windows-x64-setup.exe | Windows x64 · 安装程序
             *-linux-x86_64.tar.xz | Linux x86_64
+            *-linux-x86_64.rpm | Linux x86_64 · RPM（Fedora、RHEL、openSUSE）
             *-macos.zip | macOS · 压缩包 | folded
             *-windows-x64.zip | Windows x64 · 便携版 | folded
             *-windows-arm64-setup.exe | Windows ARM64 · 安装程序 | folded
