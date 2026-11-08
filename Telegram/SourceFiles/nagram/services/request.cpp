@@ -1,7 +1,6 @@
 #include "nagram/services/request.h"
 
 #include "lang/lang_keys.h"
-#include "nagram/services/credentials.h"
 
 #include <QtCore/QJsonDocument>
 #include <QtNetwork/QHttpMultiPart>
@@ -23,7 +22,7 @@ QString ServiceErrorText(ServiceError error, int status) {
 	case ServiceError::Configuration:
 		return tr::lng_nagram_service_invalid(tr::now);
 	case ServiceError::Credential:
-		return tr::lng_nagram_service_key_error(tr::now);
+		return CredentialErrorText(CredentialError(status));
 	case ServiceError::Network:
 		return tr::lng_nagram_service_network_error(tr::now);
 	case ServiceError::Http:
@@ -38,6 +37,20 @@ QString ServiceErrorText(ServiceError error, int status) {
 		return QString();
 	}
 	Unexpected("Invalid service error.");
+}
+
+QString CredentialErrorText(CredentialError error) {
+	switch (error) {
+	case CredentialError::Unavailable:
+		return tr::lng_nagram_service_key_unavailable(tr::now);
+	case CredentialError::Denied:
+		return tr::lng_nagram_service_key_denied(tr::now);
+	case CredentialError::None:
+	case CredentialError::Missing:
+	case CredentialError::Invalid:
+		break;
+	}
+	return tr::lng_nagram_service_key_error(tr::now);
 }
 
 ServiceRequest::ServiceRequest() {
@@ -79,7 +92,12 @@ std::optional<QNetworkRequest> ServiceRequest::prepare(
 	if (service.useKey) {
 		auto credential = ReadCredential(CredentialAccount(service));
 		if (credential.error != CredentialError::None || credential.secret.isEmpty()) {
-			done({ .error = ServiceError::Credential });
+			done({
+				.error = ServiceError::Credential,
+				.status = int((credential.error == CredentialError::None)
+					? CredentialError::Missing
+					: credential.error),
+			});
 			return std::nullopt;
 		}
 		for (auto &[name, value] : AuthHeaders(service, credential.secret)) {

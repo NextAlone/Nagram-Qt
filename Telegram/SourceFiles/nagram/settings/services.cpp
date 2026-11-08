@@ -258,11 +258,10 @@ bool CredentialUsed(const QJsonObject &config, const QString &account) {
 }
 
 CredentialError RemoveServiceCredential(const ServiceDefinition &service) {
-	const auto account = CredentialAccount(service);
-	if (!service.useKey && ReadCredential(account).error == CredentialError::Unavailable) {
-		return CredentialError::None;
-	}
-	return DeleteCredential(account);
+	const auto error = DeleteCredential(CredentialAccount(service));
+	return (!service.useKey && error == CredentialError::Unavailable)
+		? CredentialError::None
+		: error;
 }
 
 void ServiceTestBox(
@@ -522,7 +521,7 @@ void ServiceBox(
 			if (error != CredentialError::None) {
 				secret.fill('\0');
 				key->showError();
-				box->showToast(tr::lng_nagram_service_key_error(tr::now));
+				box->showToast(CredentialErrorText(error));
 				return;
 			}
 		}

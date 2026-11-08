@@ -488,7 +488,9 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_service_invalid" = "Check the service name, HTTPS URL, relative endpoint, model and parameter ranges. A selected system service must be available on this device.";
 "lng_nagram_service_key" = "API key — leave blank to keep the saved key";
 "lng_nagram_service_key_cleanup" = "Could not remove the old API key. Remove the Nagram Desktop Services entry from your system credential store.";
-"lng_nagram_service_key_error" = "The saved API key is missing or inaccessible. Enter it again and allow access to the system credential store. Keys must be one line, at most 4096 bytes.";
+"lng_nagram_service_key_denied" = "Access to the system credential store was denied, or it is locked. Unlock it, allow Nagram access, then retry.";
+"lng_nagram_service_key_error" = "The saved API key is missing. Enter it again. Keys must be one line, at most 4096 bytes.";
+"lng_nagram_service_key_unavailable" = "No system credential store is available, so API keys cannot be saved. On Linux, run a Secret Service provider such as GNOME Keyring or KWallet, then retry.";
 "lng_nagram_service_language" = "Audio language code (blank detects automatically)";
 "lng_nagram_service_model" = "Model ID";
 "lng_nagram_service_models" = "Load models";

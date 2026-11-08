@@ -22,7 +22,7 @@
 | --- | --- |
 | 服务实例配置 | `nagram/services/model.h` 的 `ServiceDefinition`；本机键 `nagram.services`（`kServicesConfig`），结构为 `{"version":1,"translation","transcription","instances"}`，由 `ValidServices` / `ParseService` 严格校验（HTTPS 或回环 HTTP、相对 endpoint、无查询与片段、温度范围） |
 | 协议 | 翻译：`openai`、`deepl`、`deeplx`、`google`、`microsoft`、`yandex`（`TranslationProtocol`、`BuildTranslationCall`、`ParseTranslationResult`、`AuthHeaders`、`TranslationBatchParts`）；转写：只有 `openai` |
-| 凭据 | `nagram/services/credentials.cpp` 的 `ReadCredential` / `WriteCredential` / `DeleteCredential`（macOS Keychain、Windows Credential Manager，Linux 返回 `Unavailable`）；`CredentialAccount` 把查找键绑定到地址、协议、用途 |
+| 凭据 | `nagram/services/credentials.cpp` 的 `ReadCredential` / `WriteCredential` / `DeleteCredential`（macOS Keychain、Windows Credential Manager；Linux 经会话总线访问 Secret Service（`org.freedesktop.secrets`，`nagram/services/credentials_linux.cpp`，用 GIO 直接调用，不依赖 libsecret），集合锁住时调用 `Unlock` 并等待提示框的结果，读取时被用户取消后不再弹出，直到下次保存密钥；没有提供方时返回 `Unavailable`）；`CredentialAccount` 把查找键绑定到地址、协议、用途 |
 | 请求 | `nagram/services/request.cpp` 的 `ServiceRequest`：`json` / `models` / `audio`，`cancel()`，120 秒超时，手动重定向策略（3xx 报 `Redirect`），请求体 128 KiB、音频 24 MiB、响应 2 MiB 上限 |
 | 手动翻译 | `boxes/translate_box.cpp` 的 `TranslateBox` 通过 `Nagram::CreateInteractiveTranslateProvider` 取服务；`ExternalTranslateProvider`（`nagram/services/translation.cpp`）用 `PlanTranslation` / `ApplyTranslation` 保护实体、代码、链接和提及 |
 | 草稿翻译 | `nagram/services/draft_translation.cpp` 的 `InstallDraftTranslation`，预览后写回，草稿变化时拒绝写回 |
@@ -491,7 +491,7 @@ H06–H09 归入小分组“自动翻译”，H10 与 H03 扩展归入已有的�
 | 跨账号 | 账号 A 设置 H07 与对话覆盖，切到账号 B：B 为默认；两账号存在相同 peer ID（同一公开频道）时互不影响；退出账号 A 后重新登录，覆盖随账号数据清除；H06（本机）对两个账号同时生效；转写与翻译结果不跨账号出现 |
 | 异步竞态 | 请求进行中切换对话、关闭翻译框、切换目标语言、点击“显示原文”、把模式改为关闭、修改或删除服务实例、在设置中切换 H01：迟到的结果不写入消息，桩记录到连接被中止；消息在请求期间被删除或编辑：结果丢弃或只应用于仍匹配的消息；快速连续打开关闭翻译栏不产生并发请求（桩同一时刻至多一个连接）；批量转写期间修改服务配置：队列停止，缓存清空 |
 | 回退 | 所有新选项恢复默认后，翻译栏、自动翻译、消息菜单与上游一致；v2 的服务配置在不带本包的构建中读取时报配置无效且外部服务停用（不崩溃、不发请求），重新升级后配置仍可用；导入 v1 导出文件正常 |
-| 外部能力不可用 | Linux 无凭据库：需密钥的实例报凭据错误，H06 的开启按“不可用”说明处理，不发请求；系统翻译不可用时 H09 + 系统翻译报明确原因，不改用 Telegram；非 Premium 且 H09 关闭时 H06 开启不生效并显示原因；桩返回 401、429、500、3xx 重定向、超大响应、畸形 JSON、长度不符的数组，各自显示对应错误且不重复请求；所选总结服务被删除后 E36 不再出现 |
+| 外部能力不可用 | Linux 没有 Secret Service 提供方（未运行 GNOME Keyring、KWallet 等）：保存密钥时提示“系统没有可用的凭据库”，需密钥的实例报同一凭据错误；解锁提示框被取消时提示“拒绝访问或已锁定”；H06 的开启按“不可用”说明处理，不发请求；系统翻译不可用时 H09 + 系统翻译报明确原因，不改用 Telegram；非 Premium 且 H09 关闭时 H06 开启不生效并显示原因；桩返回 401、429、500、3xx 重定向、超大响应、畸形 JSON、长度不符的数组，各自显示对应错误且不重复请求；所选总结服务被删除后 E36 不再出现 |
 | 不重复发送 | 滚动已翻译的对话，桩不再收到已翻译或已失败消息；重复打开批量转写，已有结果的消息不再上传；重复点击“生成”在请求进行中无效 |
 | 正文范围 | 对照桩收到的请求体：整页翻译不含自己发出的消息、服务消息、未加载的消息；上下文不含姓名、不超过条数与字数上限；禁止复制的对话不带上下文；摘要与设置页声明的范围一致 |
 

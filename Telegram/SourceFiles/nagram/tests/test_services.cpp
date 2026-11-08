@@ -1,6 +1,7 @@
 #include "nagram/services/context_model.h"
 #include "nagram/services/model.h"
 #include "nagram/services/presets.h"
+#include "nagram/services/secret_service_model.h"
 #include "nagram/services/summary_model.h"
 #include "nagram/services/transcription_queue.h"
 #include "base/basic_types.h"
@@ -19,6 +20,48 @@ void Require(bool value, const char *message) {
 	if (!value) {
 		throw std::runtime_error(message);
 	}
+}
+
+void TestSecretService() {
+	using namespace Nagram;
+	using namespace Nagram::SecretService;
+	const auto account = u"key-\u4e2d.abc"_q;
+	const auto attributes = ItemAttributes(account);
+	Require(attributes.size() == 3
+		&& attributes[0] == std::pair<QByteArray, QByteArray>(
+			"xdg:schema",
+			"xyz.nextalone.nagram.desktop.Services")
+		&& attributes[1].first == "service"
+		&& attributes[1].second == "Nagram Desktop Services"
+		&& attributes[2].first == "account"
+		&& attributes[2].second == account.toUtf8(),
+		"Secret Service attributes");
+	Require(ItemLabel(account) == "Nagram Desktop Services/" + account.toUtf8(),
+		"Secret Service label");
+	Require(NoObject("/") && NoObject(QByteArray()), "Secret Service no object");
+	Require(!NoObject("/org/freedesktop/secrets/prompt/u1"),
+		"Secret Service prompt path");
+	for (const auto name : {
+			"org.freedesktop.DBus.Error.ServiceUnknown",
+			"org.freedesktop.DBus.Error.NameHasNoOwner",
+			"org.freedesktop.DBus.Error.NoReply",
+			"org.freedesktop.DBus.Error.UnknownMethod",
+			"org.freedesktop.DBus.Error.Spawn.ChildExited",
+			"org.freedesktop.Secret.Error.NotSupported" }) {
+		Require(ErrorFromName(name) == CredentialError::Unavailable,
+			name);
+	}
+	Require(ErrorFromName("org.freedesktop.Secret.Error.NoSuchObject")
+			== CredentialError::Missing,
+		"Secret Service missing item");
+	for (const auto name : {
+			"org.freedesktop.Secret.Error.IsLocked",
+			"org.freedesktop.DBus.Error.AccessDenied",
+			"org.freedesktop.DBus.Error.Failed",
+			"org.kde.kwallet.Error" }) {
+		Require(ErrorFromName(name) == CredentialError::Denied, name);
+	}
+	std::cout << "PASS: Nagram Secret Service mapping" << std::endl;
 }
 
 QByteArray OpenAiReply(const QByteArray &content, const QByteArray &reason) {
@@ -645,4 +688,5 @@ void TestServices() {
 	TestContext(service);
 	TestSummary(service);
 	TestTranscriptionQueue();
+	TestSecretService();
 }

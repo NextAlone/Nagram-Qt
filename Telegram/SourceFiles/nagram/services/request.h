@@ -1,5 +1,6 @@
 #pragma once
 
+#include "nagram/services/credentials.h"
 #include "nagram/services/model.h"
 
 #include <QtCore/QPointer>
@@ -29,6 +30,7 @@ struct ServiceResult {
 };
 
 [[nodiscard]] QString ServiceErrorText(ServiceError error, int status = 0);
+[[nodiscard]] QString CredentialErrorText(CredentialError error);
 
 class ServiceRequest final {
 public:

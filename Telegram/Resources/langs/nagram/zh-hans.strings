@@ -484,7 +484,9 @@
 "lng_nagram_service_invalid" = "请检查服务名称、HTTPS URL、相对接口路径、模型与参数范围。所选系统服务必须在本机可用。";
 "lng_nagram_service_key" = "API 密钥 — 留空保留已存密钥";
 "lng_nagram_service_key_cleanup" = "无法删除旧 API 密钥，请在系统凭据库中移除对应的 Nagram Desktop Services 条目。";
-"lng_nagram_service_key_error" = "已存 API 密钥缺失或无法访问。请重新输入并允许访问系统凭据库。密钥必须为单行，最多 4096 字节。";
+"lng_nagram_service_key_denied" = "系统凭据库拒绝访问或已锁定。请解锁并允许 Nagram 访问后重试。";
+"lng_nagram_service_key_error" = "已存 API 密钥缺失。请重新输入。密钥必须为单行，最多 4096 字节。";
+"lng_nagram_service_key_unavailable" = "系统没有可用的凭据库，无法保存 API 密钥。在 Linux 上请运行 GNOME Keyring、KWallet 等 Secret Service 服务后重试。";
 "lng_nagram_service_language" = "音频语言代码（留空自动识别）";
 "lng_nagram_service_model" = "模型 ID";
 "lng_nagram_service_models" = "读取模型列表";

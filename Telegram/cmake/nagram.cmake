@@ -131,6 +131,8 @@ set(nagram_sources
     nagram/settings/messages.cpp
     nagram/settings/services.cpp
     nagram/services/credentials.cpp
+    nagram/services/credentials_linux.cpp
+    nagram/services/secret_service_model.cpp
     nagram/services/auto_translate.cpp
     nagram/services/auto_translate_model.cpp
     nagram/services/chat_translation.cpp
@@ -313,6 +315,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/services/model.cpp
         nagram/services/page_translation_model.cpp
         nagram/services/presets.cpp
+        nagram/services/secret_service_model.cpp
         nagram/services/summary_model.cpp
         nagram/services/send_translation_model.cpp
         nagram/services/transcription_queue.cpp
