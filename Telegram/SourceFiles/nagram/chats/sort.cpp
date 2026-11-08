@@ -1,6 +1,7 @@
 #include "nagram/chats/sort.h"
 
 #include "nagram/chats/options.h"
+#include "nagram/interface/order_row.h"
 #include "data/data_chat_filters.h"
 #include "data/data_peer.h"
 #include "data/data_session.h"
@@ -14,15 +15,8 @@
 #include "main/main_session.h"
 #include "ui/layers/generic_box.h"
 #include "ui/vertical_list.h"
-#include "ui/widgets/buttons.h"
 #include "ui/widgets/labels.h"
-
-#include <QtCore/QMimeData>
-#include <QtGui/QDrag>
-#include <QtGui/QDragEnterEvent>
-#include <QtGui/QDropEvent>
-#include <QtGui/QMouseEvent>
-#include <QtWidgets/QApplication>
+#include "ui/wrap/vertical_layout.h"
 
 #include <algorithm>
 #include <array>
@@ -34,8 +28,6 @@
 
 namespace Nagram::Chats {
 namespace {
-
-constexpr auto kMime = "application/x-nagram-chat-sort-rule";
 
 int &SortConfig() {
 	static auto value = ForDevice().Get(kChatSort);
@@ -60,52 +52,6 @@ QString RuleTitle(int id) {
 	default: return tr::lng_nagram_sort_contacts(tr::now);
 	}
 }
-
-class SortRow final : public Ui::SettingsButton {
-public:
-	SortRow(QWidget *parent, int id, Fn<void(int, int)> moved)
-	: Ui::SettingsButton(parent, rpl::single(RuleTitle(id)),
-		st::settingsButtonNoIcon)
-	, _id(id)
-	, _moved(std::move(moved)) {
-		setAcceptDrops(true);
-	}
-
-protected:
-	void mousePressEvent(QMouseEvent *event) override {
-		_dragStart = event->globalPosition().toPoint();
-		Ui::SettingsButton::mousePressEvent(event);
-	}
-	void mouseMoveEvent(QMouseEvent *event) override {
-		if ((event->buttons() & Qt::LeftButton)
-			&& (event->globalPosition().toPoint() - _dragStart).manhattanLength()
-				>= QApplication::startDragDistance()) {
-			const auto data = new QMimeData();
-			data->setData(kMime, QByteArray::number(_id));
-			const auto drag = new QDrag(this);
-			drag->setMimeData(data);
-			drag->exec(Qt::MoveAction);
-			return;
-		}
-		Ui::SettingsButton::mouseMoveEvent(event);
-	}
-	void dragEnterEvent(QDragEnterEvent *event) override {
-		if (event->mimeData()->hasFormat(kMime)) {
-			event->acceptProposedAction();
-		}
-	}
-	void dropEvent(QDropEvent *event) override {
-		auto valid = false;
-		const auto from = event->mimeData()->data(kMime).toInt(&valid);
-		if (valid && from != _id) _moved(from, _id);
-		event->acceptProposedAction();
-	}
-
-private:
-	int _id;
-	Fn<void(int, int)> _moved;
-	QPoint _dragStart;
-};
 
 void RefreshSorting(gsl::not_null<Main::Session*> session) {
 	auto entries = std::set<Dialogs::Entry*>();
@@ -175,48 +121,38 @@ void ChatSortBox(gsl::not_null<Ui::GenericBox*> box) {
 		box, tr::lng_nagram_sort_about(), st::boxLabel));
 	const auto current = ForDevice().Get(kChatSort);
 	struct State {
-		std::array<int, 4> order;
+		explicit State(not_null<Ui::VerticalLayout*> rows) : rows(rows) {
+		}
+
+		std::array<int, 4> order = {};
 		int enabled = 0;
-		Fn<void()> refresh;
+		Interface::OrderRows rows;
 	};
-	const auto state = box->lifetime().make_state<State>();
+	const auto rows = box->addRow(object_ptr<Ui::VerticalLayout>(box));
+	const auto state = box->lifetime().make_state<State>(rows);
 	state->order = Order(current);
 	state->enabled = current & 15;
-	const auto rows = box->addRow(object_ptr<Ui::VerticalLayout>(box));
-	state->refresh = [=] {
-		rows->clear();
-		for (const auto &id : state->order) {
-			const auto row = rows->add(object_ptr<SortRow>(
-				rows, id, [=](int from, int to) {
-					const auto first = std::find(
-						state->order.begin(), state->order.end(), from);
-					const auto second = std::find(
-						state->order.begin(), state->order.end(), to);
-					if (first == state->order.end()
-						|| second == state->order.end()) return;
-					const auto fromIndex = first - state->order.begin();
-					const auto toIndex = second - state->order.begin();
-					const auto moved = state->order[fromIndex];
-					if (fromIndex < toIndex) {
-						std::move(state->order.begin() + fromIndex + 1,
-							state->order.begin() + toIndex + 1,
-							state->order.begin() + fromIndex);
-					} else {
-						std::move_backward(state->order.begin() + toIndex,
-							state->order.begin() + fromIndex,
-							state->order.begin() + fromIndex + 1);
-					}
-					state->order[toIndex] = moved;
-					InvokeQueued(box, state->refresh);
-				}));
-			row->toggleOn(rpl::single(bool(state->enabled & (1 << id))));
-			row->toggledChanges(
-			) | rpl::on_next([=](bool checked) {
-				if (checked) state->enabled |= 1 << id;
-				else state->enabled &= ~(1 << id);
-			}, row->lifetime());
+	for (const auto &id : state->order) {
+		state->rows.add(
+			rpl::single(RuleTitle(id)),
+			st::settingsButtonNoIcon,
+			bool(state->enabled & (1 << id)),
+			[=](bool checked) {
+				if (checked) {
+					state->enabled |= 1 << id;
+				} else {
+					state->enabled &= ~(1 << id);
+				}
+			});
+	}
+	state->rows.start([=](int from, int to) {
+		const auto order = state->order.begin();
+		if (from < to) {
+			std::rotate(order + from, order + from + 1, order + to + 1);
+		} else if (to < from) {
+			std::rotate(order + to, order + from, order + from + 1);
 		}
-	};
+	});
 	box->addButton(tr::lng_settings_save(), [=] {
 		if (ForDevice().Get(kChatSort) != current) {
 			box->showToast(tr::lng_nagram_sort_changed(tr::now));
@@ -233,7 +169,6 @@ void ChatSortBox(gsl::not_null<Ui::GenericBox*> box) {
 		box->closeBox();
 	});
 	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
-	state->refresh();
 }
 
 } // namespace Nagram::Chats
