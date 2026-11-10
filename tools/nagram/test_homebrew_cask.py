@@ -43,7 +43,7 @@ class HomebrewCaskTest(unittest.TestCase):
             text,
         )
         self.assertIn('\n  auto_updates true\n', text)
-        self.assertIn('\n  app "Nagram.app"\n', text)
+        self.assertIn('\n  app "Nagram Desktop.app"\n', text)
         self.assertTrue(text.endswith("  ]\nend\n"))
         self.assertNotIn("{version}", text.replace("#{version}", ""))
 

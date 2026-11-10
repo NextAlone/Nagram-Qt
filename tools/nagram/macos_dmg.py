@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Put a built Nagram.app into a disk image to install it from.
+"""Put a built Nagram Desktop.app into a disk image to install it from.
 
 The image opens as a window with the application next to a link to
 /Applications, to drag one onto the other. Runs on macOS and needs dmgbuild
@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 INSTALL = "python3 -m pip install --require-hashes -r tools/nagram/macos_dmg.txt"
-VOLUME = "Nagram"
+VOLUME = "Nagram Desktop"
 # The oldest macOS that Nagram runs on reads this compression.
 FORMAT = "ULFO"
 WINDOW = ((200, 120), (640, 400))
@@ -60,7 +60,7 @@ def build(app, out):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--app", required=True, help="the built Nagram.app")
+    parser.add_argument("--app", required=True, help="the built Nagram Desktop.app")
     parser.add_argument("--out", required=True, help="the disk image to write, *.dmg")
     args = parser.parse_args(argv)
     try:

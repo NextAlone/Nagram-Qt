@@ -113,7 +113,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--packer", required=True, help="the built Packer executable")
     parser.add_argument("--out", required=True, help="directory for the package")
-    parser.add_argument("--app", required=True, help="Nagram.app, Nagram.exe or Nagram")
+    parser.add_argument("--app", required=True, help="Nagram Desktop.app, Nagram.exe or Nagram")
     parser.add_argument("--updater", help="the built Updater, on Windows and Linux")
     parser.add_argument("--arch", help="macOS: the architecture of the bundle")
     parser.add_argument("--target", help="Windows: win64 or winarm")

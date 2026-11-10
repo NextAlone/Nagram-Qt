@@ -210,7 +210,7 @@ jobs:
         if: env.ONLY_CACHE == 'false'
         run: |
           python3 "$REPO_NAME/tools/nagram/smoke_test.py" \
-            "$REPO_NAME/out/$CONFIG/Nagram.app/Contents/MacOS/Nagram"
+            "$REPO_NAME/out/$CONFIG/Nagram Desktop.app/Contents/MacOS/Nagram Desktop"
 
       - name: Sign and notarize.
         if: env.ONLY_CACHE == 'false' && env.CONFIG == 'Release'
@@ -225,16 +225,16 @@ jobs:
           NAGRAM_NOTARY_TEAM_ID: ${{ secrets.NAGRAM_NOTARY_TEAM_ID }}
         run: |
           # Signing seals the binaries, so the symbols go first.
-          strip "$REPO_NAME/out/$CONFIG/Nagram.app/Contents/MacOS/Nagram"
-          strip "$REPO_NAME/out/$CONFIG/Nagram.app/Contents/Frameworks/Updater"
+          strip "$REPO_NAME/out/$CONFIG/Nagram Desktop.app/Contents/MacOS/Nagram Desktop"
+          strip "$REPO_NAME/out/$CONFIG/Nagram Desktop.app/Contents/Frameworks/Updater"
 
           bash "$REPO_NAME/tools/nagram/sign_macos.sh" \
-            "$REPO_NAME/out/$CONFIG/Nagram.app" \
+            "$REPO_NAME/out/$CONFIG/Nagram Desktop.app" \
             "$REPO_NAME/Telegram/Telegram/Telegram.entitlements"
 
           # The hardened runtime must not keep the signed app from starting.
           python3 "$REPO_NAME/tools/nagram/smoke_test.py" \
-            "$REPO_NAME/out/$CONFIG/Nagram.app/Contents/MacOS/Nagram"
+            "$REPO_NAME/out/$CONFIG/Nagram Desktop.app/Contents/MacOS/Nagram Desktop"
 
           # The disk image takes the signed app and is then signed itself.
           # Creating an image fails now and then with 'Resource busy'.
@@ -243,7 +243,7 @@ jobs:
             -r "$REPO_NAME/tools/nagram/macos_dmg.txt"
           bash "$REPO_NAME/tools/nagram/retry.sh" 3 10 \
             "$RUNNER_TEMP/dmg/bin/python" "$REPO_NAME/tools/nagram/macos_dmg.py" \
-            --app "$REPO_NAME/out/$CONFIG/Nagram.app" \
+            --app "$REPO_NAME/out/$CONFIG/Nagram Desktop.app" \
             --out "$REPO_NAME/out/$CONFIG/Nagram-macos.dmg"
           bash "$REPO_NAME/tools/nagram/sign_macos.sh" \
             "$REPO_NAME/out/$CONFIG/Nagram-macos.dmg"
@@ -256,14 +256,14 @@ jobs:
           cd $REPO_NAME/out/$CONFIG
           mkdir artifact
           if [ "$CONFIG" = "Release" ]; then
-            ditto -c -k --keepParent Nagram.app artifact/Nagram-macos.zip
+            ditto -c -k --keepParent "Nagram Desktop.app" artifact/Nagram-macos.zip
             mv Nagram-macos.dmg artifact/
             if [ -n "$NAGRAM_UPDATE_KEY" ]; then
               # A universal bundle goes into the package of each architecture
               # as it is: thinning it would break the signature.
-              for arch in $(lipo -archs Nagram.app/Contents/MacOS/Nagram); do
+              for arch in $(lipo -archs "Nagram Desktop.app/Contents/MacOS/Nagram Desktop"); do
                 python3 ../../tools/nagram/pack_update.py --packer Packer --out artifact \
-                  --app Nagram.app --arch "$arch" --ci-build "$NAGRAM_CI_BUILD"
+                  --app "Nagram Desktop.app" --arch "$arch" --ci-build "$NAGRAM_CI_BUILD"
               done
             else
               echo "::warning::NAGRAM_UPDATE_KEY is not set: no update package, this build is not offered to installed copies."
@@ -272,7 +272,7 @@ jobs:
           else
             # An artifact keeps neither the executable bits nor the links
             # of a bundle, the archive does.
-            ditto -c -k --keepParent Nagram.app artifact/Nagram-macos-debug.zip
+            ditto -c -k --keepParent "Nagram Desktop.app" artifact/Nagram-macos-debug.zip
           fi
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: env.UPLOAD_ARTIFACT == 'true'

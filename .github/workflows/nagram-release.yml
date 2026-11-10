@@ -458,7 +458,7 @@ jobs:
           # Homebrew quarantines what it installs, so Gatekeeper must accept
           # the application: only a notarized release goes to the tap.
           ditto -x -k "$RUNNER_TEMP/$ARCHIVE" "$RUNNER_TEMP/unpacked"
-          if ! xcrun stapler validate "$RUNNER_TEMP/unpacked/Nagram.app"; then
+          if ! xcrun stapler validate "$RUNNER_TEMP/unpacked/Nagram Desktop.app"; then
             echo "::warning::This release is not notarized, the cask is not updated."
             exit 0
           fi

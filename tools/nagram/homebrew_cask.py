@@ -35,7 +35,7 @@ cask "nagram-desktop" do
   auto_updates true
   depends_on :macos
 
-  app "Nagram.app"
+  app "Nagram Desktop.app"
 
   zap trash: [
     "~/Library/Application Support/Nagram Desktop",

@@ -17,7 +17,7 @@ class MacosDmgTest(unittest.TestCase):
     def setUp(self):
         self._temp = tempfile.TemporaryDirectory()
         self.dir = Path(self._temp.name).resolve()
-        self.app = self.dir / "Nagram.app"
+        self.app = self.dir / "Nagram Desktop.app"
         (self.app / "Contents" / "MacOS").mkdir(parents=True)
         self.out = self.dir / "artifact" / "Nagram-macos.dmg"
         self.built = []
@@ -46,16 +46,16 @@ class MacosDmgTest(unittest.TestCase):
     def test_the_image_holds_the_application_next_to_a_link_to_applications(self):
         self.assertEqual(self.run_main(), (0, ""))
         ((filename, volume, settings, existed),) = self.built
-        self.assertEqual((filename, volume, existed), (str(self.out), "Nagram", False))
+        self.assertEqual((filename, volume, existed), (str(self.out), "Nagram Desktop", False))
         self.assertEqual(settings["files"], [str(self.app)])
         self.assertEqual(settings["symlinks"], {"Applications": "/Applications"})
         self.assertEqual(settings["default_view"], "icon-view")
         places = settings["icon_locations"]
-        self.assertEqual(set(places), {"Nagram.app", "Applications"})
+        self.assertEqual(set(places), {"Nagram Desktop.app", "Applications"})
         (_, (width, height)) = settings["window_rect"]
         for x, y in places.values():
             self.assertTrue(0 < x < width and 0 < y < height, (x, y))
-        self.assertLess(places["Nagram.app"][0], places["Applications"][0])
+        self.assertLess(places["Nagram Desktop.app"][0], places["Applications"][0])
 
     def test_replaces_an_image_of_an_earlier_run(self):
         self.out.parent.mkdir()

@@ -397,6 +397,9 @@ int Launcher::exec() {
 	if (!Platform::CheckAppTranslocation()) {
 		return 0;
 	}
+	if (!Platform::RenameLegacyBundle()) {
+		return 0;
+	}
 
 	// Must be started before Platform is started.
 	Logs::start();
