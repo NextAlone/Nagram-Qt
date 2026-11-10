@@ -1,0 +1,2 @@
+# Keep the Inno Setup translations byte-identical to the issrc tag they come from
+*.isl -text

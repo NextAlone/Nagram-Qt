@@ -72,6 +72,8 @@ Name: "pt_BR";   MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
 Name: "ru";      MessagesFile: "compiler:Languages\Russian.isl"
 Name: "fr";      MessagesFile: "compiler:Languages\French.isl"
 Name: "ua";      MessagesFile: "compiler:Languages\Ukrainian.isl"
+Name: "zh_TW";   MessagesFile: "languages\ChineseTraditional.isl"
+Name: "zh_CN";   MessagesFile: "languages\ChineseSimplified.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
