@@ -21,7 +21,6 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_restart_required" = "After restart";
 "lng_nagram_message_style" = "Message style";
 "lng_nagram_text_message_width" = "Text message width";
-"lng_nagram_text_width_hint" = "50–400%; leave empty to follow Telegram";
 "lng_nagram_wide_channel_posts" = "Widen channel text messages";
 "lng_nagram_hide_bubble_tail" = "Hide message bubble tails";
 "lng_nagram_theme_reply_colors" = "Use theme colors for replies and quotes";
@@ -90,7 +89,6 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_disable_community_grouping_note" = "Every chat of a community is shown on its own, and the \"show as one\" switch is hidden. Takes effect after restart.";
 "lng_nagram_recent_chats_option" = "Remember recent chats";
 "lng_nagram_recent_chats_limit" = "Recent chats kept";
-"lng_nagram_recent_chats_limit_hint" = "Enter 5–100";
 "lng_nagram_recent_in_share" = "Show recent chats first when forwarding";
 "lng_nagram_recent_chats_note" = "Adds “Recent chats” to the main menu. The list is kept on this device for each account. Turning this off clears it.";
 "lng_nagram_recent_chats" = "Recent chats";
@@ -161,7 +159,6 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_sticker_scale" = "Sticker size";
 "lng_nagram_hide_sticker_time" = "Hide sticker time";
 "lng_nagram_recent_sticker_limit" = "Recent stickers shown";
-"lng_nagram_recent_sticker_hint" = "Enter 1–200, or leave empty to follow Telegram";
 "lng_nagram_hide_group_stickers" = "Hide group stickers";
 "lng_nagram_hide_recommended_stickers" = "Hide recommended stickers";
 "lng_nagram_hide_recommended_emoji" = "Hide recommended emoji";

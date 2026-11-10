@@ -49,6 +49,7 @@ set(nagram_sources
     nagram/interface/roundness.cpp
     nagram/settings/interface.cpp
     nagram/settings/restart.cpp
+    nagram/settings/slider_box.cpp
     nagram/settings/updates.cpp
     nagram/settings/search_terms.cpp
     nagram/settings/link_format.cpp

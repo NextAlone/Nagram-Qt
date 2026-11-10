@@ -8,6 +8,7 @@
 #include "nagram/media/sticker_export.h"
 #include "nagram/settings/home.h"
 #include "nagram/settings/restart.h"
+#include "nagram/settings/slider_box.h"
 #include "core/application.h"
 #include "core/file_utilities.h"
 #include "lang/lang_keys.h"
@@ -72,66 +73,60 @@ void AddToggle(
 	}
 }
 
+constexpr auto kMinStickerScale = 50;
+constexpr auto kMaxStickerScale = 200;
+constexpr auto kStickerScaleStep = 25;
+constexpr auto kMaxRecentStickers = 200;
+constexpr auto kDefaultRecentStickers = 20;
+
 void StickerScaleBox(not_null<Ui::GenericBox*> box) {
-	box->setTitle(tr::lng_nagram_sticker_scale());
-	const auto group = std::make_shared<Ui::RadiobuttonGroup>(
-		ForDevice().Get(Media::kStickerScale));
-	for (auto value = 50; value <= 200; value += 25) {
-		box->addRow(object_ptr<Ui::Radiobutton>(
-			box, group, value, QString::number(value) + '%',
-			st::settingsSendType), st::settingsSendTypePadding);
-	}
-	group->setChangedCallback([=](int value) {
-		Expects(ForDevice().Set(Media::kStickerScale, value));
-		box->closeBox();
+	SliderBox(box, {
+		.title = tr::lng_nagram_sticker_scale(tr::now),
+		.values = SliderSteps(
+			kMinStickerScale,
+			kMaxStickerScale,
+			kStickerScaleStep),
+		.current = ForDevice().Get(Media::kStickerScale),
+		.format = SliderPercent,
+		.save = [](std::optional<int> value) {
+			Expects(ForDevice().Set(Media::kStickerScale, *value));
+		},
 	});
 }
 
 void PanelScaleBox(
 		not_null<Ui::GenericBox*> box,
 		not_null<Window::SessionController*> controller) {
-	box->setTitle(tr::lng_nagram_sticker_panel_scale());
-	const auto group = std::make_shared<Ui::RadiobuttonGroup>(
-		ForDevice().Get(Media::kStickerPanelScale));
-	for (auto value = 50; value <= 200; value += 25) {
-		box->addRow(object_ptr<Ui::Radiobutton>(
-			box, group, value, QString::number(value) + '%',
-			st::settingsSendType), st::settingsSendTypePadding);
-	}
-	group->setChangedCallback([=](int value) {
-		if (ForDevice().Get(Media::kStickerPanelScale) != value) {
-			Expects(ForDevice().Set(Media::kStickerPanelScale, value));
+	SliderBox(box, {
+		.title = tr::lng_nagram_sticker_panel_scale(tr::now),
+		.values = SliderSteps(
+			kMinStickerScale,
+			kMaxStickerScale,
+			kStickerScaleStep),
+		.current = ForDevice().Get(Media::kStickerPanelScale),
+		.format = SliderPercent,
+		.save = [=](std::optional<int> value) {
+			Expects(ForDevice().Set(Media::kStickerPanelScale, *value));
 			ShowRestartPrompt(controller);
-		}
-		box->closeBox();
+		},
 	});
 }
 
 void RecentLimitBox(not_null<Ui::GenericBox*> box) {
-	box->setTitle(tr::lng_nagram_recent_sticker_limit());
 	const auto current = ForDevice().Get(Media::kRecentStickerLimit);
-	const auto field = box->addRow(object_ptr<Ui::InputField>(
-		box,
-		st::defaultInputField,
-		tr::lng_nagram_recent_sticker_hint(),
-		current ? QString::number(current) : QString()));
-	field->setInputMethodHints(Qt::ImhDigitsOnly);
-	box->setFocusCallback([=] { field->setFocusFast(); });
-	const auto submit = [=] {
-		const auto text = field->getLastText().trimmed();
-		auto valid = false;
-		const auto value = text.isEmpty() ? 0 : text.toInt(&valid);
-		if (!text.isEmpty() && (!valid || value < 1 || value > 200)) {
-			field->showError();
-			return;
-		}
-		Expects(ForDevice().Set(Media::kRecentStickerLimit, value));
-		box->closeBox();
-	};
-	field->submits(
-	) | rpl::on_next([=](auto) { submit(); }, field->lifetime());
-	box->addButton(tr::lng_settings_save(), submit);
-	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
+	SliderBox(box, {
+		.title = tr::lng_nagram_recent_sticker_limit(tr::now),
+		.values = SliderSteps(1, kMaxRecentStickers, 1),
+		.current = current ? current : kDefaultRecentStickers,
+		.format = [](int value) { return QString::number(value); },
+		.follow = tr::lng_nagram_preview_follow(tr::now),
+		.following = !current,
+		.save = [](std::optional<int> value) {
+			Expects(ForDevice().Set(
+				Media::kRecentStickerLimit,
+				value.value_or(0)));
+		},
+	});
 }
 
 QString VoiceBitrateLabel(int value) {

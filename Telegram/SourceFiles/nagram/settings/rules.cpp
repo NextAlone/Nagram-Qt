@@ -1,6 +1,7 @@
 #include "nagram/settings/rules.h"
 
 #include "nagram/settings/home.h"
+#include "nagram/settings/slider_box.h"
 #include "nagram/filters/settings.h"
 #include "nagram/filters/hidden_messages.h"
 #include "nagram/filters/model.h"
@@ -68,6 +69,10 @@ void AddToggle(
 		}, button->lifetime());
 	}
 }
+
+constexpr auto kMinWebAppScale = 100;
+constexpr auto kMaxWebAppScale = 200;
+constexpr auto kWebAppScaleStep = 25;
 
 std::vector<QString> HashtagPageLabels() {
 	return {
@@ -279,17 +284,20 @@ const auto kMeta = BuildHelper({
 				return QString::number(value) + '%';
 			}),
 			.onClick = [=] {
-				const auto values = std::vector<int>{ 100, 125, 150, 175, 200 };
-				auto labels = std::vector<QString>();
-				for (const auto &value : values) {
-					labels.push_back(QString::number(value) + '%');
-				}
-				controller->show(Box(
-					ChoiceBox,
-					option,
-					title,
-					values,
-					std::move(labels)));
+				controller->show(Box([=](not_null<Ui::GenericBox*> box) {
+					SliderBox(box, {
+						.title = (*title)(tr::now),
+						.values = SliderSteps(
+							kMinWebAppScale,
+							kMaxWebAppScale,
+							kWebAppScaleStep),
+						.current = ForDevice().Get(*option),
+						.format = SliderPercent,
+						.save = [=](std::optional<int> value) {
+							Expects(ForDevice().Set(*option, *value));
+						},
+					});
+				}));
 			},
 			.keywords = { u"web app"_q, u"mini app"_q, u"size"_q },
 		});

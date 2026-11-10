@@ -17,7 +17,6 @@
 "lng_nagram_restart_required" = "重启后生效";
 "lng_nagram_message_style" = "消息样式";
 "lng_nagram_text_message_width" = "文字消息宽度";
-"lng_nagram_text_width_hint" = "50–400%；留空则跟随 Telegram";
 "lng_nagram_wide_channel_posts" = "加宽频道文字消息";
 "lng_nagram_hide_bubble_tail" = "隐藏气泡尾巴";
 "lng_nagram_theme_reply_colors" = "回复和引用使用主题颜色";
@@ -86,7 +85,6 @@
 "lng_nagram_disable_community_grouping_note" = "社区中的每个聊天都单独显示，并隐藏“合并显示”开关。重启后生效。";
 "lng_nagram_recent_chats_option" = "记住最近会话";
 "lng_nagram_recent_chats_limit" = "最近会话保留数量";
-"lng_nagram_recent_chats_limit_hint" = "输入 5–100";
 "lng_nagram_recent_in_share" = "转发时优先显示最近会话";
 "lng_nagram_recent_chats_note" = "在主菜单中加入“最近会话”。列表按账号保存在本机，关闭后会清空。";
 "lng_nagram_recent_chats" = "最近会话";
@@ -157,7 +155,6 @@
 "lng_nagram_sticker_scale" = "贴纸大小";
 "lng_nagram_hide_sticker_time" = "隐藏贴纸时间";
 "lng_nagram_recent_sticker_limit" = "最近使用贴纸显示数量";
-"lng_nagram_recent_sticker_hint" = "输入 1–200，留空则跟随 Telegram";
 "lng_nagram_hide_group_stickers" = "隐藏群组贴纸";
 "lng_nagram_hide_recommended_stickers" = "隐藏推荐贴纸";
 "lng_nagram_hide_recommended_emoji" = "隐藏推荐表情";

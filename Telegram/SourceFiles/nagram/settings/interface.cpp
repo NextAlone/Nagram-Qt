@@ -7,6 +7,7 @@
 #include "nagram/interface/main_menu.h"
 #include "nagram/settings/home.h"
 #include "nagram/settings/restart.h"
+#include "nagram/settings/slider_box.h"
 #include "lang/lang_keys.h"
 #include "settings/settings_builder.h"
 #include "settings/settings_common.h"
@@ -15,8 +16,6 @@
 #include "ui/vertical_list.h"
 #include "ui/widgets/buttons.h"
 #include "ui/widgets/checkbox.h"
-#include "ui/widgets/continuous_sliders.h"
-#include "ui/widgets/fields/input_field.h"
 #include "ui/widgets/labels.h"
 #include "window/window_session_controller.h"
 #include "styles/style_layers.h"
@@ -51,6 +50,10 @@ public:
 
 constexpr auto kMinRoundness = 0;
 constexpr auto kMaxRoundness = 100;
+constexpr auto kMinTextWidth = 50;
+constexpr auto kMaxTextWidth = 400;
+constexpr auto kTextWidthStep = 10;
+constexpr auto kDefaultTextWidth = 100;
 
 QString RoundnessLabel(int value) {
 	return ((value != Interface::kRoundnessUnchanged)
@@ -64,53 +67,22 @@ void RoundnessBox(
 		const Option<int> &option,
 		QString title,
 		not_null<Window::SessionController*> controller) {
-	box->setTitle(title);
 	const auto current = ForDevice().Get(option);
-	const auto follow = box->addRow(object_ptr<Ui::Checkbox>(
-		box,
-		tr::lng_nagram_preview_follow(tr::now),
-		(current == Interface::kRoundnessUnchanged),
-		st::defaultBoxCheckbox));
-	auto row = MakeSliderWithLabel(
-		box,
-		st::settingsScale,
-		st::settingsScaleLabel,
-		st::normalFont->spacew * 2,
-		st::settingsScaleLabel.style.font->width(u"100%"_q),
-		true);
-	const auto slider = row.slider;
-	const auto label = row.label;
-	box->addRow(std::move(row.widget), st::settingsBigScalePadding);
-	slider->setAccessibleName(title);
-
-	const auto value = box->lifetime().make_state<int>(
-		(current == Interface::kRoundnessUnchanged) ? kMaxRoundness : current);
-	const auto show = [=](int percent) {
-		*value = percent;
-		label->setText(QString::number(percent) + u"%"_q);
-	};
-	slider->setPseudoDiscrete(
-		kMaxRoundness - kMinRoundness + 1,
-		[](int index) { return kMinRoundness + index; },
-		*value,
-		show);
-	show(*value);
-	follow->checkedValue(
-	) | rpl::on_next([=](bool checked) {
-		slider->setDisabled(checked);
-	}, slider->lifetime());
-
-	box->addButton(tr::lng_settings_save(), [=] {
-		const auto chosen = follow->checked()
-			? Interface::kRoundnessUnchanged
-			: *value;
-		if (chosen != current) {
-			Expects(ForDevice().Set(option, chosen));
+	const auto following = (current == Interface::kRoundnessUnchanged);
+	SliderBox(box, {
+		.title = std::move(title),
+		.values = SliderSteps(kMinRoundness, kMaxRoundness, 1),
+		.current = following ? kMaxRoundness : current,
+		.format = SliderPercent,
+		.follow = tr::lng_nagram_preview_follow(tr::now),
+		.following = following,
+		.save = [=](std::optional<int> value) {
+			Expects(ForDevice().Set(
+				option,
+				value.value_or(Interface::kRoundnessUnchanged)));
 			ShowRestartPrompt(controller);
-		}
-		box->closeBox();
+		},
 	});
-	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
 }
 
 void AddRoundness(
@@ -135,33 +107,20 @@ void AddRoundness(
 }
 
 void TextWidthBox(not_null<Ui::GenericBox*> box) {
-	box->setTitle(tr::lng_nagram_text_message_width());
 	const auto current = ForDevice().Get(Interface::kTextMessageWidth);
-	const auto field = box->addRow(object_ptr<Ui::InputField>(
-		box,
-		st::defaultInputField,
-		tr::lng_nagram_text_width_hint(),
-		current ? QString::number(current) : QString()));
-	field->setInputMethodHints(Qt::ImhDigitsOnly);
-	box->setFocusCallback([=] { field->setFocusFast(); });
-	const auto submit = [=] {
-		const auto text = field->getLastText().trimmed();
-		auto valid = false;
-		const auto value = text.isEmpty() ? 0 : text.toInt(&valid);
-		if ((!text.isEmpty() && !valid)
-			|| (value != 0 && (value < 50 || value > 400))) {
-			field->showError();
-			return;
-		}
-		if (value != current) {
-			Expects(ForDevice().Set(Interface::kTextMessageWidth, value));
-		}
-		box->closeBox();
-	};
-	field->submits(
-	) | rpl::on_next([=](auto) { submit(); }, field->lifetime());
-	box->addButton(tr::lng_settings_save(), submit);
-	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
+	SliderBox(box, {
+		.title = tr::lng_nagram_text_message_width(tr::now),
+		.values = SliderSteps(kMinTextWidth, kMaxTextWidth, kTextWidthStep),
+		.current = current ? current : kDefaultTextWidth,
+		.format = SliderPercent,
+		.follow = tr::lng_nagram_preview_follow(tr::now),
+		.following = !current,
+		.save = [](std::optional<int> value) {
+			Expects(ForDevice().Set(
+				Interface::kTextMessageWidth,
+				value.value_or(0)));
+		},
+	});
 }
 
 QString DelayLabel(int milliseconds) {

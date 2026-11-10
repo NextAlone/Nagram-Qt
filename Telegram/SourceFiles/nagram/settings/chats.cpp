@@ -9,6 +9,7 @@
 #include "nagram/core/options.h"
 #include "nagram/settings/home.h"
 #include "nagram/settings/restart.h"
+#include "nagram/settings/slider_box.h"
 #include "data/data_chat_filters.h"
 #include "data/data_session.h"
 #include "main/main_session.h"
@@ -19,7 +20,6 @@
 #include "ui/layers/generic_box.h"
 #include "ui/widgets/buttons.h"
 #include "ui/widgets/checkbox.h"
-#include "ui/widgets/fields/input_field.h"
 #include "ui/wrap/vertical_layout.h"
 #include "window/window_session_controller.h"
 #include "styles/style_menu_icons.h"
@@ -154,27 +154,18 @@ void StartupFolderBox(
 }
 
 void RecentChatsLimitBox(not_null<Ui::GenericBox*> box) {
-	box->setTitle(tr::lng_nagram_recent_chats_limit());
-	const auto field = box->addRow(object_ptr<Ui::InputField>(
-		box,
-		st::defaultInputField,
-		tr::lng_nagram_recent_chats_limit_hint(),
-		QString::number(ForDevice().Get(Chats::kRecentChatsLimit))));
-	field->setInputMethodHints(Qt::ImhDigitsOnly);
-	box->setFocusCallback([=] { field->setFocusFast(); });
-	const auto submit = [=] {
-		auto valid = false;
-		const auto value = field->getLastText().trimmed().toInt(&valid);
-		if (!valid || !ForDevice().Set(Chats::kRecentChatsLimit, value)) {
-			field->showError();
-			return;
-		}
-		box->closeBox();
-	};
-	field->submits(
-	) | rpl::on_next([=](auto) { submit(); }, field->lifetime());
-	box->addButton(tr::lng_settings_save(), submit);
-	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
+	SliderBox(box, {
+		.title = tr::lng_nagram_recent_chats_limit(tr::now),
+		.values = SliderSteps(
+			Chats::kMinimumRecentChats,
+			Chats::kMaximumRecentChats,
+			1),
+		.current = ForDevice().Get(Chats::kRecentChatsLimit),
+		.format = [](int value) { return QString::number(value); },
+		.save = [](std::optional<int> value) {
+			Expects(ForDevice().Set(Chats::kRecentChatsLimit, *value));
+		},
+	});
 }
 
 const auto kMeta = BuildHelper({
