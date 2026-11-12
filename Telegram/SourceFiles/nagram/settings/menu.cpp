@@ -59,6 +59,7 @@ QString Title(Menu::ActionId id) {
 	case Menu::ActionId::Batch: return tr::lng_nagram_menu_batch(tr::now);
 	case Menu::ActionId::SelectSender: return tr::lng_nagram_menu_select_sender(tr::now);
 	case Menu::ActionId::MediaInfo: return tr::lng_nagram_menu_media_info(tr::now);
+	case Menu::ActionId::SaveStickerGif: return tr::lng_nagram_menu_sticker_gif(tr::now);
 	case Menu::ActionId::Screenshot: return tr::lng_nagram_menu_screenshot(tr::now);
 	case Menu::ActionId::Reading: return tr::lng_nagram_menu_reading(tr::now);
 	case Menu::ActionId::FilterAuthor: return tr::lng_nagram_filter_author_hide(tr::now);
@@ -108,6 +109,7 @@ const style::icon *Icon(Menu::ActionId id) {
 	case Menu::ActionId::Batch: return &st::menuIconCopy;
 	case Menu::ActionId::SelectSender: return &st::menuIconSelect;
 	case Menu::ActionId::MediaInfo: return &st::menuIconInfo;
+	case Menu::ActionId::SaveStickerGif: return &st::menuIconGif;
 	case Menu::ActionId::Screenshot: return &st::menuIconSaveImage;
 	case Menu::ActionId::Reading: return &st::menuIconTranslate;
 	case Menu::ActionId::FilterAuthor: return &st::menuIconBlock;

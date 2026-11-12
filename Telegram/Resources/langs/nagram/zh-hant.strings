@@ -316,6 +316,13 @@
 "lng_nagram_menu_batch_unavailable" = "目標聊天不支援這項批次操作。";
 "lng_nagram_menu_selection_limit" = "選取的訊息太多。";
 "lng_nagram_menu_media_info" = "媒體資訊";
+"lng_nagram_menu_sticker_gif" = "儲存為 GIF";
+"lng_nagram_sticker_gif_filter" = "GIF 圖片 (*.gif)";
+"lng_nagram_sticker_gif_working" = "正在將貼圖轉換為 GIF…";
+"lng_nagram_sticker_gif_saved" = "貼圖已儲存為 GIF。";
+"lng_nagram_sticker_gif_download_error" = "無法下載貼圖。請檢查網路連線後重試。";
+"lng_nagram_sticker_gif_decode_error" = "無法解碼此貼圖的動畫，未儲存 GIF。可以改為儲存原始檔案。";
+"lng_nagram_sticker_gif_write_error" = "無法寫入 GIF 檔案。請選擇有寫入權限的資料夾後重試。";
 "lng_nagram_menu_delete_download" = "刪除已下載的檔案";
 "lng_nagram_menu_delete_download_confirm" = "將 {file} 移到系統垃圾桶？聊天中的訊息會保留。";
 "lng_nagram_menu_delete_download_done" = "檔案已移到垃圾桶。";

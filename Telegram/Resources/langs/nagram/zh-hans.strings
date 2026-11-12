@@ -316,6 +316,13 @@
 "lng_nagram_menu_batch_unavailable" = "目标聊天不支持此批量操作。";
 "lng_nagram_menu_selection_limit" = "选中的消息太多。";
 "lng_nagram_menu_media_info" = "媒体信息";
+"lng_nagram_menu_sticker_gif" = "保存为 GIF";
+"lng_nagram_sticker_gif_filter" = "GIF 图片 (*.gif)";
+"lng_nagram_sticker_gif_working" = "正在将贴纸转换为 GIF…";
+"lng_nagram_sticker_gif_saved" = "贴纸已保存为 GIF。";
+"lng_nagram_sticker_gif_download_error" = "无法下载贴纸。请检查网络连接后重试。";
+"lng_nagram_sticker_gif_decode_error" = "无法解码此贴纸的动画，未保存 GIF。可以改为保存原始文件。";
+"lng_nagram_sticker_gif_write_error" = "无法写入 GIF 文件。请选择有写入权限的文件夹后重试。";
 "lng_nagram_menu_delete_download" = "删除已下载的文件";
 "lng_nagram_menu_delete_download_confirm" = "将 {file} 移到系统回收站？聊天中的消息会保留。";
 "lng_nagram_menu_delete_download_done" = "文件已移到回收站。";

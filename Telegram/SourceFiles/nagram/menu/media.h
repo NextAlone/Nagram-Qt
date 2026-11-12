@@ -14,5 +14,9 @@ void InsertMediaInfoAction(
 	Ui::PopupMenu *menu,
 	HistoryItem *item,
 	Window::SessionController *controller);
+void InsertSaveStickerGifAction(
+	Ui::PopupMenu *menu,
+	HistoryItem *item,
+	Window::SessionController *controller);
 
 } // namespace Nagram::Menu

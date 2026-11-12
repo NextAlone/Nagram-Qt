@@ -100,6 +100,7 @@ void Apply(
 		}
 		if (item) {
 			InsertMediaInfoAction(menu, item, controller);
+			InsertSaveStickerGifAction(menu, item, controller);
 			InsertDeleteDownloadAction(menu, item, controller);
 			InsertReadingAction(menu, item, controller);
 			Filters::InsertAuthorAction(menu, item, controller);

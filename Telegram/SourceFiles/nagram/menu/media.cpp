@@ -1,7 +1,9 @@
 #include "nagram/menu/media.h"
 
 #include "nagram/menu/actions.h"
+#include "nagram/media/sticker_gif.h"
 #include "data/data_document.h"
+#include "data/data_file_origin.h"
 #include "data/data_media_types.h"
 #include "data/data_photo.h"
 #include "data/data_session.h"
@@ -93,6 +95,32 @@ void InsertMediaInfoAction(
 		&st::menuIconInfo, &st::menuIconInfo);
 	Tag(menu->insertAction(EndPosition(menu), std::move(widget)),
 		ActionId::MediaInfo);
+}
+
+void InsertSaveStickerGifAction(
+		Ui::PopupMenu *menu,
+		HistoryItem *item,
+		Window::SessionController *controller) {
+	const auto media = item ? item->media() : nullptr;
+	const auto document = media ? media->document() : nullptr;
+	if (!menu
+		|| !controller
+		|| !document
+		|| item->forbidsSaving()
+		|| !Media::CanSaveStickerGif(document)) {
+		return;
+	}
+	const auto origin = Data::FileOrigin(Data::FileOriginMessage(item->fullId()));
+	const auto action = Ui::Menu::CreateAction(menu,
+		tr::lng_nagram_menu_sticker_gif(tr::now),
+		crl::guard(controller, [=] {
+			Media::SaveStickerGif(controller->uiShow(), document, origin);
+		}));
+	auto widget = base::make_unique_q<Ui::Menu::Action>(
+		menu->menu(), menu->menu()->st(), action,
+		&st::menuIconGif, &st::menuIconGif);
+	Tag(menu->insertAction(EndPosition(menu), std::move(widget)),
+		ActionId::SaveStickerGif);
 }
 
 } // namespace Nagram::Menu

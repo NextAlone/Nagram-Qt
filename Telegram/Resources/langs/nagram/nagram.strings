@@ -320,6 +320,13 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_menu_batch_unavailable" = "This batch action is unavailable in the destination.";
 "lng_nagram_menu_selection_limit" = "Too many messages are selected.";
 "lng_nagram_menu_media_info" = "Media information";
+"lng_nagram_menu_sticker_gif" = "Save as GIF";
+"lng_nagram_sticker_gif_filter" = "GIF images (*.gif)";
+"lng_nagram_sticker_gif_working" = "Converting the sticker to GIF…";
+"lng_nagram_sticker_gif_saved" = "The sticker was saved as GIF.";
+"lng_nagram_sticker_gif_download_error" = "Could not download the sticker. Check your connection and try again.";
+"lng_nagram_sticker_gif_decode_error" = "Could not decode the animation of this sticker, so no GIF was saved. You can save the original file instead.";
+"lng_nagram_sticker_gif_write_error" = "Could not write the GIF file. Choose a folder you can write to and try again.";
 "lng_nagram_menu_delete_download" = "Delete downloaded file";
 "lng_nagram_menu_delete_download_confirm" = "Move {file} to the system trash? The message stays in the chat.";
 "lng_nagram_menu_delete_download_done" = "The file was moved to the trash.";

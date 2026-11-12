@@ -73,6 +73,8 @@ set(nagram_sources
     nagram/media/cover.cpp
     nagram/media/sticker_export.cpp
     nagram/media/sticker_export_model.cpp
+    nagram/media/sticker_gif.cpp
+    nagram/media/sticker_gif_model.cpp
     nagram/media/url_template.cpp
     nagram/media/extras.cpp
     nagram/media/viewer_window.cpp
@@ -337,6 +339,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/notifications/model.cpp
         nagram/media/url_template.cpp
         nagram/media/sticker_export_model.cpp
+        nagram/media/sticker_gif_model.cpp
         nagram/snapshot/cloud_theme_model.cpp
         nagram/sync/model.cpp
     )

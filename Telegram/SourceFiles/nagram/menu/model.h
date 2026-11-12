@@ -44,6 +44,7 @@ enum class ActionId : int {
 	TranscribeSelected = 37,
 	CopyMarkdown = 39,
 	MessagesFromSender = 40,
+	SaveStickerGif = 41,
 };
 
 enum class Visibility { Show, Hide, WithOption };
@@ -58,7 +59,7 @@ struct Slot {
 	bool separator = false;
 };
 
-inline constexpr auto kEntries = std::array<Entry, 35>({{
+inline constexpr auto kEntries = std::array<Entry, 36>({{
 	{ ActionId::Reply, "lng_nagram_menu_reply" },
 	{ ActionId::Edit, "lng_nagram_menu_edit" },
 	{ ActionId::Copy, "lng_nagram_menu_copy" },
@@ -80,6 +81,7 @@ inline constexpr auto kEntries = std::array<Entry, 35>({{
 	{ ActionId::Batch, "lng_nagram_menu_batch" },
 	{ ActionId::SelectSender, "lng_nagram_menu_select_sender" },
 	{ ActionId::MediaInfo, "lng_nagram_menu_media_info" },
+	{ ActionId::SaveStickerGif, "lng_nagram_menu_sticker_gif" },
 	{ ActionId::Screenshot, "lng_nagram_menu_screenshot" },
 	{ ActionId::Reading, "lng_nagram_menu_reading" },
 	{ ActionId::FilterAuthor, "lng_nagram_filter_author_hide" },
