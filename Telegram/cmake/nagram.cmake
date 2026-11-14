@@ -14,6 +14,7 @@ set(nagram_sources
     nagram/core/options.cpp
     nagram/core/regex.cpp
     nagram/core/diagnostics.cpp
+    nagram/core/bundle_rename_mac.mm
     nagram/core/relaunch.cpp
     nagram/core/updates.cpp
     nagram/core/updates_model.cpp
@@ -226,6 +227,10 @@ endif()
 nice_target_sources(Telegram ${res_loc} PRIVATE qrc/nagram.qrc)
 if (APPLE)
     nice_target_sources(Telegram ${res_loc} PRIVATE qrc/nagram_mac.qrc)
+    # Nagram.app on macOS is the native app (Nagram-macOS).
+    set(nagram_output_name "Nagram Desktop")
+else()
+    set(nagram_output_name "Nagram")
 endif()
 
 # Compiles the Icon Composer document so macOS renders the app icon itself.

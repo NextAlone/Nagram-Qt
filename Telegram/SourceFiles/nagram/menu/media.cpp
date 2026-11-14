@@ -123,4 +123,17 @@ void InsertSaveStickerGifAction(
 		ActionId::SaveStickerGif);
 }
 
+void AddSaveStickerGifAction(
+		not_null<Ui::PopupMenu*> menu,
+		std::shared_ptr<Main::SessionShow> show,
+		not_null<DocumentData*> document) {
+	if (!Shown(ActionId::SaveStickerGif)
+		|| !Media::CanSaveStickerGif(document)) {
+		return;
+	}
+	menu->addAction(tr::lng_nagram_menu_sticker_gif(tr::now), [=] {
+		Media::SaveStickerGif(show, document, document->stickerSetOrigin());
+	}, &st::menuIconGif);
+}
+
 } // namespace Nagram::Menu

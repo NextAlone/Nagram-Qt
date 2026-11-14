@@ -18,6 +18,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "core/sandbox.h"
 #include "core/version.h"
 #include "nagram/core/version.h"
+#include "nagram/core/bundle_rename.h"
 #include "base/concurrent_timer.h"
 #include "base/options.h"
 
@@ -394,10 +395,8 @@ int Launcher::exec() {
 
 	// Before Logs::start(), which is where the working directory gets
 	// chosen: a translocated bundle never sees its NagramForcePortable.
-	if (!Platform::CheckAppTranslocation()) {
-		return 0;
-	}
-	if (!Platform::RenameLegacyBundle()) {
+	if (!Platform::CheckAppTranslocation()
+		|| !Nagram::RenameLegacyBundle(arguments())) {
 		return 0;
 	}
 

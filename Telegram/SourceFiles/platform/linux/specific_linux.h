@@ -15,10 +15,6 @@ inline bool CheckAppTranslocation() {
 	return true;
 }
 
-inline bool RenameLegacyBundle() {
-	return true;
-}
-
 inline void IgnoreApplicationActivationRightNow() {
 }
 

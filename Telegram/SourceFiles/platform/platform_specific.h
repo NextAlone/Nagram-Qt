@@ -30,9 +30,6 @@ inline constexpr auto kUntranslocatedArgument = "-untranslocated";
 // either relaunched itself from the original location or told the user.
 [[nodiscard]] bool CheckAppTranslocation();
 
-// NAGRAM: false when the bundle was renamed to its current name and relaunched.
-[[nodiscard]] bool RenameLegacyBundle();
-
 enum class PermissionStatus {
 	Granted,
 	CanRequest,

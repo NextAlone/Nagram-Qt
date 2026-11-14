@@ -9,8 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/media/options.h"
 #include "nagram/media/extras.h"
 #include "nagram/media/local_faved.h"
-#include "nagram/media/sticker_gif.h"
-#include "nagram/menu/actions.h"
+#include "nagram/menu/media.h"
 
 #include "base/options.h"
 #include "base/timer_rpl.h"
@@ -2783,15 +2782,7 @@ base::unique_qptr<Ui::PopupMenu> StickersListWidget::fillContextMenu(
 			showStickerSetBox(document, id);
 		}, &icons->menuStickerSet);
 	}
-	if (Nagram::Menu::Shown(Nagram::Menu::ActionId::SaveStickerGif)
-		&& Nagram::Media::CanSaveStickerGif(document)) {
-		menu->addAction(tr::lng_nagram_menu_sticker_gif(tr::now), [=] {
-			Nagram::Media::SaveStickerGif(
-				show,
-				document,
-				document->stickerSetOrigin());
-		}, &st::menuIconGif);
-	}
+	Nagram::Menu::AddSaveStickerGifAction(menu.get(), show, document);
 
 	if (const auto id = set.id; id == Data::Stickers::RecentSetId) {
 		menu->addAction(tr::lng_recent_stickers_remove(tr::now), [=] {
