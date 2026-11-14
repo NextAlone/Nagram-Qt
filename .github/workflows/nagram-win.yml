@@ -134,10 +134,11 @@ jobs:
           }
           Get-PSDrive -PSProvider FileSystem | Format-Table Name, Used, Free
 
-      # Release compilation on the x64 runner runs out of memory otherwise
-      # (C1060, compiler is out of heap space).
+      # Compilation on the x64 runner runs out of memory otherwise, in Debug
+      # as well as Release (C1060, compiler is out of heap space, or an
+      # OutOfMemoryException in the MSBuild CL task).
       - name: Enlarge the page file.
-        if: matrix.arch == 'x64' && env.BUILD_CONFIG == 'Release'
+        if: matrix.arch == 'x64'
         uses: al-cheb/configure-pagefile-action@a3b6ebd6b634da88790d9c58d4b37a7f4a7b8708 # v1.4
         with:
           minimum-size: 16GB
@@ -379,6 +380,10 @@ jobs:
         env:
           NAGRAM_API_ID: ${{ secrets.NAGRAM_API_ID }}
           NAGRAM_API_HASH: ${{ secrets.NAGRAM_API_HASH }}
+          # The arm64 runner installs the latest Build Tools, and MSVC 14.52
+          # flags upstream make_state<T>() calls on non-dependent objects
+          # with C4864, which Debug treats as an error.
+          CL: ${{ matrix.arch == 'arm64' && '/wd4864' || '' }}
         run: |
           cd %TBUILD%\%REPO_NAME%\Telegram
 
