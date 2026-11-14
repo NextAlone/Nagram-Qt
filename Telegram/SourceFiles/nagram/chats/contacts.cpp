@@ -1,7 +1,6 @@
 #include "nagram/chats/contacts.h"
 
 #include "nagram/chats/options.h"
-#include "boxes/peer_list_box.h"
 #include "data/data_user.h"
 #include "lang/lang_keys.h"
 #include "main/session/session_show.h"
@@ -10,33 +9,16 @@
 #include "styles/style_nagram_interface.h"
 
 namespace Nagram::Chats {
-namespace {
 
-class ContactRow final : public PeerListRow {
-public:
-	using PeerListRow::PeerListRow;
-
-	QSize rightActionSize() const override;
-	QMargins rightActionMargins() const override;
-	void rightActionPaint(
-		Painter &p,
-		int x,
-		int y,
-		int outerWidth,
-		bool selected,
-		bool actionSelected) override;
-
-};
-
-QSize ContactRow::rightActionSize() const {
-	const auto user = peer()->asUser();
+QSize MutualContactActionSize(not_null<PeerData*> peer) {
+	const auto user = peer->asUser();
 	const auto mutual = user
 		&& (user->flags() & UserDataFlag::MutualContact)
 		&& ForDevice().Get(kMarkMutualContacts);
 	return mutual ? st::nagramMutualContactIcon.size() : QSize();
 }
 
-QMargins ContactRow::rightActionMargins() const {
+QMargins MutualContactActionMargins() {
 	const auto height = st::contactsWithStories.item.height;
 	const auto icon = st::nagramMutualContactIcon.height();
 	return QMargins(
@@ -46,22 +28,15 @@ QMargins ContactRow::rightActionMargins() const {
 		0);
 }
 
-void ContactRow::rightActionPaint(
+void PaintMutualContactAction(
 		Painter &p,
 		int x,
 		int y,
 		int outerWidth,
-		bool selected,
-		bool actionSelected) {
-	(actionSelected
+		bool over) {
+	(over
 		? st::nagramMutualContactIconOver
 		: st::nagramMutualContactIcon).paint(p, x, y, outerWidth);
-}
-
-} // namespace
-
-std::unique_ptr<PeerListRow> MakeContactRow(not_null<UserData*> user) {
-	return std::make_unique<ContactRow>(user);
 }
 
 void ShowMutualContactHint(not_null<PeerListDelegate*> delegate) {

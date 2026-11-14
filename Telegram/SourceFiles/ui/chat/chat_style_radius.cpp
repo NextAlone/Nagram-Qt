@@ -7,12 +7,9 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "ui/chat/chat_style_radius.h"
 #include "nagram/interface/roundness.h"
-#include "ui/chat/chat_style.h"
 #include "base/options.h"
+#include "ui/chat/message_bubble.h"
 
-#include "ui/chat/chat_theme.h"
-#include "ui/painter.h"
-#include "ui/ui_utility.h"
 #include "styles/style_chat.h"
 
 namespace Ui {

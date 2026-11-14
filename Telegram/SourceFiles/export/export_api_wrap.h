@@ -209,6 +209,7 @@ private:
 		int splitIndex);
 
 	void requestMessagesCount(int localSplitIndex);
+	void requestMessagesCountFromDate(int localSplitIndex, int count);
 	void checkFirstMessageDate(int localSplitIndex, int count);
 	void resolveMessagesRange(int localSplitIndex, int count);
 	void messagesCountLoaded(int localSplitIndex, int count);
@@ -216,10 +217,10 @@ private:
 	void requestChatMessages(
 		int splitIndex,
 		int offsetId,
+		int offsetDate,
 		int addOffset,
 		int limit,
-		FnMut<void(MTPmessages_Messages&&)> done,
-		TimeId offsetDate = 0);
+		FnMut<void(MTPmessages_Messages&&)> done);
 	void startMessagesSlice(Data::MessagesSlice &&slice);
 	void resumeMessagesSlice();
 	void hydrateMessageDone(
