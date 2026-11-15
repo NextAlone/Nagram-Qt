@@ -5,7 +5,21 @@ on:
     branches:
       - nagram-next
       - main
+    # The guards read no documentation: a change to it alone runs nothing.
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - 'changelog.txt'
+      - 'LEGAL'
+      - 'LICENSE'
   pull_request:
+    # The guards read no documentation: a change to it alone runs nothing.
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - 'changelog.txt'
+      - 'LEGAL'
+      - 'LICENSE'
 
 permissions:
   contents: read
