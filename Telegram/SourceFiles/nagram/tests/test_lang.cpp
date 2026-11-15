@@ -229,7 +229,7 @@ int main() {
 			if (!english.contains("lng_nagram_app_icon_" + name)) {
 				throw std::runtime_error("App icon has no title: " + name);
 			}
-			for (const auto suffix : { ".png", "_dark.png" }) {
+			for (const auto suffix : { ".png", "_dark.png", "_flat.png" }) {
 				const auto path = root + "/../nagram/icons/" + name + suffix;
 				if (!std::ifstream(path).good()) {
 					throw std::runtime_error("Missing app icon: " + path);

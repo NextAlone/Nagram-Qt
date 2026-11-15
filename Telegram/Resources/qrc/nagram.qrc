@@ -5,13 +5,22 @@
   </qresource>
   <qresource prefix="/nagram/icons">
     <file alias="block.png">../nagram/icons/block.png</file>
+    <file alias="block_flat.png">../nagram/icons/block_flat.png</file>
     <file alias="block_black.png">../nagram/icons/block_black.png</file>
+    <file alias="block_black_flat.png">../nagram/icons/block_black_flat.png</file>
     <file alias="block_blue.png">../nagram/icons/block_blue.png</file>
+    <file alias="block_blue_flat.png">../nagram/icons/block_blue_flat.png</file>
     <file alias="block_niello.png">../nagram/icons/block_niello.png</file>
+    <file alias="block_niello_flat.png">../nagram/icons/block_niello_flat.png</file>
     <file alias="block_purple.png">../nagram/icons/block_purple.png</file>
+    <file alias="block_purple_flat.png">../nagram/icons/block_purple_flat.png</file>
     <file alias="classic.png">../nagram/icons/classic.png</file>
+    <file alias="classic_flat.png">../nagram/icons/classic_flat.png</file>
     <file alias="colorful.png">../nagram/icons/colorful.png</file>
+    <file alias="colorful_flat.png">../nagram/icons/colorful_flat.png</file>
     <file alias="cyan.png">../nagram/icons/cyan.png</file>
+    <file alias="cyan_flat.png">../nagram/icons/cyan_flat.png</file>
     <file alias="black.png">../nagram/icons/black.png</file>
+    <file alias="black_flat.png">../nagram/icons/black_flat.png</file>
   </qresource>
 </RCC>

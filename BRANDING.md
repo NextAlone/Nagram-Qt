@@ -21,6 +21,10 @@ is available, so the system renders it. The alternate icons offered in the
 settings are the Nagram iOS alternates, retained as `Nagram*.icon` next to it;
 `export_icons.py` renders their light and dark renditions into
 `Telegram/Resources/nagram/icons`. The same copyright applies to them.
+Windows and Linux use renditions without the lit glass rim around the icon
+body, keeping the layer gradients: the `_flat` alternates and the default
+application PNGs, Windows ICO and window logo in `Telegram/Resources/art`,
+all written by the same script.
 Required upstream and third-party notices remain unchanged.
 
 The macOS menu bar retains the upstream Telegram paper-plane glyph and unread

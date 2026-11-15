@@ -52,10 +52,15 @@ auto Generation = 0;
 		: tr::lng_nagram_app_icon_default(tr::now);
 }
 
+// macOS shows the Liquid Glass renditions, other systems the flat ones.
 [[nodiscard]] QImage Load(const QString &id, bool dark) {
 	return QImage(u":/nagram/icons/"_q
 		+ id
-		+ (dark ? u"_dark.png"_q : u".png"_q));
+		+ (dark
+			? u"_dark.png"_q
+			: Platform::IsMac()
+			? u".png"_q
+			: u"_flat.png"_q));
 }
 
 // The exported images fill the whole canvas, while macOS draws the image set
@@ -155,9 +160,14 @@ QString AppIconTitle(const QString &id) {
 }
 
 QImage AppIconPreview(const QString &id) {
-	return id.isEmpty()
-		? QImage(u":/gui/art/logo_256.png"_q)
-		: Load(id, false);
+	if (!id.isEmpty()) {
+		return Load(id, false);
+	}
+#ifdef Q_OS_MAC
+	return QImage(u":/gui/art/icon_round512@2x.png"_q);
+#else // Q_OS_MAC
+	return QImage(u":/gui/art/logo_256.png"_q);
+#endif // Q_OS_MAC
 }
 
 const QImage *CustomLogo() {
