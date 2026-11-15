@@ -259,7 +259,7 @@ jobs:
 
       - name: Post to the channels.
         if: steps.packages.outputs.chat != ''
-        uses: NextAlone/NagramActionRelated/channel-publish@2b74e4cd4e3c89fcc9d50095c039e467c674661f
+        uses: NextAlone/NagramActionRelated/channel-publish@f6be16850f0f7eddbc0fa3db6561bd3abde0a8ea
         with:
           bot-token: ${{ secrets.NAGRAM_CHANNEL_BOT_TOKEN }}
           api-id: ${{ secrets.NAGRAM_API_ID }}
@@ -273,12 +273,13 @@ jobs:
           notes-file: ${{ steps.packages.outputs.notes }}
           notes-en-file: ${{ steps.packages.outputs.notes_en }}
           # The notes name these sections the same way in every release;
-          # the list of the packages is replaced by the files themselves.
+          # the list of the packages is replaced by the files themselves, and
+          # how to install is no part of the quoted changelog.
           fold-sections: |
             上游
             安装
           drop-sections: 安装包
-          files-title: 下载
+          unquoted-sections: 安装
           folded-files-title: 其他安装包（便携版、Windows ARM64）
           files: |
             *-macos.dmg | macOS · Apple 芯片与 Intel
@@ -290,8 +291,7 @@ jobs:
             *-windows-arm64-setup.exe | Windows ARM64 · 安装程序 | folded
             *-windows-arm64.zip | Windows ARM64 · 便携版 | folded
           buttons: |
-            *GitHub Release=${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.TAG }}
-            问题反馈=https://t.me/OrIssuesBot | Assets={post}
+            *GitHub Release=${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.TAG }} | danger:问题反馈=https://t.me/OrIssuesBot | Assets={post}
 
   aur:
     name: AUR

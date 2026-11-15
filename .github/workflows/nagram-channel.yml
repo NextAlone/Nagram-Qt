@@ -93,7 +93,7 @@ jobs:
 
       - name: Post to the channel.
         if: steps.builds.outputs.version != ''
-        uses: NextAlone/NagramActionRelated/channel-publish@2b74e4cd4e3c89fcc9d50095c039e467c674661f
+        uses: NextAlone/NagramActionRelated/channel-publish@f6be16850f0f7eddbc0fa3db6561bd3abde0a8ea
         with:
           bot-token: ${{ secrets.NAGRAM_CHANNEL_BOT_TOKEN }}
           api-id: ${{ secrets.NAGRAM_API_ID }}
@@ -121,4 +121,4 @@ jobs:
             *-windows-arm64-setup.exe | Release · ARM64 安装程序 | folded
             *-windows-arm64.zip | Release · ARM64 便携版 | folded
             *-windows-arm64-debug.zip | Debug · ARM64 | folded
-          buttons: Commit=${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+          buttons: success:Commit=${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }} | danger:问题反馈=https://t.me/OrIssuesBot
