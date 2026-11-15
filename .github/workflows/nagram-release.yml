@@ -137,6 +137,7 @@ jobs:
           ls -l upload
           test -n "$(ls upload)"
 
+          # How to write the notes: docs/nagram/release-notes.md.
           NOTES="docs/nagram/releases/$TAG.md"
           test -f "$NOTES"
 
