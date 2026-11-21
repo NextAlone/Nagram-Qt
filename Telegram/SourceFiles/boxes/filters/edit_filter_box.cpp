@@ -876,10 +876,14 @@ void EditFilterBox(
 				p.setOpacity(1. - p.opacity());
 				p.setFont(st::normalFont);
 				p.setPen(st::windowSubTextFg);
+				const auto textRect = preview->rect().translated(-shift, 0)
+					- st::boxRowPadding;
 				p.drawText(
-					preview->rect().translated(-shift, 0) - st::boxRowPadding,
-					tr::lng_filters_tag_color_no(tr::now),
-					style::al_right);
+					textRect,
+					style::al_right,
+					st::normalFont->elided(
+						tr::lng_filters_tag_color_no(tr::now),
+						textRect.width()));
 			}
 		}, preview->lifetime());
 
@@ -893,7 +897,7 @@ void EditFilterBox(
 		};
 		const auto upperTitle = [=] {
 			auto value = state->title.current();
-			value.text = value.text.toUpper();
+			value.text = Ui::Text::Upper(value.text);
 			return value;
 		};
 		state->title.changes(

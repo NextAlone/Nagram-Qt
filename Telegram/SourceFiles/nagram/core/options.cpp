@@ -33,23 +33,6 @@
 #include <map>
 #include <memory>
 
-namespace Storage {
-
-template <>
-std::optional<QByteArray> Account::readPrefImpl<QByteArray>(
-		std::string_view key) {
-	return readPrefGeneric(key);
-}
-
-template <>
-void Account::writePrefImpl<QByteArray>(
-		std::string_view key,
-		QByteArray value) {
-	writePrefGeneric(key, value);
-}
-
-} // namespace Storage
-
 namespace Nagram {
 
 Options &ForDevice() {

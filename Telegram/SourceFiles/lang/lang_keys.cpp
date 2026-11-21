@@ -11,6 +11,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "lang/lang_file_parser.h"
 #include "ui/integration.h"
 #include "nagram/privacy/display.h"
+#include "ui/text/text_utilities.h"
 
 #include <QtCore/QLocale>
 
@@ -142,7 +143,9 @@ QString langDayOfMonthShort(const QDate &date) {
 	}
 	auto day = date.day();
 	return langDateMaybeWithYear(date, [&](int month, int year) {
-		return QLocale().toString(date, QLocale::ShortFormat);
+		return QLocale().toString(
+			date,
+			QLocale::ShortFormat).replace(QChar(' '), QChar(0x00A0));
 	}, [day](int month, int year) {
 		return tr::lng_month_day(
 			tr::now,
@@ -170,11 +173,13 @@ QString langMonthFull(const QDate &date) {
 			Nagram::Privacy::DateStyle::MonthFull)) {
 		return *persian;
 	}
-	return langDateMaybeWithYear(date, [](int month, int year) {
+	const auto text = langDateMaybeWithYear(date, [](int month, int year) {
 		return langMonthOfYearFull(month, year);
 	}, [](int month, int year) {
 		return Month(month)(tr::now);
 	});
+	// The month heads a section, even where months are lowercase.
+	return Ui::Text::Capitalized(text);
 }
 
 QString langDayOfWeek(int index) {

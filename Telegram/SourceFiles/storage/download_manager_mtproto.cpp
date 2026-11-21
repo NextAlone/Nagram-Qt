@@ -129,7 +129,7 @@ DownloadManagerMtproto::DownloadManagerMtproto(not_null<ApiWrap*> api)
 	}) | rpl::on_next([=](MTP::ShiftedDcId shiftedDcId) {
 		sessionTimedOut(
 			MTP::BareDcId(shiftedDcId),
-			MTP::GetDcIdShift(shiftedDcId));
+			MTP::GetDcIdShift(shiftedDcId) - MTP::kBaseDownloadDcShift);
 	}, _lifetime);
 }
 
