@@ -31,6 +31,9 @@ let
       runHook preInstall
 
       install -Dm755 Nagram $out/bin/Nagram
+      # The binary checks the hash of the helper next to it.
+      install -Dm755 TelegramHelpers/TelegramWidgetHelper \
+        $out/bin/TelegramHelpers/TelegramWidgetHelper
       cp -r share $out/share
 
       # Nix updates this copy, so the built-in updater is switched off.

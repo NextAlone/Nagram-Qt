@@ -72,7 +72,7 @@ namespace {
 		} else if (item->hasFailed()) {
 			status = tr::lng_sr_chat_failed(tr::now);
 			statusBeforeMessage = true;
-		} else if (item->unread(history)) {
+		} else if (history->chatListPreviewMessageUnread(item)) {
 			status = tr::lng_sr_message_not_seen(tr::now);
 			statusBeforeMessage = true;
 		} else {
@@ -257,8 +257,8 @@ QString RowAccessibilityName(
 
 	if (Nagram::Chats::HidePreview(false, peer->isSelf())) {
 		parts << Nagram::Chats::HiddenPreviewText(false);
-	} else if (history->chatListMessage()) {
-		const auto item = history->chatListMessage();
+	} else if (history->chatListPreviewMessage()) {
+		const auto item = history->chatListPreviewMessage();
 		parts += MessageTailParts(item, history, peer);
 	}
 
@@ -422,7 +422,7 @@ QString SubItemValue(
 		return {};
 	}
 	case SubItem::Sender: {
-		const auto chatItem = history->chatListMessage();
+		const auto chatItem = history->chatListPreviewMessage();
 		if (!chatItem || chatItem->isService() || chatItem->out()) {
 			return {};
 		}
@@ -437,7 +437,7 @@ QString SubItemValue(
 		if (Nagram::Chats::HidePreview(false, peer->isSelf())) {
 			return Nagram::Chats::HiddenPreviewText(false);
 		}
-		const auto chatItem = history->chatListMessage();
+		const auto chatItem = history->chatListPreviewMessage();
 		if (!chatItem || chatItem->isService()) {
 			return {};
 		}
@@ -453,7 +453,7 @@ QString SubItemValue(
 		return messageText;
 	}
 	case SubItem::Delivery: {
-		const auto chatItem = history->chatListMessage();
+		const auto chatItem = history->chatListPreviewMessage();
 		if (!chatItem || chatItem->isService()) {
 			return {};
 		}
@@ -462,7 +462,7 @@ QString SubItemValue(
 				return tr::lng_sr_chat_sending(tr::now);
 			} else if (chatItem->hasFailed()) {
 				return tr::lng_sr_chat_failed(tr::now);
-			} else if (chatItem->unread(history)) {
+			} else if (history->chatListPreviewMessageUnread(chatItem)) {
 				return tr::lng_sr_message_not_seen(tr::now);
 			} else {
 				return tr::lng_sr_message_seen(tr::now);
@@ -471,7 +471,7 @@ QString SubItemValue(
 		return tr::lng_sr_chat_received(tr::now);
 	}
 	case SubItem::Reactions: {
-		const auto chatItem = history->chatListMessage();
+		const auto chatItem = history->chatListPreviewMessage();
 		if (!chatItem || chatItem->isService()) {
 			return {};
 		}
@@ -497,7 +497,7 @@ QString SubItemValue(
 		return reactionParts.join(u", "_q);
 	}
 	case SubItem::Time: {
-		const auto chatItem = history->chatListMessage();
+		const auto chatItem = history->chatListPreviewMessage();
 		if (!chatItem || chatItem->isService()) {
 			return {};
 		}
@@ -557,7 +557,7 @@ QString SubItemValue(
 	case SubItem::Closed:
 		return {};
 	case SubItem::Forward: {
-		const auto chatItem = history->chatListMessage();
+		const auto chatItem = history->chatListPreviewMessage();
 		if (!chatItem || chatItem->isService()) {
 			return {};
 		}

@@ -416,19 +416,27 @@ jobs:
           NAGRAM_UPDATE_KEY: ${{ secrets.NAGRAM_UPDATE_KEY }}
         run: |
           set OUT=%TBUILD%\%REPO_NAME%\out\%BUILD_CONFIG%
+          set HELPER=%OUT%\modules\${{ matrix.arch }}\TelegramWidgetHelper.exe
           mkdir artifact
+          rem The portable archive: the client and the widget helper at the
+          rem path the client starts it from, nothing else of the build.
+          mkdir portable\modules\${{ matrix.arch }}
+          copy %OUT%\Nagram.exe portable\
+          if errorlevel 1 exit /b 1
+          copy %HELPER% portable\modules\${{ matrix.arch }}\
+          if errorlevel 1 exit /b 1
           if "%BUILD_CONFIG%"=="Release" (
-            powershell -Command "Compress-Archive -Path '%OUT%\Nagram.exe' -DestinationPath 'artifact\Nagram-windows-${{ matrix.arch }}.zip'"
+            powershell -Command "Compress-Archive -Path 'portable\*' -DestinationPath 'artifact\Nagram-windows-${{ matrix.arch }}.zip'"
             if errorlevel 1 exit /b 1
             if defined NAGRAM_UPDATE_KEY (
-              python %TBUILD%\%REPO_NAME%\tools\nagram\pack_update.py --packer %OUT%\Packer.exe --out artifact --app %OUT%\Nagram.exe --updater %OUT%\Updater.exe --target ${{ matrix.arch == 'arm64' && 'winarm' || 'win64' }} --ci-build %NAGRAM_CI_BUILD%
+              python %TBUILD%\%REPO_NAME%\tools\nagram\pack_update.py --packer %OUT%\Packer.exe --out artifact --app %OUT%\Nagram.exe --updater %OUT%\Updater.exe --helper %HELPER% --target ${{ matrix.arch == 'arm64' && 'winarm' || 'win64' }} --ci-build %NAGRAM_CI_BUILD%
               if errorlevel 1 exit /b 1
             ) else (
               echo ::warning::NAGRAM_UPDATE_KEY is not set: no update package, this build is not offered to installed copies.
             )
             echo ARTIFACT_NAME=release-windows-${{ matrix.arch }}>>%GITHUB_ENV%
           ) else (
-            powershell -Command "Compress-Archive -Path '%OUT%\Nagram.exe' -DestinationPath 'artifact\Nagram-windows-${{ matrix.arch }}-debug.zip'"
+            powershell -Command "Compress-Archive -Path 'portable\*' -DestinationPath 'artifact\Nagram-windows-${{ matrix.arch }}-debug.zip'"
             if errorlevel 1 exit /b 1
           )
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

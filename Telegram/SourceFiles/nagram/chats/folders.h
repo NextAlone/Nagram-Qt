@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base/unique_qptr.h"
+#include "ui/widgets/chat_filters_tabs_slider.h"
 
 namespace style {
 struct SettingsSlider;
@@ -34,9 +35,9 @@ void ResetFilterForFolder(not_null<Window::SessionController*> controller);
 [[nodiscard]] std::vector<Data::ChatFilter> FolderTabs(
 	std::vector<Data::ChatFilter> list,
 	bool main);
-[[nodiscard]] std::vector<const style::internal::Icon*> FolderTabIcons(
+[[nodiscard]] std::vector<Ui::ChatsFiltersTabs::SectionIcon> FolderTabIcons(
 	const std::vector<Data::ChatFilter> &tabs,
-	std::vector<const style::internal::Icon*> icons);
+	std::vector<Ui::ChatsFiltersTabs::SectionIcon> icons);
 [[nodiscard]] int ShownFolderTab(
 	not_null<Window::SessionController*> controller,
 	const std::vector<Data::ChatFilter> &tabs,

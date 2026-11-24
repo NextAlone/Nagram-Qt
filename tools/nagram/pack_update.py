@@ -3,7 +3,9 @@
 
 The updaters expect the upstream file names inside a package and rename them
 to the installed ones, so the files are staged as Telegram.app, Telegram.exe
-or Telegram, with Updater next to the last two. The package is signed with
+or Telegram, with Updater next to the last two and the widget helper where
+the client looks for it: modules/<arch>/TelegramWidgetHelper.exe on Windows,
+TelegramHelpers/TelegramWidgetHelper on Linux. The package is signed with
 the key in NAGRAM_UPDATE_KEY, which the manifest in
 Telegram/Resources/nagram/update must name for the channel of the release.
 
@@ -29,6 +31,9 @@ KEYS = Path("Telegram/Resources/nagram/update")
 KEY_VARIABLE = "NAGRAM_UPDATE_KEY"
 MAC_ARCHS = {"arm64": "arm", "x86_64": "x64"}
 WIN_TARGETS = {"win64": "x64", "winarm": "arm"}
+# The folder under modules/ that the Windows build puts the helper into.
+WIN_MODULES = {"win64": "x64", "winarm": "arm64"}
+LINUX_HELPER = "TelegramHelpers/TelegramWidgetHelper"
 # The client refuses larger packages: kMaxUncompressedSize, kMaxPayloadSize.
 MAX_UNPACKED = 1024 * 1024 * 1024
 MAX_PACKAGE = 256 * 1024 * 1024
@@ -50,7 +55,14 @@ def key_id(root, channel):
     return groups[0][0]
 
 
-def staged(stage, system, app, updater):
+def helper_path(system, target):
+    """Where the widget helper goes in a Windows or Linux package."""
+    if system == "win":
+        return f"modules/{WIN_MODULES[target]}/TelegramWidgetHelper.exe"
+    return LINUX_HELPER
+
+
+def staged(stage, system, app, updater, helper, target):
     """Copy the files under their upstream names; returns the -path arguments."""
     if system == "mac":
         if not (app / "Contents" / "MacOS").is_dir():
@@ -60,14 +72,18 @@ def staged(stage, system, app, updater):
     names = ("Telegram.exe", "Updater.exe") if system == "win" else ("Telegram", "Updater")
     if updater is None:
         raise PackError("--updater is required on this platform")
-    for source, name in zip((app, updater), names):
+    if helper is None:
+        raise PackError("--helper is required on this platform")
+    names = (*names, helper_path(system, target))
+    for source, name in zip((app, updater, helper), names):
         if not source.is_file():
             raise PackError(f"{source} is not a file")
+        (stage / name).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, stage / name)
-    return ["-path", names[0], "-path", names[1]]
+    return [argument for name in names for argument in ("-path", name)]
 
 
-def pack(root, packer, out, system, app, updater, arch, target, key, build=0):
+def pack(root, packer, out, system, app, updater, helper, arch, target, key, build=0):
     version, revision, channel = release_version.update_version(root)
     counter = release_version.update_counter(revision, build)
     if build:
@@ -87,7 +103,7 @@ def pack(root, packer, out, system, app, updater, arch, target, key, build=0):
     with tempfile.TemporaryDirectory() as temp:
         stage = Path(temp) / "stage"
         stage.mkdir()
-        paths = staged(stage, system, app, updater)
+        paths = staged(stage, system, app, updater, helper, target)
         unpacked = sum(path.stat().st_size for path in stage.rglob("*") if path.is_file())
         if unpacked >= MAX_UNPACKED:
             raise PackError(f"{unpacked} bytes to pack, the client takes less than {MAX_UNPACKED}")
@@ -115,6 +131,9 @@ def main(argv=None):
     parser.add_argument("--out", required=True, help="directory for the package")
     parser.add_argument("--app", required=True, help="Nagram Desktop.app, Nagram.exe or Nagram")
     parser.add_argument("--updater", help="the built Updater, on Windows and Linux")
+    parser.add_argument(
+        "--helper", help="the built TelegramWidgetHelper, unchanged since the build, on Windows and Linux"
+    )
     parser.add_argument("--arch", help="macOS: the architecture of the bundle")
     parser.add_argument("--target", help="Windows: win64 or winarm")
     parser.add_argument(
@@ -135,6 +154,7 @@ def main(argv=None):
             system,
             Path(args.app).resolve(),
             Path(args.updater).resolve() if args.updater else None,
+            Path(args.helper).resolve() if args.helper else None,
             args.arch,
             args.target,
             key,

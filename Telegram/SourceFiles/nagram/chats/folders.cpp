@@ -282,14 +282,14 @@ std::vector<Data::ChatFilter> FolderTabs(
 	return list;
 }
 
-std::vector<const style::internal::Icon*> FolderTabIcons(
+std::vector<Ui::ChatsFiltersTabs::SectionIcon> FolderTabIcons(
 		const std::vector<Data::ChatFilter> &tabs,
-		std::vector<const style::internal::Icon*> icons) {
+		std::vector<Ui::ChatsFiltersTabs::SectionIcon> icons) {
 	for (auto i = 0, count = int(tabs.size()); i != count; ++i) {
 		if (tabs[i].id() == kArchiveTabId) {
-			icons[i] = &st::nagramFoldersTabsArchive;
+			icons[i].fallback = &st::nagramFoldersTabsArchive;
 		} else if (tabs[i].id() == kSavedTabId) {
-			icons[i] = &st::nagramFoldersTabsSaved;
+			icons[i].fallback = &st::nagramFoldersTabsSaved;
 		}
 	}
 	return icons;

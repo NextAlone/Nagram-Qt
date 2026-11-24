@@ -39,6 +39,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/widgets/menu/menu_add_action_callback_factory.h"
 #include "ui/widgets/popup_menu.h"
 #include "ui/boxes/confirm_box.h"
+#include "ui/filter_title_icon.h"
 #include "ui/power_saving.h"
 #include "ui/screen_reader_mode.h"
 #include "ui/ui_utility.h"
@@ -406,17 +407,32 @@ void FiltersMenu::refresh() {
 		_session->setActiveChatsFilter(filters->displayList().front().id());
 	}
 	const auto &currentFilter = _session->activeChatsFilterCurrent();
+	using Mode = Ui::ChatsFiltersTabsMode;
+	const auto withIcons = (tabsMode() != Mode::TextOnly);
+	_titleIconsLifetime.destroy();
 	for (const auto &filter : filters->displayList()) {
 		const auto nextIsLocked = (now.size() >= premiumFrom);
 		if (nextIsLocked && (currentFilter == filter.id())) {
 			_session->setActiveChatsFilter(filters->displayList().front().id());
 		}
+		const auto title = filter.title();
+		const auto titleIcon = (withIcons && filter.id())
+			? Ui::ResolveFilterTitleIcon(
+				&_session->session(),
+				filter,
+				title,
+				&_outer,
+				_titleIconsLifetime,
+				[=] { refresh(); })
+			: Ui::FilterTitleIcon();
 		auto button = prepareButton(
 			_list,
 			filter.id(),
-			filter.title(),
+			title,
 			Ui::ComputeFilterIcon(filter),
-			nextIsLocked);
+			nextIsLocked,
+			false,
+			&titleIcon);
 		now.emplace(filter.id(), std::move(button));
 	}
 	_filters = std::move(now);
@@ -571,7 +587,8 @@ base::unique_qptr<Ui::SideBarButton> FiltersMenu::prepareButton(
 		Data::ChatFilterTitle title,
 		Ui::FilterIcon icon,
 		bool locked,
-		bool toBeginning) {
+		bool toBeginning,
+		const Ui::FilterTitleIcon *titleIcon) {
 	const auto isStatic = title.isStatic;
 	const auto paused = [=] {
 		return On(PowerSaving::kEmojiChat)
@@ -586,7 +603,11 @@ base::unique_qptr<Ui::SideBarButton> FiltersMenu::prepareButton(
 	const auto mode = tabsMode();
 	auto prepared = object_ptr<Ui::SideBarButton>(
 		container,
-		id ? title.text : TextWithEntities{ tr::lng_filters_all(tr::now) },
+		!id
+			? tr::marked(tr::lng_filters_all(tr::now))
+			: titleIcon
+			? Ui::FilterTitleWithoutIcon(title.text, *titleIcon)
+			: title.text,
 		buttonStyle(),
 		Core::TextContext({
 			.session = &_session->session(),
@@ -609,6 +630,14 @@ base::unique_qptr<Ui::SideBarButton> FiltersMenu::prepareButton(
 		? icon
 		: Ui::FilterIcon::All);
 	raw->setIconOverride(icons.normal, icons.active);
+	if (titleIcon && titleIcon->document) {
+		raw->setIconPainter(
+			Ui::MakeFilterEmojiIcon(
+				raw,
+				*titleIcon,
+				isStatic,
+				paused));
+	}
 	if (id >= 0) {
 		if (locked) {
 			// Surface a locked folder's premium-gated status and what pressing

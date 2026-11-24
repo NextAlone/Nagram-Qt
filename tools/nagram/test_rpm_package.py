@@ -29,7 +29,14 @@ class RpmPackageTest(unittest.TestCase):
         (self.root / release_version.UPSTREAM).write_text("AppVersionStr      7.4.1\n")
         self.release("beta")
         self.app = self.dir / "package" / "Nagram"
-        for path in ("Nagram", "Updater", "share/applications/app.desktop", f"share/{ICON}"):
+        files = (
+            "Nagram",
+            "Updater",
+            "TelegramHelpers/TelegramWidgetHelper",
+            "share/applications/app.desktop",
+            f"share/{ICON}",
+        )
+        for path in files:
             (self.app / path).parent.mkdir(parents=True, exist_ok=True)
             (self.app / path).write_text(path)
         self.out = self.dir / "out"
@@ -65,6 +72,8 @@ class RpmPackageTest(unittest.TestCase):
             [line for line in files if line],
             [
                 "/usr/bin/Nagram",
+                "%dir /usr/bin/TelegramHelpers",
+                "/usr/bin/TelegramHelpers/TelegramWidgetHelper",
                 "%dir /usr/share/NagramDesktop",
                 "%dir /usr/share/NagramDesktop/externalupdater.d",
                 "/usr/share/NagramDesktop/externalupdater.d/nagram-desktop.conf",
@@ -103,6 +112,7 @@ class RpmPackageTest(unittest.TestCase):
         )
         self.assertIn(f"/usr/share/{ICON}\n", listing.stdout)
         self.assertIn(rpm.MARKER + "\n", listing.stdout)
+        self.assertIn("/usr/bin/TelegramHelpers/TelegramWidgetHelper\n", listing.stdout)
 
 
 if __name__ == "__main__":

@@ -2,6 +2,9 @@
 """Lay out the Linux release directory: the application and its desktop files.
 
   Nagram/Nagram, Nagram/Updater   run from anywhere and update themselves
+  Nagram/TelegramHelpers/TelegramWidgetHelper
+                                  the widget helper, at the path the binary
+                                  was built with; the binary checks its hash
   Nagram/share/...                what a package installs under /usr/share
 
 The share tree is built from the install() rules of Telegram/CMakeLists.txt,
@@ -24,6 +27,7 @@ RULE = re.compile(
 )
 CONFIGURED = "${CMAKE_CURRENT_BINARY_DIR}/"
 BINDIR = "@CMAKE_INSTALL_FULL_BINDIR@"
+HELPER = Path("TelegramHelpers/TelegramWidgetHelper")
 
 
 class TreeError(Exception):
@@ -51,12 +55,12 @@ def rules(root):
     return result
 
 
-def build(root, binary, updater, out, bindir):
+def build(root, binary, updater, helper, out, bindir):
     app = out / "Nagram"
     if app.exists():
         raise TreeError(f"{app} already exists")
     files = rules(root)
-    for source in (binary, updater, *(path for path, _, _ in files)):
+    for source in (binary, updater, helper, *(path for path, _, _ in files)):
         if not source.is_file():
             raise TreeError(f"{source} is not a file")
     filled = {}
@@ -66,7 +70,8 @@ def build(root, binary, updater, out, bindir):
             if re.search(r"@\w+@", filled[source]):
                 raise TreeError(f"{source} has a placeholder this script does not fill")
     app.mkdir(parents=True)
-    for source, name in ((binary, "Nagram"), (updater, "Updater")):
+    (app / HELPER.parent).mkdir()
+    for source, name in ((binary, "Nagram"), (updater, "Updater"), (helper, HELPER)):
         shutil.copyfile(source, app / name)
         (app / name).chmod(0o755)
     for source, target, configured in files:
@@ -84,6 +89,9 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--binary", required=True, help="the built Nagram")
     parser.add_argument("--updater", required=True, help="the built Updater")
+    parser.add_argument(
+        "--helper", required=True, help="the built TelegramWidgetHelper, unchanged since the build"
+    )
     parser.add_argument("--out", required=True, help="directory that receives Nagram/")
     parser.add_argument("--bindir", default="/usr/bin", help="where a package puts the binary")
     parser.add_argument("--root", default=ROOT)
@@ -93,6 +101,7 @@ def main(argv=None):
             Path(args.root).resolve(),
             Path(args.binary),
             Path(args.updater),
+            Path(args.helper),
             Path(args.out),
             args.bindir,
         )

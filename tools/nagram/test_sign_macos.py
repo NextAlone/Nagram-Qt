@@ -22,6 +22,12 @@ case "$tool $1 $2" in
   "xcrun notarytool submit") cat "$here/notary.json" ;;
 esac
 """
+# Stands in for Telegram/build/sign_mac.py, which runs codesign itself.
+FAKE_SIGN_MAC = """import sys
+from pathlib import Path
+with open(Path(__file__).parent / "calls.txt", "a") as calls:
+    calls.write(" ".join(["sign_mac", *sys.argv[1:]]) + "\\n")
+"""
 IDENTITY = "0123456789ABCDEF0123456789ABCDEF01234567"
 CERTIFICATE = {
     "NAGRAM_MACOS_CERTIFICATE": base64.b64encode(b"certificate bytes").decode(),
@@ -52,6 +58,7 @@ class SignMacosTest(unittest.TestCase):
             path = self.bin / tool
             path.write_text(FAKE)
             path.chmod(path.stat().st_mode | stat.S_IXUSR)
+        (self.bin / "sign_mac.py").write_text(FAKE_SIGN_MAC)
         self.identities(f'  1) {IDENTITY} "Developer ID Application: Someone (TEAM123456)"')
         self.notary("Accepted")
         self.app = self.dir / "Nagram.app"
@@ -79,6 +86,7 @@ class SignMacosTest(unittest.TestCase):
     def sign(self, secrets, arguments=None):
         environment = {key: value for key, value in os.environ.items() if key not in NAMES}
         environment["PATH"] = f"{self.bin}{os.pathsep}{environment['PATH']}"
+        environment["NAGRAM_SIGN_MAC"] = str(self.bin / "sign_mac.py")
         if arguments is None:
             arguments = [str(self.app), str(self.entitlements)]
         return subprocess.run(
@@ -98,7 +106,7 @@ class SignMacosTest(unittest.TestCase):
         result = self.sign({})
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("::warning::", result.stdout)
-        self.assertEqual(self.calls(), [f"codesign --force --deep --sign - {self.app}"])
+        self.assertEqual(self.calls(), [f"sign_mac --identity - {self.app}"])
 
     def test_a_partial_set_of_secrets_is_an_error(self):
         result = self.sign({**API_KEY, "NAGRAM_MACOS_CERTIFICATE": "Y2VydA=="})
@@ -125,25 +133,20 @@ class SignMacosTest(unittest.TestCase):
         self.assertEqual(len(self.calls("xcrun stapler staple")), 1)
         self.assertNotIn("app-specific-password", result.stdout + result.stderr)
 
-    def test_signs_nested_code_first_then_notarizes_and_staples(self):
+    def test_signs_the_bundle_through_sign_mac_then_notarizes_and_staples(self):
         result = self.sign(SECRETS)
         self.assertEqual(result.returncode, 0, result.stderr)
-        signed = [line for line in self.calls("codesign") if " --sign " in line]
-        frameworks = self.app / "Contents" / "Frameworks"
-        self.assertEqual(
-            [line.split()[-1] for line in signed],
-            [str(frameworks / "libswiftCore.dylib"), str(frameworks / "Updater"), str(self.app)],
-        )
-        for line in signed:
-            self.assertIn("--force --timestamp --options runtime", line)
-            self.assertIn(f"--sign {IDENTITY}", line)
-        self.assertNotIn("--entitlements", signed[0] + signed[1])
-        self.assertIn(f"--entitlements {self.entitlements} {self.app}", signed[2])
+        (signed,) = self.calls("sign_mac")
+        self.assertTrue(signed.startswith(
+            f"sign_mac --identity {IDENTITY} --entitlements {self.entitlements}"
+            " --timestamp --runtime --keychain "), signed)
+        self.assertTrue(signed.endswith(f"nagram-signing.keychain-db {self.app}"), signed)
+        self.assertEqual([line for line in self.calls("codesign") if " --sign " in line], [])
         calls = self.calls()
         steps = (
             "security create-keychain",
             "security import",
-            "codesign --force --timestamp",
+            "sign_mac --identity",
             "codesign --verify --deep --strict",
             "ditto -c -k --keepParent",
             "xcrun notarytool submit",

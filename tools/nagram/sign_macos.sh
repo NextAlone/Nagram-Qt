@@ -9,7 +9,9 @@
 # stapled; the image is signed, notarized and stapled the same way. With none
 # of the variables the bundle is signed ad hoc, which Gatekeeper refuses until
 # the user allows the app, and the image is left as it is. A partial set is an
-# error.
+# error. The bundle goes through Telegram/build/sign_mac.py, which keeps the
+# identity of the widget helper that the client checks before starting it;
+# NAGRAM_SIGN_MAC names another copy of that script.
 #   NAGRAM_MACOS_CERTIFICATE           base64 of the Developer ID Application .p12
 #   NAGRAM_MACOS_CERTIFICATE_PASSWORD  the password of that .p12
 # Notary credentials, either an App Store Connect team API key:
@@ -35,6 +37,8 @@ else
 	exit 2
 fi
 
+sign_mac=${NAGRAM_SIGN_MAC:-$(cd "$(dirname "$0")/../../Telegram/build" && pwd)/sign_mac.py}
+
 certificate=(NAGRAM_MACOS_CERTIFICATE NAGRAM_MACOS_CERTIFICATE_PASSWORD)
 api_key=(NAGRAM_NOTARY_KEY NAGRAM_NOTARY_KEY_ID NAGRAM_NOTARY_ISSUER_ID)
 apple_id=(NAGRAM_NOTARY_APPLE_ID NAGRAM_NOTARY_PASSWORD NAGRAM_NOTARY_TEAM_ID)
@@ -55,7 +59,7 @@ if [ "$no_certificate$no_api_key$no_apple_id" = "$every" ]; then
 		echo "::warning::No Developer ID secrets: the disk image is not signed and not notarized."
 	else
 		echo "::warning::No Developer ID secrets: Nagram Desktop.app is signed ad hoc and not notarized."
-		codesign --force --deep --sign - "$app"
+		python3 "$sign_mac" --identity - "$app"
 	fi
 	exit 0
 elif [ -n "$no_certificate" ]; then
@@ -110,11 +114,6 @@ else
 		--team-id "$NAGRAM_NOTARY_TEAM_ID")
 fi
 
-sign() {
-	codesign --force --timestamp --options runtime \
-		--keychain "$keychain" --sign "$identity" "$@"
-}
-
 # Submits the file to the notary service and waits for its verdict.
 notarize() {
 	xcrun notarytool submit "$1" "${notary[@]}" \
@@ -140,14 +139,10 @@ if [ -n "$image" ]; then
 	xcrun stapler validate "$image"
 	spctl --assess --type open --context context:primary-signature --verbose=2 "$image"
 else
-	# Nested code is signed before the bundle that seals it.
-	if [ -d "$app/Contents/Frameworks" ]; then
-		while IFS= read -r nested; do
-			sign "$nested"
-		done < <(find "$app/Contents/Frameworks" -type f \
-			\( -name '*.dylib' -o -perm -100 \) | sort -r)
-	fi
-	sign --entitlements "$entitlements" "$app"
+	# Nested code is signed before the bundle that seals it, the widget
+	# helper with its own entitlements.
+	python3 "$sign_mac" --identity "$identity" --entitlements "$entitlements" \
+		--timestamp --runtime --keychain "$keychain" "$app"
 	codesign --verify --deep --strict --verbose=2 "$app"
 
 	ditto -c -k --keepParent "$app" "$work/notarize.zip"

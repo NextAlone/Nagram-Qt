@@ -64,6 +64,8 @@ class PackUpdateTest(unittest.TestCase):
         self.binary.write_text("binary")
         self.updater = self.dir / "Updater"
         self.updater.write_text("updater")
+        self.helper = self.dir / "TelegramWidgetHelper"
+        self.helper.write_text("helper")
 
     def tearDown(self):
         self._temp.cleanup()
@@ -79,14 +81,18 @@ class PackUpdateTest(unittest.TestCase):
         (keys / "manifest.min.json").write_text(json.dumps({"channels": channels}))
 
     def run_pack(
-        self, system, output, app=None, updater=None, arch=None, target=None, code=0, build=0
+        self, system, output, app=None, updater=None, arch=None, target=None, code=0, build=0,
+        helper=True,
     ):
+        if helper is True:
+            helper = None if system == "mac" else self.helper
         environment = {"FAKE_RECORD": str(self.record), "FAKE_EXIT": str(code)}
         if output:
             environment["FAKE_OUTPUT"] = output
         with mock.patch.dict(os.environ, environment):
             return pack.pack(
-                self.root, self.packer, self.out, system, app, updater, arch, target, KEY, build
+                self.root, self.packer, self.out, system, app, updater, helper, arch, target, KEY,
+                build,
             )
 
     def recorded(self):
@@ -113,24 +119,30 @@ class PackUpdateTest(unittest.TestCase):
         self.assertEqual((record["key"], record["key_mode"]), (KEY + "\n", "0o600"))
         self.assertFalse(Path(arguments[13]).exists())
 
-    def test_packs_the_binary_and_the_updater_on_the_other_platforms(self):
+    def test_packs_the_binary_the_updater_and_the_helper_on_the_other_platforms(self):
         self.release(4, "stable")
         package = self.run_pack(
             "win", "td-update-win-arm-7002010", self.binary, self.updater, target="winarm"
         )
         self.assertEqual(package.name, "td-update-win-arm-7002010")
         record = self.recorded()
-        self.assertEqual(record["files"], ["Telegram.exe", "Updater.exe"])
+        helper = "modules/arm64/TelegramWidgetHelper.exe"
+        self.assertEqual(record["files"], ["Telegram.exe", "Updater.exe", helper])
         self.assertEqual(
-            record["arguments"][:6],
-            ["-path", "Telegram.exe", "-path", "Updater.exe", "-target", "winarm"],
+            record["arguments"][:8],
+            ["-path", "Telegram.exe", "-path", "Updater.exe", "-path", helper, "-target", "winarm"],
         )
+        self.run_pack("win", "td-update-win-x64-7002010", self.binary, self.updater, target="win64")
+        self.assertIn("modules/x64/TelegramWidgetHelper.exe", self.recorded()["files"])
         package = self.run_pack("linux", "td-update-linux-x64-7002010", self.binary, self.updater)
         self.assertEqual(package.name, "td-update-linux-x64-7002010")
         record = self.recorded()
-        self.assertEqual(record["files"], ["Telegram", "Updater"])
+        helper = "TelegramHelpers/TelegramWidgetHelper"
+        self.assertEqual(record["files"], ["Telegram", helper, "Updater"])
         self.assertEqual(
-            record["arguments"][4:8], ["-version", "7002010", "-counter", str(4 << 22)]
+            record["arguments"][:10],
+            ["-path", "Telegram", "-path", "Updater", "-path", helper,
+             "-version", "7002010", "-counter", str(4 << 22)],
         )
 
     def test_packs_a_build_of_the_default_branch_for_its_own_channel(self):
@@ -140,7 +152,7 @@ class PackUpdateTest(unittest.TestCase):
         self.assertEqual(package, self.out / name)
         arguments = self.recorded()["arguments"]
         self.assertEqual(
-            arguments[4:10],
+            arguments[6:12],
             ["-version", "7002010", "-counter", str(counter), "-channel", "canary-public"],
         )
         self.assertEqual(arguments[-2:], ["-local-key-id", "ci-a"])
@@ -172,6 +184,9 @@ class PackUpdateTest(unittest.TestCase):
             dict(system="win", app=self.binary, updater=self.updater, target="win32"),
             dict(system="linux", app=self.binary),
             dict(system="linux", app=self.dir / "missing", updater=self.updater),
+            dict(system="linux", app=self.binary, updater=self.updater, helper=None),
+            dict(system="win", app=self.binary, updater=self.updater, target="win64", helper=None),
+            dict(system="linux", app=self.binary, updater=self.updater, helper=self.dir / "none"),
         )
         for case in cases:
             with self.assertRaises(pack.PackError, msg=str(case)):
