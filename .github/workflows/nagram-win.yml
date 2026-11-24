@@ -80,7 +80,6 @@ jobs:
         # the Channel job posts together; a release asks for Release alone.
         config: ${{ fromJSON(inputs.config && format('["{0}"]', inputs.config) || github.event_name == 'push' && github.ref_name == github.event.repository.default_branch && '["Debug","Release"]' || '["Debug"]') }}
         arch: ${{ fromJSON(inputs.archs || '["x64","arm64"]') }}
-        qt: [qt6]
         generator: [""]
 
     env:
@@ -262,12 +261,12 @@ jobs:
           path: |
             ${{ env.LibrariesPath }}\[qQ]t[_-]*
             ${{ env.LibrariesPath }}\cache_keys\[qQ]t[_-]*
-          key: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}-v2-${{ env.CACHE_KEY }}
-          restore-keys: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}-v2-
+          key: ${{ runner.OS }}-${{ matrix.arch }}-qt-v2-${{ env.CACHE_KEY }}
+          restore-keys: ${{ runner.OS }}-${{ matrix.arch }}-qt-v2-
 
       - name: Libraries.
         run: |
-          %TBUILD%\%REPO_NAME%\Telegram\build\prepare\win.bat silent ${{ matrix.qt }}
+          %TBUILD%\%REPO_NAME%\Telegram\build\prepare\win.bat silent
 
       # Before the caches are saved, so they hold only what the build needs.
       # tdesktop_rust/out/src/wallet_engine holds the generated
@@ -309,7 +308,7 @@ jobs:
           path: |
             ${{ env.LibrariesPath }}\[qQ]t[_-]*
             ${{ env.LibrariesPath }}\cache_keys\[qQ]t[_-]*
-          key: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}-v2-${{ env.CACHE_KEY }}
+          key: ${{ runner.OS }}-${{ matrix.arch }}-qt-v2-${{ env.CACHE_KEY }}
 
       # Old caches would push the libraries out of the repository quota.
       - name: Drop superseded caches.
@@ -320,7 +319,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           THIRD_PARTY_KEY: ${{ runner.OS }}-${{ runner.arch }}-third-party-${{ env.CACHE_KEY }}
           LIBS_KEY: ${{ runner.OS }}-${{ matrix.arch }}-libs-v4-${{ env.CACHE_KEY }}
-          QT_KEY: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}-v2-${{ env.CACHE_KEY }}
+          QT_KEY: ${{ runner.OS }}-${{ matrix.arch }}-qt-v2-${{ env.CACHE_KEY }}
         run: |
           bash "$TBUILD/$REPO_NAME/tools/nagram/drop_superseded_caches.sh" \
             "$THIRD_PARTY_KEY" "$LIBS_KEY" "$QT_KEY"
@@ -341,10 +340,6 @@ jobs:
             esac
             echo "Architecture from matrix: $ARCH"
             ARTIFACT_NAME="${ARTIFACT_NAME} ${{ matrix.arch }}"
-          fi
-
-          if [ -n "${{ matrix.qt }}" ]; then
-            ARTIFACT_NAME="${ARTIFACT_NAME} ${{ matrix.qt }}"
           fi
 
           GENERATOR=""
@@ -390,7 +385,6 @@ jobs:
           call configure.bat ^
           %TDESKTOP_BUILD_GENERATOR% ^
           %TDESKTOP_BUILD_ARCH% ^
-          ${{ matrix.qt }} ^
           %TDESKTOP_BUILD_API% ^
           -D CMAKE_CONFIGURATION_TYPES=%BUILD_CONFIG% ^
           -D DESKTOP_APP_TEST_APPS=ON ^
