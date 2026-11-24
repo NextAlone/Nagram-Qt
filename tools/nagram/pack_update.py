@@ -5,7 +5,7 @@ The updaters expect the upstream file names inside a package and rename them
 to the installed ones, so the files are staged as Telegram.app, Telegram.exe
 or Telegram, with Updater next to the last two and the widget helper where
 the client looks for it: modules/<arch>/TelegramWidgetHelper.exe on Windows,
-TelegramHelpers/TelegramWidgetHelper on Linux. The package is signed with
+TelegramDesktop/TelegramWidgetHelper on Linux. The package is signed with
 the key in NAGRAM_UPDATE_KEY, which the manifest in
 Telegram/Resources/nagram/update must name for the channel of the release.
 
@@ -33,7 +33,7 @@ MAC_ARCHS = {"arm64": "arm", "x86_64": "x64"}
 WIN_TARGETS = {"win64": "x64", "winarm": "arm"}
 # The folder under modules/ that the Windows build puts the helper into.
 WIN_MODULES = {"win64": "x64", "winarm": "arm64"}
-LINUX_HELPER = "TelegramHelpers/TelegramWidgetHelper"
+LINUX_HELPER = "TelegramDesktop/TelegramWidgetHelper"
 # The client refuses larger packages: kMaxUncompressedSize, kMaxPayloadSize.
 MAX_UNPACKED = 1024 * 1024 * 1024
 MAX_PACKAGE = 256 * 1024 * 1024
@@ -132,7 +132,7 @@ def main(argv=None):
     parser.add_argument("--app", required=True, help="Nagram Desktop.app, Nagram.exe or Nagram")
     parser.add_argument("--updater", help="the built Updater, on Windows and Linux")
     parser.add_argument(
-        "--helper", help="the built TelegramWidgetHelper, unchanged since the build, on Windows and Linux"
+        "--helper", help="the built TelegramWidgetHelper, on Windows and Linux"
     )
     parser.add_argument("--arch", help="macOS: the architecture of the bundle")
     parser.add_argument("--target", help="Windows: win64 or winarm")

@@ -63,7 +63,7 @@ class LinuxTreeTest(unittest.TestCase):
         app = tree.build(tree.ROOT, self.binary, self.updater, self.helper, self.out, "/usr/bin")
         self.assertEqual(app, self.out / "Nagram")
         files = self.files(app)
-        self.assertEqual(files[:3], ["Nagram", "TelegramHelpers/TelegramWidgetHelper", "Updater"])
+        self.assertEqual(files[:3], ["Nagram", "TelegramDesktop/TelegramWidgetHelper", "Updater"])
         self.assertIn(f"share/applications/{ID}.desktop", files)
         self.assertIn(f"share/metainfo/{ID}.metainfo.xml", files)
         self.assertIn(f"share/icons/hicolor/256x256/apps/{ID}.png", files)
@@ -72,7 +72,7 @@ class LinuxTreeTest(unittest.TestCase):
         self.assertEqual(len([name for name in files if name.endswith(f"/{ID}.png")]), 14)
         service = (app / "share" / "dbus-1" / "services" / f"{ID}.service").read_text()
         self.assertIn("Exec=/usr/bin/Nagram\n", service)
-        for name in ("Nagram", "Updater", "TelegramHelpers/TelegramWidgetHelper"):
+        for name in ("Nagram", "Updater", "TelegramDesktop/TelegramWidgetHelper"):
             self.assertEqual(stat.S_IMODE((app / name).stat().st_mode), 0o755)
         desktop = app / "share" / "applications" / f"{ID}.desktop"
         self.assertEqual(stat.S_IMODE(desktop.stat().st_mode), 0o644)
@@ -85,7 +85,7 @@ class LinuxTreeTest(unittest.TestCase):
             self.files(app),
             [
                 "Nagram",
-                "TelegramHelpers/TelegramWidgetHelper",
+                "TelegramDesktop/TelegramWidgetHelper",
                 "Updater",
                 "share/applications/app.desktop",
                 "share/dbus-1/services/app.service",

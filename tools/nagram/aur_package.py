@@ -4,7 +4,7 @@
 Writes PKGBUILD and .SRCINFO from the one description below, so the two
 cannot disagree. The package installs the release archive as it is: the
 binary to /usr/bin/Nagram, its widget helper to
-/usr/bin/TelegramHelpers, Nagram/share to /usr/share, and a marker that
+/usr/bin/TelegramDesktop, Nagram/share to /usr/share, and a marker that
 switches the built-in updater off, since pacman updates the package.
 
 With --beta it writes nagram-desktop-beta-bin instead, which follows every
@@ -65,9 +65,9 @@ BETA_TAG_VERSION = "${pkgver/beta/-beta}"
 PACKAGE = """\
 package() {
 	install -Dm755 Nagram/Nagram "$pkgdir/usr/bin/Nagram"
-	# The binary checks the hash of the helper next to it.
-	install -Dm755 Nagram/TelegramHelpers/TelegramWidgetHelper \
-		"$pkgdir/usr/bin/TelegramHelpers/TelegramWidgetHelper"
+	# The binary starts the widget helper from TelegramDesktop/ beside it.
+	install -Dm755 Nagram/TelegramDesktop/TelegramWidgetHelper \
+		"$pkgdir/usr/bin/TelegramDesktop/TelegramWidgetHelper"
 	install -d "$pkgdir/usr/share"
 	cp -r --no-preserve=ownership Nagram/share/. "$pkgdir/usr/share/"
 

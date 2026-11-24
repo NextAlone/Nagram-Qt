@@ -137,7 +137,7 @@ class PackUpdateTest(unittest.TestCase):
         package = self.run_pack("linux", "td-update-linux-x64-7002010", self.binary, self.updater)
         self.assertEqual(package.name, "td-update-linux-x64-7002010")
         record = self.recorded()
-        helper = "TelegramHelpers/TelegramWidgetHelper"
+        helper = "TelegramDesktop/TelegramWidgetHelper"
         self.assertEqual(record["files"], ["Telegram", helper, "Updater"])
         self.assertEqual(
             record["arguments"][:10],

@@ -2,9 +2,9 @@
 """Lay out the Linux release directory: the application and its desktop files.
 
   Nagram/Nagram, Nagram/Updater   run from anywhere and update themselves
-  Nagram/TelegramHelpers/TelegramWidgetHelper
+  Nagram/TelegramDesktop/TelegramWidgetHelper
                                   the widget helper, at the path the binary
-                                  was built with; the binary checks its hash
+                                  was built with (CMAKE_INSTALL_LIBEXECDIR=bin)
   Nagram/share/...                what a package installs under /usr/share
 
 The share tree is built from the install() rules of Telegram/CMakeLists.txt,
@@ -27,7 +27,7 @@ RULE = re.compile(
 )
 CONFIGURED = "${CMAKE_CURRENT_BINARY_DIR}/"
 BINDIR = "@CMAKE_INSTALL_FULL_BINDIR@"
-HELPER = Path("TelegramHelpers/TelegramWidgetHelper")
+HELPER = Path("TelegramDesktop/TelegramWidgetHelper")
 
 
 class TreeError(Exception):
@@ -90,7 +90,7 @@ def main(argv=None):
     parser.add_argument("--binary", required=True, help="the built Nagram")
     parser.add_argument("--updater", required=True, help="the built Updater")
     parser.add_argument(
-        "--helper", required=True, help="the built TelegramWidgetHelper, unchanged since the build"
+        "--helper", required=True, help="the built TelegramWidgetHelper"
     )
     parser.add_argument("--out", required=True, help="directory that receives Nagram/")
     parser.add_argument("--bindir", default="/usr/bin", help="where a package puts the binary")
