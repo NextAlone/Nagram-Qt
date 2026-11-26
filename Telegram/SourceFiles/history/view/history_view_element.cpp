@@ -1603,7 +1603,8 @@ bool Element::hidesBottomInfo() const {
 }
 
 ReplyKeyboard *Element::inlineReplyKeyboard() const {
-	return (_context == Context::MediaEditor)
+	return ((_context == Context::MediaEditor)
+		|| (_flags & Flag::FilterHidden))
 		? nullptr
 		: _data->inlineReplyKeyboard();
 }
@@ -1726,10 +1727,11 @@ void Element::refreshMedia(Element *replacing) {
 	if (_flags & Flag::MediaOverriden) {
 		return;
 	}
-	_flags &= ~Flag::HiddenByGroup;
+	_flags &= ~(Flag::HiddenByGroup | Flag::FilterHidden);
 
 	const auto item = data();
 	if (Nagram::Filters::Hidden(item)) {
+		_flags |= Flag::FilterHidden;
 		_media = nullptr;
 		return;
 	}

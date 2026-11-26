@@ -6652,7 +6652,7 @@ Ui::BubbleRounding Message::countMessageRounding() const {
 	const auto media = smallBottom ? nullptr : this->media();
 	const auto rich = smallBottom ? nullptr : richpage();
 	const auto item = data();
-	const auto keyboard = item->inlineReplyKeyboard();
+	const auto keyboard = inlineReplyKeyboard();
 	const auto richMediaAtBottom = [&] {
 		using Block = Iv::Markdown::MarkdownArticleEdgeBlock;
 		const auto edges = countRichPageBubbleEdges();

@@ -458,6 +458,7 @@ public:
 		MediaOverriden           = 0x0800,
 		HeavyCustomEmoji         = 0x1000,
 		SummaryShown             = 0x2000,
+		FilterHidden             = 0x4000,
 	};
 	using Flags = base::flags<Flag>;
 	friend inline constexpr auto is_flag_type(Flag) { return true; }
