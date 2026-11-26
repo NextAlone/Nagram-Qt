@@ -512,9 +512,6 @@ ChatWidget::ChatWidget(
 	) | rpl::on_next([=] {
 		confirmForwardSelected();
 	}, _topBar->lifetime());
-	_topBar->nagramSelection()->setSource( // MARK: NAGRAM
-		_inner,
-		crl::guard(this, [=] { clearSelected(); }));
 	_topBar->clearSelectionRequest(
 	) | rpl::on_next([=] {
 		clearSelected();
@@ -546,6 +543,9 @@ ChatWidget::ChatWidget(
 		&controller->session(),
 		static_cast<ListDelegate*>(this)));
 	_inner->lower();
+	_topBar->nagramSelection()->setSource( // MARK: NAGRAM
+		_inner,
+		crl::guard(this, [=] { clearSelected(); }));
 	_topControls = std::make_unique<TopControls>(
 		this,
 		TopControlsDescriptor{
