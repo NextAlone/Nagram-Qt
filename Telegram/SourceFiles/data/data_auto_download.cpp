@@ -7,11 +7,11 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "data/data_auto_download.h"
 
+#include "data/data_document.h"
 #include "nagram/media/extras.h"
 
 #include "data/data_peer.h"
 #include "data/data_photo.h"
-#include "data/data_document.h"
 
 #include <QtCore/QBuffer>
 

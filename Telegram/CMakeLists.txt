@@ -76,8 +76,11 @@ if (DESKTOP_APP_TEST_APPS OR TDESKTOP_BUILD_UPDATE_TESTS)
         endif()
     endif()
 endif()
+include(cmake/test_core_settings.cmake)
+include(cmake/test_export_formats.cmake)
 include(cmake/test_iv_editor_state.cmake)
 include(cmake/test_iv_editor_table_grid.cmake)
+include(cmake/test_text_contracts.cmake)
 include(cmake/test_wallet_card_tint.cmake)
 include(cmake/test_wallet_phrase_shares.cmake)
 
@@ -644,6 +647,7 @@ PRIVATE
     core/crash_report_window.h
     core/crash_reports.cpp
     core/crash_reports.h
+    core/credits_amount.cpp
     core/credits_amount.h
     core/deadlock_detector.h
     core/deep_links/deep_links_chats.cpp
@@ -1200,7 +1204,6 @@ PRIVATE
     history/view/history_view_chat_preview.h
     history/view/history_view_chat_section.cpp
     history/view/history_view_chat_section.h
-    history/view/history_view_chat_section_monoforum.cpp
     history/view/history_view_contact_status.cpp
     history/view/history_view_contact_status.h
     history/view/history_view_context_menu.cpp
@@ -1682,6 +1685,8 @@ PRIVATE
     media/stories/media_stories_delegate.h
     media/stories/media_stories_header.cpp
     media/stories/media_stories_header.h
+    media/stories/media_stories_music.cpp
+    media/stories/media_stories_music.h
     media/stories/media_stories_post.cpp
     media/stories/media_stories_post.h
     media/stories/media_stories_reactions.cpp
@@ -1733,12 +1738,14 @@ PRIVATE
     media/media_video_frames.h
     media/view/media_view_group_thumbs.cpp
     media/view/media_view_group_thumbs.h
+    media/view/media_view_story_caption.cpp
     media/view/media_view_open_common.cpp
     media/view/media_view_open_common.h
     media/view/media_view_overlay_opengl.cpp
     media/view/media_view_overlay_opengl.h
     media/view/media_view_overlay_raster.cpp
     media/view/media_view_overlay_raster.h
+    media/view/media_view_overlay_restart.cpp
     media/view/media_view_overlay_rhi.cpp
     media/view/media_view_overlay_rhi.h
     media/view/media_view_metal_texture.h
@@ -2177,6 +2184,8 @@ PRIVATE
     test/test_agent.h
     test/test_animation_clock.cpp
     test/test_animation_clock.h
+    test/test_application_state.cpp
+    test/test_application_state.h
     test/test_box_button.cpp
     test/test_box_button.h
     test/test_capture.cpp
@@ -2254,6 +2263,8 @@ PRIVATE
     test/test_palette.h
     test/test_panel.cpp
     test/test_panel.h
+    test/test_popup_hold.cpp
+    test/test_popup_hold.h
     test/test_post_paint.cpp
     test/test_post_paint.h
     test/test_press_origin.cpp

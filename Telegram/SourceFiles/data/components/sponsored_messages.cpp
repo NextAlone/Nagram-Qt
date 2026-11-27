@@ -9,8 +9,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/chats/options.h"
 #include "nagram/chats/promotions.h"
 
-#include "api/api_text_entities.h"
 #include "api/api_peer_search.h" // SponsoredSearchResult
+#include "api/api_text_entities.h"
 #include "apiwrap.h"
 #include "core/click_handler_types.h"
 #include "data/data_channel.h"
@@ -21,8 +21,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_photo.h"
 #include "data/data_session.h"
 #include "data/data_user.h"
-#include "history/history.h"
 #include "history/view/history_view_element.h"
+#include "history/history.h"
 #include "lang/lang_keys.h"
 #include "main/main_session.h"
 #include "ui/chat/sponsored_message_bar.h"
