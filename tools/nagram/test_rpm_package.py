@@ -32,7 +32,7 @@ class RpmPackageTest(unittest.TestCase):
         files = (
             "Nagram",
             "Updater",
-            "TelegramDesktop/TelegramWidgetHelper",
+            "NagramDesktop/TelegramWidgetHelper",
             "share/applications/app.desktop",
             f"share/{ICON}",
         )
@@ -72,8 +72,8 @@ class RpmPackageTest(unittest.TestCase):
             [line for line in files if line],
             [
                 "/usr/bin/Nagram",
-                "%dir /usr/bin/TelegramDesktop",
-                "/usr/bin/TelegramDesktop/TelegramWidgetHelper",
+                "%dir /usr/bin/NagramDesktop",
+                "/usr/bin/NagramDesktop/TelegramWidgetHelper",
                 "%dir /usr/share/NagramDesktop",
                 "%dir /usr/share/NagramDesktop/externalupdater.d",
                 "/usr/share/NagramDesktop/externalupdater.d/nagram-desktop.conf",
@@ -112,7 +112,7 @@ class RpmPackageTest(unittest.TestCase):
         )
         self.assertIn(f"/usr/share/{ICON}\n", listing.stdout)
         self.assertIn(rpm.MARKER + "\n", listing.stdout)
-        self.assertIn("/usr/bin/TelegramDesktop/TelegramWidgetHelper\n", listing.stdout)
+        self.assertIn("/usr/bin/NagramDesktop/TelegramWidgetHelper\n", listing.stdout)
 
 
 if __name__ == "__main__":

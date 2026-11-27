@@ -205,7 +205,7 @@ jobs:
 
           # The image builds with packaged libraries, which put the widget
           # helper into the libexec folder and have the binary look for it
-          # there: with that folder at bin, it is TelegramDesktop/ beside the
+          # there: with that folder at bin, it is NagramDesktop/ beside the
           # binary, which the release archive and packages keep.
           docker run --rm \
           -u $(id -u) \
@@ -301,14 +301,14 @@ jobs:
           cd out/$CONFIG
           mkdir artifact
           if [ "$CONFIG" = "Release" ]; then
-            mkdir -p stripped/TelegramDesktop
+            mkdir -p stripped/NagramDesktop
             cp Nagram Updater stripped/
-            cp TelegramDesktop/TelegramWidgetHelper stripped/TelegramDesktop/
-            strip stripped/Nagram stripped/Updater stripped/TelegramDesktop/TelegramWidgetHelper
+            cp NagramDesktop/TelegramWidgetHelper stripped/NagramDesktop/
+            strip stripped/Nagram stripped/Updater stripped/NagramDesktop/TelegramWidgetHelper
             # Nagram/ runs from anywhere; Nagram/share is what a package installs.
             python3 ../../tools/nagram/linux_tree.py --out package \
               --binary stripped/Nagram --updater stripped/Updater \
-              --helper stripped/TelegramDesktop/TelegramWidgetHelper
+              --helper stripped/NagramDesktop/TelegramWidgetHelper
             tar --owner=0 --group=0 --numeric-owner \
               -cJf artifact/Nagram-linux-x86_64.tar.xz -C package Nagram
             # Only a release has an RPM: a build of the default branch has
@@ -320,7 +320,7 @@ jobs:
             if [ -n "$NAGRAM_UPDATE_KEY" ]; then
               python3 ../../tools/nagram/pack_update.py --packer Packer --out artifact \
                 --app stripped/Nagram --updater stripped/Updater \
-                --helper stripped/TelegramDesktop/TelegramWidgetHelper \
+                --helper stripped/NagramDesktop/TelegramWidgetHelper \
                 --ci-build "$NAGRAM_CI_BUILD"
             else
               echo "::warning::NAGRAM_UPDATE_KEY is not set: no update package, this build is not offered to installed copies."
@@ -330,7 +330,7 @@ jobs:
             # An artifact does not keep the executable bit, the archive does.
             tar --owner=0 --group=0 --numeric-owner \
               -czf artifact/Nagram-linux-x86_64-debug.tar.gz Nagram \
-              TelegramDesktop/TelegramWidgetHelper
+              NagramDesktop/TelegramWidgetHelper
           fi
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: env.UPLOAD_ARTIFACT == 'true'

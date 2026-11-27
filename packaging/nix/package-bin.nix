@@ -31,9 +31,9 @@ let
       runHook preInstall
 
       install -Dm755 Nagram $out/bin/Nagram
-      # The binary starts the widget helper from TelegramDesktop/ beside it.
-      install -Dm755 TelegramDesktop/TelegramWidgetHelper \
-        $out/bin/TelegramDesktop/TelegramWidgetHelper
+      # The binary starts the widget helper from NagramDesktop/ beside it.
+      install -Dm755 NagramDesktop/TelegramWidgetHelper \
+        $out/bin/NagramDesktop/TelegramWidgetHelper
       cp -r share $out/share
 
       # Nix updates this copy, so the built-in updater is switched off.

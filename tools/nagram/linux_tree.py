@@ -2,7 +2,7 @@
 """Lay out the Linux release directory: the application and its desktop files.
 
   Nagram/Nagram, Nagram/Updater   run from anywhere and update themselves
-  Nagram/TelegramDesktop/TelegramWidgetHelper
+  Nagram/NagramDesktop/TelegramWidgetHelper
                                   the widget helper, at the path the binary
                                   was built with (CMAKE_INSTALL_LIBEXECDIR=bin)
   Nagram/share/...                what a package installs under /usr/share
@@ -27,7 +27,7 @@ RULE = re.compile(
 )
 CONFIGURED = "${CMAKE_CURRENT_BINARY_DIR}/"
 BINDIR = "@CMAKE_INSTALL_FULL_BINDIR@"
-HELPER = Path("TelegramDesktop/TelegramWidgetHelper")
+HELPER = Path("NagramDesktop/TelegramWidgetHelper")
 
 
 class TreeError(Exception):
